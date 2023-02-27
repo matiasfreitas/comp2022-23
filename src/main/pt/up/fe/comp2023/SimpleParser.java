@@ -42,7 +42,7 @@ public class SimpleParser implements JmmParser {
             // Convert code string into a character stream
             var input = new ANTLRInputStream(jmmCode);
             // Transform characters into tokens using the lexer
-            var lex = new JavammLexer(input);
+            var lex = new JavammLexer(input); // Will we interact with this?
             // Wrap lexer around a token stream
             var tokens = new CommonTokenStream(lex);
             // Transforms tokens into a parse tree
