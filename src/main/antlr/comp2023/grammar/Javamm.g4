@@ -30,7 +30,7 @@ ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 program : importDeclaration* classDeclaration EOF;
 
 // Submodules not working as a list
-importDeclaration : 'import' moduleName=ID ( '.' subModules=ID )* ';' ;
+importDeclaration : 'import' moduleName=ID ( '.' submoduleName+=ID )* ';' ;
 classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaratioin* methodDeclaration* '}' ;
 
 methodDeclaration
