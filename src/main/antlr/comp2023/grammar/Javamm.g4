@@ -31,7 +31,7 @@ program : importDeclaration* classDeclaration EOF;
 
 // Submodules not working as a list
 importDeclaration : 'import' moduleName=ID ( '.' subModules=ID )* ';' ;
-classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' statement* methodDeclaration* '}' ;
+classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaratioin* methodDeclaration* '}' ;
 
 methodDeclaration
     : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
@@ -46,12 +46,17 @@ arrayType: arrayType '[' ']' | simpleType '[' ']';
 type: simpleType | arrayType;
 
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
+
+varDeclaration :  type varName=ID ( '=' expression)? ';' ;
+
+classVarDeclaratioin: visibility=VISIBILITY? varDeclaration | varDeclaration;
+
 statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
-    | type varName=ID ( '=' expression)? ';' #Declaration
+    | varDeclaration #VarDeclarationStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
     | 'return' expression ';' #ReturnStatement
