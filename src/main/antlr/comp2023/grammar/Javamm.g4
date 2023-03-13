@@ -18,13 +18,14 @@ STRING: '"' ~["\\]* '"';
 
 VISIBILITY : 'public' | 'private' | 'protected' ;
 
-TYPE: 'int' | 'boolean' | 'String' | 'char';
+TYPE: 'int' | 'boolean' | 'String' | 'char' | 'double';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
 // null? other data types?
 // better way of doing arguments
 // one or more classes?
+// variable declaration with visibility specifiers inside class?
 
 program : importDeclaration* classDeclaration EOF;
 
@@ -46,7 +47,7 @@ type: simpleType | arrayType;
 
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 statement
-    : '{' statement* '}' #ScopedBloc
+    : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
@@ -72,6 +73,7 @@ expression
     | expression '?' expression ':' expression #TernaryOp
     | expression '[' expression ']' #ArrayIndexing
     | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
+    | expression '.' attributeName=ID #AttributeAccessing
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
