@@ -12,9 +12,13 @@ INT : [0-9]+ ;
 
 BOOLEAN : 'true' | 'false' ;
 
+// Add support for characters escaping?
+CHAR: '\'' ~['\\] '\'';
+STRING: '"' ~["\\]* '"';
+
 VISIBILITY : 'public' | 'private' | 'protected' ;
 
-TYPE: 'int' | 'boolean' | 'String';
+TYPE: 'int' | 'boolean' | 'String' | 'char';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
@@ -65,6 +69,8 @@ expression
     | '(' expression ')'#Paren
     | value=INT  #Integer
     | value=BOOLEAN #Boolean
+    | value=CHAR #CHAR
+    | value=STRING #STRING
     | value=ID #Identifier
     | value='this' #This
     ;

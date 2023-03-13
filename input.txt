@@ -1,15 +1,17 @@
-import collections.java.Array;
+//import collections.java.Array;
 
-// This is a line comment
-/* this is a block comment */
-/*
-    This is also a block comment
-*/
 class Main {
    public static void main(String[] args){
+    /*
         int a = 3;
         String[] b;
         int[][] c;
         return a;
+        */
+    //int a = 3 / ((2 - 4) * 3)  +1;
+    String a = out.println(a);
+    a = out.println(b*3 +1);
+    out.println('a');
+    out.println("adksfjasdlfjasld");
    }
 }
