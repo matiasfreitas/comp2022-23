@@ -1,5 +1,10 @@
 import collections.java.Array;
 
+// This is a line comment
+/* this is a block comment */
+/*
+    This is also a block comment
+*/
 class Main {
    public static void main(String[] args){
         int a = 3;

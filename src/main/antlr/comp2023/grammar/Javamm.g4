@@ -6,6 +6,8 @@ grammar Javamm;
 
 WS : [ \t\n\r\f]+ -> skip ;
 
+LINE_COMMENT: '//' ~[\n\r]* ->skip;
+BLOCK_COMMENT: '/*' .*? '*/' ->skip;
 INT : [0-9]+ ;
 
 BOOLEAN : 'true' | 'false' ;
@@ -15,6 +17,8 @@ VISIBILITY : 'public' | 'private' | 'protected' ;
 TYPE: 'int' | 'boolean' | 'String';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
+
+
 
 program : importDeclaration* classDeclaration EOF;
 
