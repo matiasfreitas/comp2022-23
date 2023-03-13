@@ -1,7 +1,10 @@
-import collections.Array;
+import collections.java.Array;
 
 class Main {
    public static void main(String[] args){
+        int a = 3;
+        String[] b;
+        int[][] c;
         return a;
    }
 }

@@ -18,29 +18,31 @@ ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
 program : importDeclaration* classDeclaration EOF;
 
-importDeclaration : 'import' ID ( '.' ID )* ';' ;
-classDeclaration : 'class' class=ID ( 'extends' extends=ID )? '{' varDeclaration* methodDeclaration* '}' ;
+// Submodules not working as a list
+importDeclaration : 'import' moduleName=ID ( '.' subModules=ID )* ';' ;
+classDeclaration : 'class' className=ID ( 'extends' extendsName=ID )? '{' statement* methodDeclaration* '}' ;
 
-varDeclaration : varType=type ID ';';
 methodDeclaration
-    : visibility=VISIBILITY? static='static'? returnType=type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' varDeclaration* statement* 'return' expression ';' '}'
+    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
     ;
 
 simpleType
-    : TYPE
-    | ID
+    : typeName=TYPE
+    | typeName=ID
     ;
 arrayType: arrayType '[' ']' | simpleType '[' ']';
 
 type: simpleType | arrayType;
 
 statement
-    : '{' statement* '}'
-    | 'if' '(' expression ')' statement 'else' statement
-    | 'while' '(' expression ')' statement
-    | expression ';'
-    | ID '=' expression ';'
-    | ID '[' expression ']' '=' expression ';'
+    : '{' statement* '}' #ScopedBloc
+    | 'if' '(' expression ')' statement 'else' statement  #IfStatement
+    | 'while' '(' expression ')' statement #WhileLoop
+    | expression ';' #SingleStatement
+    | type varName=ID ( '=' expression)? ';' #Declaration
+    | varName=ID '=' expression ';' #Assignment
+    | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
+    | 'return' expression ';' #ReturnStatement
     ;
 
 expression
@@ -51,7 +53,7 @@ expression
     |expression op=('<' |'>' |'<=' | '>=') expression #BinaryOp
     |expression op=('==' | '!=')  expression #BinaryOp
     | expression '[' expression ']' #ArrayIndexing
-    | expression '.' ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
+    | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' ID '(' ')' #NewObject
