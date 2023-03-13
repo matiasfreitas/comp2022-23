@@ -22,13 +22,15 @@ TYPE: 'int' | 'boolean' | 'String' | 'char';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
-
+// null? other data types?
+// better way of doing arguments
+// one or more classes?
 
 program : importDeclaration* classDeclaration EOF;
 
 // Submodules not working as a list
 importDeclaration : 'import' moduleName=ID ( '.' subModules=ID )* ';' ;
-classDeclaration : 'class' className=ID ( 'extends' extendsName=ID )? '{' statement* methodDeclaration* '}' ;
+classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' statement* methodDeclaration* '}' ;
 
 methodDeclaration
     : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
@@ -61,18 +63,18 @@ expression
     | expression op=('+'|'-') expression #BinaryOp
     | expression op=('<<' | '>>' | '>>>') expression #BinaryOp
     | expression op=('<' |'>' |'<=' | '>=') expression #BinaryOp
-    |expression op=('==' | '!=')  expression #BinaryOp
+    | expression op=('==' | '!=')  expression #BinaryOp
     | expression op='&' expression #BinaryOp
     | expression op='^' expression #BinaryOp
     | expression op='|' expression #BinaryOp
-    |expression op='&&' expression #BinaryOp
-    |expression op='||' expression #BinaryOp
+    | expression op='&&' expression #BinaryOp
+    | expression op='||' expression #BinaryOp
     | expression '?' expression ':' expression #TernaryOp
     | expression '[' expression ']' #ArrayIndexing
     | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
-    | 'new' ID '(' ')' #NewObject
+    | 'new' typeName=ID '(' ')' #NewObject
     | '!' expression  #Negation
     | '(' expression ')'#Paren
     | value=INT  #Integer
