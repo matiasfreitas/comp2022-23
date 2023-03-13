@@ -42,6 +42,7 @@ arrayType: arrayType '[' ']' | simpleType '[' ']';
 
 type: simpleType | arrayType;
 
+// assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 statement
     : '{' statement* '}' #ScopedBloc
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
@@ -52,14 +53,21 @@ statement
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
     | 'return' expression ';' #ReturnStatement
     ;
-
+// instance of
 expression
-    :expression op=('*' | '/') expression #BinaryOp
-    |expression op=('+'|'-') expression #BinaryOp
+    : expression op=('++' | '--') #PostFix
+    | op=('++'|'--'|'+' |'-' |'!') #Unary
+    | expression op=('*' | '/') expression #BinaryOp
+    | expression op=('+'|'-') expression #BinaryOp
+    | expression op=('<<' | '>>' | '>>>') expression #BinaryOp
+    | expression op=('<' |'>' |'<=' | '>=') expression #BinaryOp
+    |expression op=('==' | '!=')  expression #BinaryOp
+    | expression op='&' expression #BinaryOp
+    | expression op='^' expression #BinaryOp
+    | expression op='|' expression #BinaryOp
     |expression op='&&' expression #BinaryOp
     |expression op='||' expression #BinaryOp
-    |expression op=('<' |'>' |'<=' | '>=') expression #BinaryOp
-    |expression op=('==' | '!=')  expression #BinaryOp
+    | expression '?' expression ':' expression #TernaryOp
     | expression '[' expression ']' #ArrayIndexing
     | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
     // See how arrays work in java
