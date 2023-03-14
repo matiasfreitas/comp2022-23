@@ -27,16 +27,17 @@ ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 // one or more classes?
 // variable declaration with visibility specifiers inside class?
 
-program : importDeclaration* classDeclaration EOF;
+program : importDeclaration* classDeclaration+ EOF;
 
 // Submodules not working as a list
 importDeclaration : 'import' moduleName+=ID ( '.' moduleName+=ID )* ';' ;
 classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaration* methodDeclaration* '}' ;
 
 methodDeclaration
-    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
+    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' methodBody
     ;
 
+methodBody: '{' statement*'}';
 // Fazer distinção do builtin type e custom types?
 simpleType
     : typeName=TYPE #BuiltinType

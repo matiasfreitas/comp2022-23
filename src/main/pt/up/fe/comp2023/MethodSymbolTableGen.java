@@ -12,11 +12,25 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     @Override
     protected void buildVisitor() {
         addVisit("MethodDeclaration",this::handleMethodDeclaration);
+        addVisit("MethodBody",this::handleMethodBody);
         this.setDefaultVisit(this::visitAllChildren);
     }
 
+    private Void handleMethodBody(JmmNode jmmNode, Void unused) {
+        ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(null);
+        scopeTableGen.visit(jmmNode);
+        ScopeSymbolTable methodScope = scopeTableGen.getScope();
+        thisMethod.setMethodScope(methodScope);
+        return null;
+        
+    }
+
     private Void handleMethodDeclaration(JmmNode jmmNode, Void unused) {
-        System.out.println(jmmNode.toTree());
+        System.out.println("Handling Method");
+
+        for(JmmNode child : jmmNode.getChildren()) {
+            visit(child);
+        }
         return null;
     }
 

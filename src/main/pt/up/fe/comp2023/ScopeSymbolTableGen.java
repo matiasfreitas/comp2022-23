@@ -10,41 +10,44 @@ import java.util.List;
 
 public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
     ScopeSymbolTable thisScope;
-    public  ScopeSymbolTableGen(ScopeSymbolTable parentScope){
+
+    public ScopeSymbolTableGen(ScopeSymbolTable parentScope) {
         this.thisScope = new ScopeSymbolTable();
         this.thisScope.setParentScope(parentScope);
     }
+
     @Override
     protected void buildVisitor() {
-            addVisit("VarDeclarationStatement",this::handleVarDeclaration);
-            addVisit("ScopedBlock",this::handleScopeBlock);
-            this.setDefaultVisit(this::visitAllChildren);
+        addVisit("VarDeclarationStatement", this::handleVarDeclaration);
+        addVisit("ScopedBlock", this::handleScopeBlock);
+        this.setDefaultVisit(this::visitAllChildren);
     }
 
 
-    private Void handleVarDeclaration(JmmNode jmmNode,Void unused) {
-        String varName = jmmNode.get("varName");
+    private Void handleVarDeclaration(JmmNode jmmNode, Void unused) {
+        System.out.println("Handling Var Declaration");
+        String varName = jmmNode.getChildren().get(0).get("varName");
         // Get identifier type type
         // I whish instead of isArray i could have dimensions
-        Type t = new Type("int",false);
-        Symbol s = new Symbol(t,varName);
+        Type t = new Type("int", false);
+        Symbol s = new Symbol(t, varName);
         this.thisScope.addSymbol(s);
-        return  null;
+        return null;
 
     }
 
-    private Void handleScopeBlock(JmmNode jmmNode,Void unused) {
+    private Void handleScopeBlock(JmmNode jmmNode, Void unused) {
+        System.out.println("Handling Scope");
         ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
-        childGen.visit(jmmNode,unused);
+        childGen.visit(jmmNode, unused);
         ScopeSymbolTable childScope = childGen.getScope();
         this.thisScope.addSubScope(childScope);
         return null;
 
     }
 
-    private ScopeSymbolTable getScope() {
+    public ScopeSymbolTable getScope() {
         return this.thisScope;
     }
-
 
 }

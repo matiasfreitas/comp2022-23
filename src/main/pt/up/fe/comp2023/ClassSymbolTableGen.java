@@ -17,6 +17,11 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleVarClassDeclaration(JmmNode jmmNode, Void unused) {
+        System.out.println("Looking at a Class Var Declaration");
+        String visibility = "private";
+        if(jmmNode.hasAttribute("visibility")){
+            visibility = jmmNode.get("visibility");
+        }
         return null;
     }
 
@@ -28,7 +33,9 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         if(jmmNode.hasAttribute("isStatic")){
             classTable.setIsStatic(true);
         }
-
+        for(JmmNode child : jmmNode.getChildren()) {
+                visit(child);
+        }
 
         return null;
     }
