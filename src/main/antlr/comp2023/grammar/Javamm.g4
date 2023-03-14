@@ -37,9 +37,10 @@ methodDeclaration
     : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
     ;
 
+// Fazer distinção do builtin type e custom types?
 simpleType
-    : typeName=TYPE
-    | typeName=ID
+    : typeName=TYPE #BuiltinType
+    | typeName=ID   #ObjectType
     ;
 arrayType: arrayType '[' ']' | simpleType '[' ']';
 

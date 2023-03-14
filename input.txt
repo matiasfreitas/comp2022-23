@@ -9,13 +9,22 @@ import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
 
+ import utils .M;
+ import utils .N;
+ // ...
+
 
 class HelloWorld {
     int a = 3;
     private String b = "3";
     int c = 5;
+    Map[][][] b;
     public static void main(String[] args) {
+     M a;
+     a = M.foo();
+     a.bar(10);
         int[][][] a;
+        System.out.println('a');
         System.out.println("Hello, World!");
     }
 }
