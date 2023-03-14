@@ -8,6 +8,14 @@ import java.util.List;
 public class MethodSymbolTable {
     private Type returnType;
     private List<Symbol> parameters;
-    private  ClassSymbolTable myClass;
+    private  ClassSymbolTable parentClass;
     private ScopeSymbolTable methodScope;
+
+    public void setParentClass(ClassSymbolTable parent){
+        this.parentClass = parent;
+    }
+
+    public String getStringRepresentation() {
+        return "Lara my bomboca";
+    }
 }

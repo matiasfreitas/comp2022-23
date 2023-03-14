@@ -9,4 +9,14 @@ public class ScopeSymbolTable {
     private List<Symbol> symbols;
     private ScopeSymbolTable parentScope;
     private List<ScopeSymbolTable> subScopes;
+
+    public void addSubScope(ScopeSymbolTable subScope){
+        this.subScopes.add(subScope);
+    }
+    public void addSymbol(Symbol symbol){
+        this.symbols.add(symbol);
+    }
+    public void setParentScope(ScopeSymbolTable parentScope){
+        this.parentScope = parentScope;
+    }
 }

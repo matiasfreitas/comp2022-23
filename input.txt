@@ -15,7 +15,7 @@ import pt.up.fe.specs.util.SpecsSystem;
 
 
 class HelloWorld {
-    int a = 3
+    int a = 3;
     private String b = "3";
     int c = 5;
     Map[][][] b;
