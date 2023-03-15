@@ -19,11 +19,12 @@ class HelloWorld {
     String b = "oi";
     public static void main(String[] args,Integer b) {
      double c;
-     /*
+     String literal = "x";
+
      {
       int scoped;
      }
-     */
+
      return  a;
     }
 }

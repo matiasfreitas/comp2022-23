@@ -18,14 +18,14 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
 
     @Override
     protected void buildVisitor() {
-        addVisit("VarTypeDeclaration", this::handleVarDeclaration);
+        addVisit("VarTypeSpecification", this::handleVarDeclaration);
         addVisit("ScopedBlock", this::handleScopeBlock);
         this.setDefaultVisit(this::visitAllChildren);
     }
 
 
     private Void handleVarDeclaration(JmmNode jmmNode, Void unused) {
-        System.out.println("Handling Var Declaration");
+        System.out.println("Handling Var Declaration inside a scope");
         SymbolGen symbolGen = new SymbolGen();
         symbolGen.visit(jmmNode);
         Symbol s = symbolGen.getSymbol();
@@ -36,7 +36,7 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
     }
 
     private Void handleScopeBlock(JmmNode jmmNode, Void unused) {
-        System.out.println("Handling Scope");
+        System.out.println("Handling new Scope inside scope");
         ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
         childGen.visit(jmmNode, unused);
         ScopeSymbolTable childScope = childGen.getScope();
