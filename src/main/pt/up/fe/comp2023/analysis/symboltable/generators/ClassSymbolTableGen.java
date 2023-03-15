@@ -1,19 +1,23 @@
-package pt.up.fe.comp2023;
+package pt.up.fe.comp2023.analysis.symboltable.generators;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
+import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
-public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
+public class ClassSymbolTableGen extends AJmmVisitor<Void, Void> {
     ClassSymbolTable classTable;
-    public ClassSymbolTableGen(){
+
+    public ClassSymbolTableGen() {
         classTable = new ClassSymbolTable();
     }
+
     @Override
     protected void buildVisitor() {
-            addVisit("ClassDeclaration",this::handleClassDeclaration);
-            addVisit("MethodDeclaration",this::handleMethodDeclaration);
-            addVisit("ClassVarDeclaration",this::handleVarClassDeclaration);
+        addVisit("ClassDeclaration", this::handleClassDeclaration);
+        addVisit("MethodDeclaration", this::handleMethodDeclaration);
+        addVisit("ClassVarDeclaration", this::handleVarClassDeclaration);
 
     }
 
@@ -21,7 +25,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         //System.out.println("Looking at a Class Var Declaration");
         // TODO: Handle Visibility
         String visibility = "private";
-        if(jmmNode.hasAttribute("visibility")){
+        if (jmmNode.hasAttribute("visibility")) {
             visibility = jmmNode.get("visibility");
         }
         SymbolGen sGen = new SymbolGen();
@@ -34,14 +38,14 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
 
     private Void handleClassDeclaration(JmmNode jmmNode, Void unused) {
         // System.out.println("Handling Class");
-        if(jmmNode.hasAttribute("extendsName")){
+        if (jmmNode.hasAttribute("extendsName")) {
             classTable.setParentClass(jmmNode.get("extendsName"));
         }
-        if(jmmNode.hasAttribute("isStatic")){
+        if (jmmNode.hasAttribute("isStatic")) {
             classTable.setIsStatic(true);
         }
         classTable.setName(jmmNode.get("className"));
-        this.visitAllChildren(jmmNode,unused);
+        this.visitAllChildren(jmmNode, unused);
         return null;
     }
 
@@ -53,7 +57,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         return null;
     }
 
-    public ClassSymbolTable getClassTable(){
+    public ClassSymbolTable getClassTable() {
         return this.classTable;
     }
 

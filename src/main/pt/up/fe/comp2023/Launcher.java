@@ -8,6 +8,7 @@ import java.util.Map;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp2023.analysis.symboltable.generators.JmmSymbolTableGen;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;

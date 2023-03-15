@@ -1,11 +1,9 @@
-package pt.up.fe.comp2023;
+package pt.up.fe.comp2023.analysis.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class ClassSymbolTable {
     private List<Symbol> classFields = new LinkedList<>();
