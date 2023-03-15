@@ -23,15 +23,21 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
         ScopeSymbolTable methodScope = scopeTableGen.getScope();
         thisMethod.setMethodScope(methodScope);
         return null;
-        
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, Void unused) {
         System.out.println("Handling Method");
-
-        for(JmmNode child : jmmNode.getChildren()) {
-            visit(child);
+        String visibility = "private";
+        Boolean isStatic = false;
+        if(jmmNode.hasAttribute("visibility")){
+            visibility = jmmNode.get("visibility");
         }
+        if(jmmNode.hasAttribute("isStatic"))
+            isStatic = true;
+
+        String methodName = jmmNode.get("methodName");
+        System.out.println("Method " + methodName + " isStatic " + isStatic +" visibility " + visibility);
+        this.visitAllChildren(jmmNode,unused);
         return null;
     }
 

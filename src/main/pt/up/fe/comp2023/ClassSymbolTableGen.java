@@ -38,10 +38,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         if(jmmNode.hasAttribute("isStatic")){
             classTable.setIsStatic(true);
         }
-        for(JmmNode child : jmmNode.getChildren()) {
-                visit(child);
-        }
-
+        this.visitAllChildren(jmmNode,unused);
         return null;
     }
 
