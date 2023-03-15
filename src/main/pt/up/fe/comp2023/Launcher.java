@@ -44,7 +44,7 @@ public class Launcher {
 
         JmmSymbolTableGen symbolTable = new JmmSymbolTableGen();
         symbolTable.visit(rootNode);
-        System.out.println(symbolTable.classTable.tableToString(""));
+        System.out.println(symbolTable.tableToString(""));
         // ... add remaining stages
     }
 

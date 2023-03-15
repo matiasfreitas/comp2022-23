@@ -28,7 +28,7 @@ public class ScopeSymbolTable {
         }
         StringBuilder subScopes= new StringBuilder();
         for(ScopeSymbolTable subScope : this.subScopes){
-            subScopes.append(subScope.tableToString(identation + "  ")).append("\n");
+            subScopes.append(subScope.tableToString(identation + "  "));
 
         }
         return "" + symbols + subScopes;

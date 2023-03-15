@@ -1,33 +1,25 @@
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import pt.up.fe.comp.TestUtils;
-import pt.up.fe.comp.jmm.parser.JmmParserResult;
-import pt.up.fe.specs.util.SpecsIo;
-import pt.up.fe.specs.util.SpecsLogs;
-import pt.up.fe.specs.util.SpecsSystem;
-
- import utils .M;
- import utils .N;
- // ...
+import utils .M;
+import utils .N;
+// ...
 
 
 class HelloWorld {
     int a = 3;
-    String b = "oi";
     public static void main(String[] args,Integer b) {
      double c;
-     String literal = "x";
-
      {
       int scoped;
       {
       String super_scoped;
       }
      }
-
      return  a;
+    }
+}
+class Useless{
+    int a = 3;
+    private M main(int [][] a) {
+     double c;
     }
 }

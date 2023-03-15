@@ -37,7 +37,10 @@ public class MethodSymbolTable {
     public void setIsStatic(Boolean isStatic) {
         this.isStatic = isStatic;
     }
-
+    
+    public void setReturnType(Type returnType) {
+        this.returnType = returnType;
+    }
     public void setVisibility(String visibility) {
         this.visibility = visibility;
     }
@@ -57,4 +60,6 @@ public class MethodSymbolTable {
 
 
     }
+
+
 }
