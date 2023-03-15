@@ -34,4 +34,13 @@ public class ScopeSymbolTable {
         return "" + symbols + subScopes;
 
     }
+
+    public List<Symbol> flatten() {
+        List<Symbol> result = new LinkedList<>(symbols);
+        for(ScopeSymbolTable sub :subScopes) {
+            List<Symbol> subFlat = sub.flatten();
+            result.addAll(subFlat);
+        }
+        return result;
+    }
 }

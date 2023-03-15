@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ClassSymbolTable {
-    private List<Symbol> classFields = new LinkedList<>();
+    public List<Symbol> classFields = new LinkedList<>();
     //private Map<String,MethodSymbolTable> methods = new HashMap<>();
-    List<MethodSymbolTable> methods = new LinkedList<>();
-    private Boolean isStatic = false;
-    private String parentClass;
-    private String name;
+    public List<MethodSymbolTable> methods = new LinkedList<>();
+    public Boolean isStatic = false;
+    public String parentClass;
+    public String name;
 
     public void setIsStatic(boolean b) {
         this.isStatic = true;

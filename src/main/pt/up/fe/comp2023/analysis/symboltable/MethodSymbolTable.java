@@ -41,6 +41,12 @@ public class MethodSymbolTable {
     public void setReturnType(Type returnType) {
         this.returnType = returnType;
     }
+    public Type getReturnType(){
+        return returnType;
+    }
+    public List<Symbol> getParameters(){
+        return parameters;
+    }
     public void setVisibility(String visibility) {
         this.visibility = visibility;
     }
@@ -62,4 +68,7 @@ public class MethodSymbolTable {
     }
 
 
+    public ScopeSymbolTable getBodyScope() {
+        return methodScope;
+    }
 }
