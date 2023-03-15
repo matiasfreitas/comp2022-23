@@ -8,7 +8,7 @@ WS : [ \t\n\r\f]+ -> skip ;
 
 LINE_COMMENT: '//' ~[\n\r]* ->skip;
 BLOCK_COMMENT: '/*' .*? '*/' ->skip;
-INT : [0-9]+ ;
+INT : [1-9][0-9]* | '0' ;
 
 BOOLEAN : 'true' | 'false' ;
 
