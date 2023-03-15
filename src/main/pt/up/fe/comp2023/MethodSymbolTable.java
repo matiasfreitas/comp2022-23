@@ -37,7 +37,7 @@ public class MethodSymbolTable {
     public void setIsStatic(Boolean isStatic) {
         this.isStatic = isStatic;
     }
-    
+
     public void setReturnType(Type returnType) {
         this.returnType = returnType;
     }
@@ -47,14 +47,14 @@ public class MethodSymbolTable {
 
     public String tableToString(String indentation) {
 
-        String isStatic = this.isStatic ? "static" : "";
-        String visibility = this.visibility;
+        String isStatic = this.isStatic ? "static " : "";
+        String visibility = this.visibility + " ";
         StringBuilder parameters = new StringBuilder();
         String thisIndentation = indentation + "  ";
         for (Symbol field : this.parameters) {
             parameters.append(thisIndentation).append("  ").append(field.toString()).append("\n");
         }
-        return indentation + visibility + " " + isStatic + " " + this.name + "\n" +
+        return thisIndentation + visibility + isStatic +  this.name + " Returns " + this.returnType.toString() + "\n" +
                 thisIndentation + "Parameters:\n" + parameters +
                 thisIndentation + "Method Body:\n" + this.methodScope.tableToString(thisIndentation + "  ");
 

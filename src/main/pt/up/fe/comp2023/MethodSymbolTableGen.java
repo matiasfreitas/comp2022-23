@@ -46,6 +46,16 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
         this.thisMethod.setMethodName(methodName);
         this.thisMethod.setIsStatic(isStatic);
         this.thisMethod.setVisibility(visibility);
+        for (JmmNode child : jmmNode.getChildren()){
+            if(child.getKind().equals("Type")) {
+                TypeGen typeGen = new TypeGen();
+                typeGen.visit(child);
+                this.thisMethod.setReturnType(typeGen.getType());
+            }
+            else{
+                visit(child,unused);
+            }
+        }
         this.visitAllChildren(jmmNode,unused);
         return null;
     }
