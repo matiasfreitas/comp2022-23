@@ -13,7 +13,15 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     protected void buildVisitor() {
         addVisit("MethodDeclaration",this::handleMethodDeclaration);
         addVisit("MethodBody",this::handleMethodBody);
+        addVisit("MethodArguments",this::handleMethodArguments);
         this.setDefaultVisit(this::visitAllChildren);
+    }
+
+    private Void handleMethodArguments(JmmNode jmmNode, Void unused) {
+        SymbolGen sGen = new SymbolGen();
+        sGen.visit(jmmNode);
+        this.thisMethod.addParameter(sGen.getSymbol());
+        return null;
     }
 
     private Void handleMethodBody(JmmNode jmmNode, Void unused) {
@@ -24,7 +32,6 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
         thisMethod.setMethodScope(methodScope);
         return null;
     }
-
     private Void handleMethodDeclaration(JmmNode jmmNode, Void unused) {
         String visibility = "private";
         Boolean isStatic = false;

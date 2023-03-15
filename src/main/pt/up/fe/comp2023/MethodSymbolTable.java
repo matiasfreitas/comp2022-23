@@ -49,10 +49,10 @@ public class MethodSymbolTable {
         StringBuilder parameters = new StringBuilder();
         String thisIndentation = indentation + "  ";
         for (Symbol field : this.parameters) {
-            parameters.append(field.toString()).append(", ");
+            parameters.append(thisIndentation).append("  ").append(field.toString()).append("\n");
         }
         return indentation + visibility + " " + isStatic + " " + this.name + "\n" +
-                thisIndentation + "Parameters: (" + parameters + ")\n" +
+                thisIndentation + "Parameters:\n" + parameters +
                 thisIndentation + "Method Body:\n" + this.methodScope.tableToString(thisIndentation + "  ");
 
 
