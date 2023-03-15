@@ -5,7 +5,6 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class JmmSymbolTableGen extends AJmmVisitor<Void,Void> {
     List<String> imports;

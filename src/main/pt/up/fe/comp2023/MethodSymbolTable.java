@@ -39,4 +39,20 @@ public class MethodSymbolTable {
     public void setVisibility(String visibility) {
         this.visibility = visibility;
     }
+
+    public String tableToString(String identation) {
+
+        String isStatic = this.isStatic? "static" : "";
+        String visibility = this.visibility;
+        StringBuilder parameters = new StringBuilder();
+        for(Symbol field : this.parameters){
+            parameters.append(field.toString()).append(", ");
+        }
+        return identation +  visibility + " " + isStatic + " "+ this.name +"\n" +
+                identation + "Parameters: (" + parameters + ")\n"+
+                identation + "Method Body:\n" + this.methodScope.tableToString(identation +"  ");
+
+
+
+    }
 }

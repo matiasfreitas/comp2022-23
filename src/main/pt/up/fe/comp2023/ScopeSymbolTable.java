@@ -20,4 +20,18 @@ public class ScopeSymbolTable {
     public void setParentScope(ScopeSymbolTable parentScope){
         this.parentScope = parentScope;
     }
+
+    public String tableToString(String identation) {
+        StringBuilder symbols = new StringBuilder();
+        for(Symbol field : this.symbols){
+            symbols.append(identation).append(field.toString()).append("\n");
+        }
+        StringBuilder subScopes= new StringBuilder();
+        for(ScopeSymbolTable subScope : this.subScopes){
+            subScopes.append(subScope.tableToString(identation + "  ")).append("\n");
+
+        }
+        return "" + symbols + subScopes;
+
+    }
 }

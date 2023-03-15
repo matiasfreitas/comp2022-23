@@ -40,6 +40,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         if(jmmNode.hasAttribute("isStatic")){
             classTable.setIsStatic(true);
         }
+        classTable.setName(jmmNode.get("className"));
         this.visitAllChildren(jmmNode,unused);
         return null;
     }
