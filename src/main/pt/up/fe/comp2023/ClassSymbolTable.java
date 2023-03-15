@@ -42,15 +42,17 @@ public class ClassSymbolTable {
         String extendsClass = !(this.parentClass == null) ? "extends " + this.parentClass : "";
         String showFields = (this.classFields.size() >0)?  "Fields:\n" : "";
         StringBuilder fields = new StringBuilder();
+        String thisIdentation = identation + "  ";
         for(Symbol field : this.classFields){
-            fields.append(identation).append(field.toString()).append("\n");
+            fields.append(thisIdentation + "  ").append(field.toString()).append("\n");
         }
         StringBuilder methods = new StringBuilder();
+        String showMethods = (this.methods.size() >0)?  "Methods:\n" : "";
         for(MethodSymbolTable method : this.methods){
-            methods.append(method.tableToString(identation + "  "));
+            methods.append(method.tableToString(thisIdentation+ "  "));
         }
         return identation + isStatic + "class " + this.name + extendsClass + "\n" +
-            identation + showFields  + fields  + methods;
+            thisIdentation+ showFields  + fields  + thisIdentation + showMethods + methods;
 
 
     }

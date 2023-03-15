@@ -18,7 +18,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleVarClassDeclaration(JmmNode jmmNode, Void unused) {
-        System.out.println("Looking at a Class Var Declaration");
+        //System.out.println("Looking at a Class Var Declaration");
         // TODO: Handle Visibility
         String visibility = "private";
         if(jmmNode.hasAttribute("visibility")){
@@ -28,12 +28,12 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         sGen.visit(jmmNode);
         Symbol s = sGen.getSymbol();
         classTable.addField(s);
-        System.out.println("Handled class variable " + s.toString());
+        // System.out.println("Handled class variable " + s.toString());
         return null;
     }
 
     private Void handleClassDeclaration(JmmNode jmmNode, Void unused) {
-        System.out.println("Handling Class");
+        // System.out.println("Handling Class");
         if(jmmNode.hasAttribute("extendsName")){
             classTable.setParentClass(jmmNode.get("extendsName"));
         }

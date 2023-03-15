@@ -17,7 +17,7 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleMethodBody(JmmNode jmmNode, Void unused) {
-        System.out.println("Handling Method Body");
+        //System.out.println("Handling Method Body");
         ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(null);
         scopeTableGen.visit(jmmNode);
         ScopeSymbolTable methodScope = scopeTableGen.getScope();
@@ -26,7 +26,6 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, Void unused) {
-        System.out.println("Handling Method");
         String visibility = "private";
         Boolean isStatic = false;
         if(jmmNode.hasAttribute("visibility")){
@@ -36,7 +35,7 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
             isStatic = true;
 
         String methodName = jmmNode.get("methodName");
-        System.out.println("Method " + methodName + " isStatic " + isStatic +" visibility " + visibility);
+        //System.out.println("Method " + methodName + " isStatic " + isStatic +" visibility " + visibility);
         this.thisMethod.setMethodName(methodName);
         this.thisMethod.setIsStatic(isStatic);
         this.thisMethod.setVisibility(visibility);

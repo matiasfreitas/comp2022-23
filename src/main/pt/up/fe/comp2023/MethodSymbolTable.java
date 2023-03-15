@@ -10,12 +10,12 @@ public class MethodSymbolTable {
     private Type returnType;
     private String name;
     private List<Symbol> parameters = new LinkedList<>();
-    private  ClassSymbolTable parentClass;
+    private ClassSymbolTable parentClass;
     private ScopeSymbolTable methodScope;
-    private  String visibility;
+    private String visibility;
     private Boolean isStatic;
 
-    public void setParentClass(ClassSymbolTable parent){
+    public void setParentClass(ClassSymbolTable parent) {
         this.parentClass = parent;
     }
 
@@ -27,7 +27,9 @@ public class MethodSymbolTable {
         this.methodScope = methodScope;
     }
 
-    
+    public void addParameter(Symbol p){
+        this.parameters.add(p);
+    }
     public void setMethodName(String methodName) {
         this.name = methodName;
     }
@@ -40,18 +42,18 @@ public class MethodSymbolTable {
         this.visibility = visibility;
     }
 
-    public String tableToString(String identation) {
+    public String tableToString(String indentation) {
 
-        String isStatic = this.isStatic? "static" : "";
+        String isStatic = this.isStatic ? "static" : "";
         String visibility = this.visibility;
         StringBuilder parameters = new StringBuilder();
-        for(Symbol field : this.parameters){
+        String thisIndentation = indentation + "  ";
+        for (Symbol field : this.parameters) {
             parameters.append(field.toString()).append(", ");
         }
-        return identation +  visibility + " " + isStatic + " "+ this.name +"\n" +
-                identation + "Parameters: (" + parameters + ")\n"+
-                identation + "Method Body:\n" + this.methodScope.tableToString(identation +"  ");
-
+        return indentation + visibility + " " + isStatic + " " + this.name + "\n" +
+                thisIndentation + "Parameters: (" + parameters + ")\n" +
+                thisIndentation + "Method Body:\n" + this.methodScope.tableToString(thisIndentation + "  ");
 
 
     }
