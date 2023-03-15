@@ -34,7 +34,7 @@ importDeclaration : 'import' moduleName+=ID ( '.' moduleName+=ID )* ';' ;
 classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaration* methodDeclaration* '}' ;
 
 methodDeclaration
-    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' methodBody
+    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' methodArguments?')' methodBody
     ;
 
 methodBody: '{' statement*'}';
@@ -49,16 +49,20 @@ type: simpleType | arrayType;
 
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 
-varDeclaration :  type varName=ID ( '=' expression)? ';' ;
+varTypeSpecification : type varName=ID ;
 
-classVarDeclaration: visibility=VISIBILITY? varDeclaration | varDeclaration;
+varDeclaration :  varTypeSpecification ( '=' expression)? ;
+
+methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
+
+classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
 statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
-    | varDeclaration #VarDeclarationStatement
+    | varDeclaration ';'  #VarDeclarationStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
     | 'return' expression ';' #ReturnStatement
