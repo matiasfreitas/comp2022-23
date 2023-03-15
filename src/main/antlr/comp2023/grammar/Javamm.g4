@@ -27,19 +27,20 @@ ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 // one or more classes?
 // variable declaration with visibility specifiers inside class?
 
-program : importDeclaration* classDeclaration EOF;
+program : importDeclaration* classDeclaration+ EOF;
 
 // Submodules not working as a list
-importDeclaration : 'import' moduleName=ID ( '.' submoduleName+=ID )* ';' ;
-classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaratioin* methodDeclaration* '}' ;
+importDeclaration : 'import' moduleName+=ID ( '.' moduleName+=ID )* ';' ;
+classDeclaration : visibility=VISIBILITY? 'class' className=ID ( 'extends' extendsName=ID )? '{' classVarDeclaration* methodDeclaration* '}' ;
 
 methodDeclaration
-    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' ( type ID ( ',' type ID )* )? ')' '{' statement*'}'
+    : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' methodArguments?')' methodBody
     ;
 
+methodBody: '{' statement*'}';
 // Fazer distinção do builtin type e custom types?
 simpleType
-    : typeName=TYPE #BuiltinType
+    : typeName=TYPE #BuiltInType
     | typeName=ID   #ObjectType
     ;
 arrayType: arrayType '[' ']' | simpleType '[' ']';
@@ -48,16 +49,20 @@ type: simpleType | arrayType;
 
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 
-varDeclaration :  type varName=ID ( '=' expression)? ';' ;
+varTypeSpecification : type varName=ID ;
 
-classVarDeclaratioin: visibility=VISIBILITY? varDeclaration | varDeclaration;
+varDeclaration :  varTypeSpecification ( '=' expression)? ;
+
+methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
+
+classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
 statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
-    | varDeclaration #VarDeclarationStatement
+    | varDeclaration ';'  #VarDeclarationStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
     | 'return' expression ';' #ReturnStatement
