@@ -10,7 +10,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test variable lookup.
  */
-public class SymbolTableTest {
+public class
+SymbolTableTest {
 
     static JmmSemanticsResult getSemanticsResult(String filename) {
         return TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/jmm/"+filename));

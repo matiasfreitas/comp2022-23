@@ -21,9 +21,12 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleMethodArguments(JmmNode jmmNode, Void unused) {
-        SymbolGen sGen = new SymbolGen();
-        sGen.visit(jmmNode);
-        this.thisMethod.addParameter(sGen.getSymbol());
+        System.out.println("Just call me once");
+        for(JmmNode child : jmmNode.getChildren()) {
+            SymbolGen sGen = new SymbolGen();
+            sGen.visit(child);
+            this.thisMethod.addParameter(sGen.getSymbol());
+        }
         return null;
     }
 
@@ -59,7 +62,6 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
                 visit(child,unused);
             }
         }
-        this.visitAllChildren(jmmNode,unused);
         return null;
     }
 

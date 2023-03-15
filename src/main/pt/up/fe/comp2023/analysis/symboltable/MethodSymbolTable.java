@@ -20,7 +20,13 @@ public class MethodSymbolTable {
     }
 
     public String getStringRepresentation() {
-        return "Lara my bomboca";
+        StringBuilder repr = new StringBuilder(this.parentClass.name);
+        repr.append("::").append(this.name).append("->").append(this.returnType).append("(");
+        for(Symbol p : parameters){
+            repr.append("_").append(p.getType().toString());
+        }
+        repr.append(")");
+        return repr.toString();
     }
 
     public void setMethodScope(ScopeSymbolTable methodScope) {
