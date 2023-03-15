@@ -16,36 +16,14 @@ import pt.up.fe.specs.util.SpecsSystem;
 
 class HelloWorld {
     int a = 3;
-    private String b = "3";
-    public static void main(String[] args) {
-     M a;
-     a = M.foo();
-     a.bar(10);
-        int[][][] a;
-        System.out.println('a');
-        System.out.println("Hello, World!");
-    }
-    public static void dog(int a, String b){
-        M c;
-        D a;
-        return x;
-    }
-}
-
-class HelloWorld {
-    int a = 3;
-    private String b = "3";
-    public static void main(String[] args) {
-     M a;
-     a = M.foo();
-     a.bar(10);
-        int[][][] a;
-        System.out.println('a');
-        System.out.println("Hello, World!");
-    }
-    public static void dog(int a, String b){
-        M c;
-        D a;
-        return x;
+    String b = "oi";
+    public static void main(String[] args,Integer b) {
+     double c;
+     /*
+     {
+      int scoped;
+     }
+     */
+     return  a;
     }
 }

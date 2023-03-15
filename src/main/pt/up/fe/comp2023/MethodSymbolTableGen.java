@@ -17,6 +17,7 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleMethodBody(JmmNode jmmNode, Void unused) {
+        System.out.println("Handling Method Body");
         ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(null);
         scopeTableGen.visit(jmmNode);
         ScopeSymbolTable methodScope = scopeTableGen.getScope();

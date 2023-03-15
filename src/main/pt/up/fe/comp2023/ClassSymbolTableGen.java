@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
@@ -22,6 +23,10 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void,Void> {
         if(jmmNode.hasAttribute("visibility")){
             visibility = jmmNode.get("visibility");
         }
+        SymbolGen sGen = new SymbolGen();
+        sGen.visit(jmmNode);
+        Symbol s = sGen.getSymbol();
+        System.out.println("Handled class variable " + s.toString());
         return null;
     }
 

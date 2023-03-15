@@ -18,7 +18,7 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
 
     @Override
     protected void buildVisitor() {
-        addVisit("VarDeclarationStatement", this::handleVarDeclaration);
+        addVisit("VarTypeDeclaration", this::handleVarDeclaration);
         addVisit("ScopedBlock", this::handleScopeBlock);
         this.setDefaultVisit(this::visitAllChildren);
     }
@@ -26,11 +26,10 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
 
     private Void handleVarDeclaration(JmmNode jmmNode, Void unused) {
         System.out.println("Handling Var Declaration");
-        String varName = jmmNode.getChildren().get(0).get("varName");
-        // Get identifier type type
-        // I whish instead of isArray i could have dimensions
-        Type t = new Type("int", false);
-        Symbol s = new Symbol(t, varName);
+        SymbolGen symbolGen = new SymbolGen();
+        symbolGen.visit(jmmNode);
+        Symbol s = symbolGen.getSymbol();
+        System.out.println(s.toString());
         this.thisScope.addSymbol(s);
         return null;
 

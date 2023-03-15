@@ -40,7 +40,7 @@ methodDeclaration
 methodBody: '{' statement*'}';
 // Fazer distinção do builtin type e custom types?
 simpleType
-    : typeName=TYPE #BuiltinType
+    : typeName=TYPE #BuiltInType
     | typeName=ID   #ObjectType
     ;
 arrayType: arrayType '[' ']' | simpleType '[' ']';

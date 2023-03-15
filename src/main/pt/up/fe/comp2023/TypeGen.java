@@ -8,8 +8,8 @@ import java.util.Objects;
 
 public class TypeGen extends AJmmVisitor<Void,Void> {
     Integer dimensions = 0;
-    String typeName = "";
-    Boolean builtIn = false;
+    String typeName;
+    Boolean builtIn;
     @Override
     protected void buildVisitor() {
         addVisit("ArrayType",this::handleArrayType);
