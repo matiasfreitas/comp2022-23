@@ -23,6 +23,9 @@ class HelloWorld {
 
      {
       int scoped;
+      {
+      String super_scoped;
+      }
      }
 
      return  a;

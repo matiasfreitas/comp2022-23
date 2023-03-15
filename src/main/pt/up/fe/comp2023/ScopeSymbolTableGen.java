@@ -38,7 +38,9 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
     private Void handleScopeBlock(JmmNode jmmNode, Void unused) {
         System.out.println("Handling new Scope inside scope");
         ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
-        childGen.visit(jmmNode, unused);
+        for(JmmNode child : jmmNode.getChildren()){
+            childGen.visit(child, unused);
+        }
         ScopeSymbolTable childScope = childGen.getScope();
         this.thisScope.addSubScope(childScope);
         return null;
