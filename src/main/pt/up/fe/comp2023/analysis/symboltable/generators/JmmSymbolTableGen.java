@@ -3,6 +3,8 @@ package pt.up.fe.comp2023.analysis.symboltable.generators;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
+import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
+import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,18 +38,12 @@ public class JmmSymbolTableGen extends AJmmVisitor<Void,Void> {
         return null;
     }
 
-    public String tableToString(String indentation){
-        String showImports = (this.imports.size() > 0)? "Imports:\n":"";
-        String showClasses = (this.classes.size() == 1)? "Class:\n":"Classes:\n";
-        String thisIndentation = indentation + "  ";
-        StringBuilder classes = new StringBuilder();
-        for (ClassSymbolTable c : this.classes){
-            classes.append(c.tableToString(thisIndentation));
-        }
-        StringBuilder imports = new StringBuilder();
-        for (String c : this.imports){
-            imports.append(thisIndentation).append(c).append("\n");
-        }
-        return showImports + imports + showClasses + classes;
+
+    public JmmSymbolTable getJmmSymbolTable() {
+        return new JmmSymbolTable(imports,classes.get(0));
+    }
+
+    public MyJmmSymbolTable getMyJmmSymbolTable() {
+        return  new MyJmmSymbolTable(imports,classes);
     }
 }

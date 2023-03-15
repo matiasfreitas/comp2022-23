@@ -63,8 +63,6 @@ public class MethodSymbolTable {
         return thisIndentation + visibility + isStatic +  this.name + " Returns " + this.returnType.toString() + "\n" +
                 thisIndentation + "Parameters:\n" + parameters +
                 thisIndentation + "Method Body:\n" + this.methodScope.tableToString(thisIndentation + "  ");
-
-
     }
 
 

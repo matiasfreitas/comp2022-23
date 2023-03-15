@@ -69,4 +69,5 @@ public class JmmSymbolTable implements SymbolTable {
         ScopeSymbolTable mBody = m.getBodyScope();
         return mBody.flatten();
     }
+
 }
