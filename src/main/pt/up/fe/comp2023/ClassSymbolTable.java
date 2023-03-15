@@ -24,4 +24,11 @@ public class ClassSymbolTable {
     public void addMethod(MethodSymbolTable methodSymbolTable) {
         this.methods.put(methodSymbolTable.getStringRepresentation(),methodSymbolTable);
     }
+
+    public void addField(Symbol s) {
+        classFields.add(s);
+    }
+    public void setIsStatic(Boolean isStatic){
+        this.isStatic = isStatic;
+    }
 }

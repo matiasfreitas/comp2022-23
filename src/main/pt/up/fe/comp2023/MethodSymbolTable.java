@@ -8,9 +8,12 @@ import java.util.List;
 
 public class MethodSymbolTable {
     private Type returnType;
+    private String name;
     private List<Symbol> parameters = new LinkedList<>();
     private  ClassSymbolTable parentClass;
     private ScopeSymbolTable methodScope;
+    private  String visibility;
+    private Boolean isStatic;
 
     public void setParentClass(ClassSymbolTable parent){
         this.parentClass = parent;
@@ -22,5 +25,18 @@ public class MethodSymbolTable {
 
     public void setMethodScope(ScopeSymbolTable methodScope) {
         this.methodScope = methodScope;
+    }
+
+    
+    public void setMethodName(String methodName) {
+        this.name = methodName;
+    }
+
+    public void setIsStatic(Boolean isStatic) {
+        this.isStatic = isStatic;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
 }

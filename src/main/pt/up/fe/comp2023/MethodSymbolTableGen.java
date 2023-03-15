@@ -37,6 +37,9 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
 
         String methodName = jmmNode.get("methodName");
         System.out.println("Method " + methodName + " isStatic " + isStatic +" visibility " + visibility);
+        this.thisMethod.setMethodName(methodName);
+        this.thisMethod.setIsStatic(isStatic);
+        this.thisMethod.setVisibility(visibility);
         this.visitAllChildren(jmmNode,unused);
         return null;
     }
