@@ -6,7 +6,9 @@ import utils.N;
 
 class Test {
     public static void main(String[] args){
-        !M.foo;
+        Boolean[] boolArray = new Boolean[5];
+        Arrays.fill(boolArray, Boolean.FALSE);
+         System.out.println(!boolArray[0]);
     }
 }
 

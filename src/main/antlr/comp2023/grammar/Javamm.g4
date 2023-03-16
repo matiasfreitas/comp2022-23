@@ -71,6 +71,8 @@ statement
 expression
     : '(' expression ')'#Paren
     | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
+    | expression '.' attributeName=ID #AttributeAccessing
+    | expression '[' expression ']' #ArrayIndexing
     | expression op=('++' | '--') #PostFix
     | op=('++'|'--'|'+' |'-' |'!') expression #Unary
     | expression op=('*' | '/') expression #BinaryOp
@@ -84,8 +86,6 @@ expression
     | expression op='&&' expression #BinaryOp
     | expression op='||' expression #BinaryOp
     | expression '?' expression ':' expression #TernaryOp
-    | expression '[' expression ']' #ArrayIndexing
-    | expression '.' attributeName=ID #AttributeAccessing
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
