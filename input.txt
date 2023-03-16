@@ -1,25 +1,14 @@
 import java.io.File;
-import utils .M;
-import utils .N;
+import utils.M;
+import utils.N;
 // ...
 
 
-class HelloWorld {
-    int a = 3;
-    public static void main(String[] args,Integer b) {
-     double c;
-     {
-      int scoped;
-      {
-      String super_scoped;
-      }
-     }
-     return  a;
+class Test {
+    public static void main(String[] args){
+        !M.foo;
     }
 }
-class Useless{
-    int a = 3;
-    private M main(int [][] a) {
-     double c;
-    }
-}
+
+// (!M).foo()
+// !(M.foo()) x

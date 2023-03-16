@@ -69,8 +69,10 @@ statement
     ;
 // instance of
 expression
-    : expression op=('++' | '--') #PostFix
-    | op=('++'|'--'|'+' |'-' |'!') #Unary
+    : '(' expression ')'#Paren
+    | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
+    | expression op=('++' | '--') #PostFix
+    | op=('++'|'--'|'+' |'-' |'!') expression #Unary
     | expression op=('*' | '/') expression #BinaryOp
     | expression op=('+'|'-') expression #BinaryOp
     | expression op=('<<' | '>>' | '>>>') expression #BinaryOp
@@ -83,12 +85,10 @@ expression
     | expression op='||' expression #BinaryOp
     | expression '?' expression ':' expression #TernaryOp
     | expression '[' expression ']' #ArrayIndexing
-    | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
     | expression '.' attributeName=ID #AttributeAccessing
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
-    | '(' expression ')'#Paren
     | value=INT  #Integer
     | value=BOOLEAN #Boolean
     | value=CHAR #CHAR
