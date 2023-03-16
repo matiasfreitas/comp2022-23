@@ -88,7 +88,6 @@ expression
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
-    | '!' expression  #Negation
     | '(' expression ')'#Paren
     | value=INT  #Integer
     | value=BOOLEAN #Boolean

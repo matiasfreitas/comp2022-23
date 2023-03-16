@@ -21,7 +21,6 @@ public class MethodSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleMethodArguments(JmmNode jmmNode, Void unused) {
-        System.out.println("Just call me once");
         for(JmmNode child : jmmNode.getChildren()) {
             SymbolGen sGen = new SymbolGen();
             sGen.visit(child);
