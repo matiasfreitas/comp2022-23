@@ -11,6 +11,7 @@ import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.generators.JmmSymbolTableGen;
+import pt.up.fe.comp2023.ollir.OllirGenerator;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -51,6 +52,8 @@ public class Launcher {
         MyJmmSymbolTable mySymbolTable = symbolTableGen.getMyJmmSymbolTable();
 
         System.out.println(mySymbolTable.tableToString(""));
+
+
         // ... add remaining stages
     }
 
