@@ -145,13 +145,13 @@ public class OllirToJasmin {
             for (Instruction instruction: method.getInstructions()) {
                 addInstruction(instruction, method.getVarTable());
             }
-            if (method.getMethodName() == "main")
+            if (method.getMethodName().equals("main"))
                 code.append("\treturn\n");
             else {
                 if (method.getReturnType().getTypeOfElement() != VOID)
                     code.append("\tireturn\n");
-                code.append(".end method\n");
             }
+            code.append(".end method\n");
         }
 
     }
