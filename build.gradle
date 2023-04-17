@@ -7,6 +7,10 @@ plugins {
 // Java project
 apply plugin: 'java'
 
+compileJava {
+    options.compilerArgs << '-Xlint:deprecation'
+}
+
 // ANTLR support
 apply plugin: 'antlr'
 
