@@ -125,6 +125,7 @@ public class OllirToJasmin {
             addAccessModifiers(method.getMethodAccessModifier().name(), method.isStaticMethod(), method.isFinalMethod());
             code.append(method.getMethodName());
             code.append("(");
+
             for (Element param: method.getParams()) {
                 try {
                     code.append(JasminUtils.jasminType(param.getType(), classUnit.getImports()));

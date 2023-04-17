@@ -23,7 +23,30 @@ public class JasminUtils {
                 if (type.getTypeOfElement() == ElementType.OBJECTREF)
                     prefix = "a";
 
+                code.append(addInstruction(assignInstruction.getRhs(), varTable));
                 code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
+                return code.toString();
+
+            case BINARYOPER:
+
+                BinaryOpInstruction binaryInstruction = (BinaryOpInstruction) instruction;
+                Operand left                          = (Operand) binaryInstruction.getLeftOperand();
+                Operand right                         = (Operand) binaryInstruction.getRightOperand();
+                OperationType opType                  = binaryInstruction.getOperation().getOpType();
+
+                code.append("iload " +  varTable.get(left.getName()).getVirtualReg() + "\n");
+                code.append("iload " +  varTable.get(right.getName()).getVirtualReg() + "\n");
+
+                switch (opType) {
+
+                    case ADD: code.append("iadd\n"); break;
+                    case SUB: code.append("isub\n"); break;
+                    case MUL: code.append("imul\n"); break;
+                    case DIV: code.append("idiv\n"); break;
+                    default:
+                        code.append("\n");
+                }
+
                 return code.toString();
 
             case CALL:
@@ -71,7 +94,6 @@ public class JasminUtils {
                 }
 
                 if (fieldType instanceof ArrayType) {
-
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
                     return "[".repeat(dimensions) + jasminType(newFieldType, imports);
                 }
