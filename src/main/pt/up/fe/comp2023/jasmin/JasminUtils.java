@@ -45,6 +45,11 @@ public class JasminUtils {
                 return "Z";
             case STRING:
                 return "Ljava/lang/String;";
+            case VOID:
+                return "V";
+            case INT32:
+                return "I";
+
             case ARRAYREF:
             case OBJECTREF:
                 String objectClass;
@@ -58,26 +63,19 @@ public class JasminUtils {
                     objectClass = ((ClassType) fieldType).getName();
                     dimensions = 0;
                 }
-                System.out.println(imports);
                 for (String statement : imports) {
                     String[] importArray = statement.split("\\.");
-                    System.out.println(importArray[importArray.length - 1]);
                     if (importArray[importArray.length - 1].equals(objectClass)) {
-                        return "[".repeat(1) + statement.replace('.', '/');
+                        return "[".repeat(dimensions) + statement.replace('.', '/');
                     }
                 }
 
                 if (fieldType instanceof ArrayType) {
 
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(1) + jasminType(newFieldType, imports);
+                    return "[".repeat(dimensions) + jasminType(newFieldType, imports);
                 }
 
-
-            case VOID:
-                return "V";
-            case INT32:
-                return "I";
             default:
                 throw new Exception(String.valueOf(fieldType));
         }

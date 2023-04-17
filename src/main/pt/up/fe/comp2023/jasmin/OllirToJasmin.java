@@ -27,6 +27,9 @@ public class OllirToJasmin {
     public void addAccessModifiers(String info, Boolean isStatic, Boolean isFinal) {
         if (info != "DEFAULT")
             code.append(info.toLowerCase() + " ");
+        else {
+            code.append("private ");
+        }
         if (isStatic) code.append("static ");
         if (isFinal) code.append("final ");
     }
@@ -41,7 +44,7 @@ public class OllirToJasmin {
         String superClass = classUnit.getSuperClass();
         String className  = prefix + classUnit.getClassName();
 
-        code.append(".class public ");
+        code.append(".class ");
         addAccessModifiers(classInfo, classUnit.isStaticClass(), classUnit.isFinalClass());
         code.append(className + '\n');
 
