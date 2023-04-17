@@ -1,6 +1,9 @@
 package pt.up.fe.comp2023.jasmin;
 import org.specs.comp.ollir.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import static org.specs.comp.ollir.ElementType.VOID;
 
 public class OllirToJasmin {
@@ -22,7 +25,7 @@ public class OllirToJasmin {
     }
 
     public void addAccessModifiers(String info, Boolean isStatic, Boolean isFinal) {
-        if (!info.equals("DEFAULT"))
+        if (info != "DEFAULT")
             code.append(info.toLowerCase() + " ");
         if (isStatic) code.append("static ");
         if (isFinal) code.append("final ");
@@ -38,7 +41,7 @@ public class OllirToJasmin {
         String superClass = classUnit.getSuperClass();
         String className  = prefix + classUnit.getClassName();
 
-        code.append(".class ");
+        code.append(".class public ");
         addAccessModifiers(classInfo, classUnit.isStaticClass(), classUnit.isFinalClass());
         code.append(className + '\n');
 
@@ -55,7 +58,7 @@ public class OllirToJasmin {
                 }
             }
         }
-        else code.append(".super null");
+        else code.append(".super java/lang/Object");
 
         code.append('\n');
     }
@@ -75,7 +78,7 @@ public class OllirToJasmin {
         try {
             if (field.isInitialized())
                 code.append("=" + field.getInitialValue());
-            code.append(JasminUtils.jasminType(field.getFieldType()));
+            code.append(JasminUtils.jasminType(field.getFieldType(), classUnit.getImports()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -101,12 +104,16 @@ public class OllirToJasmin {
 
                 if (importArray[importArray.length - 1].equals(classUnit.getSuperClass())) {
                     code.append(statement.replace('.', '/'));
-                    code.append("/<init>()V\n");
+
                     break;
                 }
             }
         }
+        else {
+            code.append("invokenonvirtual java/lang/Object");
+        }
 
+        code.append("/<init>()V\n");
         code.append("return\n");
         code.append(".end method\n");
     }
@@ -116,36 +123,40 @@ public class OllirToJasmin {
         else {
             code.append(".method ");
             addAccessModifiers(method.getMethodAccessModifier().name(), method.isStaticMethod(), method.isFinalMethod());
+            code.append(method.getMethodName());
             code.append("(");
             for (Element param: method.getParams()) {
                 try {
-                    code.append(JasminUtils.jasminType(param.getType()));
+                    code.append(JasminUtils.jasminType(param.getType(), classUnit.getImports()));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
             code.append(")");
             try {
-                code.append(JasminUtils.jasminType(method.getReturnType()) + "\n");
+                code.append(JasminUtils.jasminType(method.getReturnType(), classUnit.getImports()) + "\n");
             } catch (Exception e) {
                 throw new RuntimeException(e);
-            }
-
-            for (Instruction instruction: method.getInstructions()) {
-                addInstruction(instruction);
             }
 
             code.append(".limit stack 99\n");
             code.append(".limit locals 99\n");
 
-            if (method.getReturnType().getTypeOfElement() != VOID)
+            for (Instruction instruction: method.getInstructions()) {
+                addInstruction(instruction, method.getVarTable());
+            }
+            if (method.getMethodName() == "main")
                 code.append("\treturn\n");
-            code.append(".end method\n");
+            else {
+                if (method.getReturnType().getTypeOfElement() != VOID)
+                    code.append("\tireturn\n");
+                code.append(".end method\n");
+            }
         }
 
     }
 
-    public void addInstruction(Instruction instruction) {
-        code.append(JasminUtils.addInstruction(instruction));
+    public void addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
+        code.append(JasminUtils.addInstruction(instruction, varTable));
     }
 }
