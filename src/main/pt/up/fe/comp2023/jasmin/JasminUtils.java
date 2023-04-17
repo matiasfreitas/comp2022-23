@@ -38,21 +38,42 @@ public class JasminUtils {
     }
 
     public static String jasminType(Type fieldType, ArrayList<String> imports) throws Exception {
+
+
         switch (fieldType.getTypeOfElement()) {
             case BOOLEAN:
                 return "Z";
             case STRING:
                 return "Ljava/lang/String;";
             case ARRAYREF:
-                return "a";
             case OBJECTREF:
-                ClassType classType = (ClassType) fieldType;
+                String objectClass;
+                Integer dimensions;
+
+                if (fieldType instanceof ArrayType) {
+                    dimensions = ((ArrayType) fieldType).getNumDimensions();
+                    objectClass = ((ArrayType) fieldType).getElementClass();
+                }
+                else {
+                    objectClass = ((ClassType) fieldType).getName();
+                    dimensions = 0;
+                }
+                System.out.println(imports);
                 for (String statement : imports) {
                     String[] importArray = statement.split("\\.");
-                    if (importArray[importArray.length - 1].equals(classType.getName())) {
-                        return statement.replace('.', '/');
+                    System.out.println(importArray[importArray.length - 1]);
+                    if (importArray[importArray.length - 1].equals(objectClass)) {
+                        return "[".repeat(1) + statement.replace('.', '/');
                     }
                 }
+
+                if (fieldType instanceof ArrayType) {
+
+                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
+                    return "[".repeat(1) + jasminType(newFieldType, imports);
+                }
+
+
             case VOID:
                 return "V";
             case INT32:
