@@ -233,8 +233,7 @@ public class JasminUtils {
     }
 
     public static String constantPusher (LiteralElement op) {
-        System.out.println(op.getLiteral());
-        int num = 0;
+        int num;
         try {
             num = Integer.parseInt(op.getLiteral());
         } catch (NumberFormatException e) {
