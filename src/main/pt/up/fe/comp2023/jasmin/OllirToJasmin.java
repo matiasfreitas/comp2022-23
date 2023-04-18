@@ -158,6 +158,8 @@ public class OllirToJasmin {
     }
 
     public void addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
-        code.append(JasminUtils.addInstruction(instruction, varTable));
+        ArrayList<String> imports = classUnit.getImports();
+        imports.add(classUnit.getClassName());
+        code.append(JasminUtils.addInstruction(instruction, varTable, imports).replace("Dummy", classUnit.getClassName()));
     }
 }
