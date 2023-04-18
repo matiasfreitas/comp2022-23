@@ -233,7 +233,19 @@ public class JasminUtils {
     }
 
     public static String constantPusher (LiteralElement op) {
-        return "ldc ";
+        System.out.println(op.getLiteral());
+        int num = 0;
+        try {
+            num = Integer.parseInt(op.getLiteral());
+        } catch (NumberFormatException e) {
+            return "ldc ";
+
+        }
+
+        if (-1 < num && num < 5) return "iconst_";
+        else if (-127 < num && num < 128) return "bipush ";
+        else if (-32768 < num && num < 32767) return "sipush ";
+        else return "ldc ";
 
     }
     public static String jasminType(Type fieldType) {
