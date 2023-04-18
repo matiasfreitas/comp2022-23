@@ -98,7 +98,7 @@ public class OllirToJasmin {
         code.append("aload_0\n");
 
         if (classUnit.getSuperClass() != null) {
-            code.append("invokenonvirtual ");
+            code.append("invokespecial ");
             for (String statement : this.classUnit.getImports()) {
                 String[] importArray = statement.split("\\.");
 
@@ -110,7 +110,7 @@ public class OllirToJasmin {
             }
         }
         else {
-            code.append("invokenonvirtual java/lang/Object");
+            code.append("invokespecial java/lang/Object");
         }
 
         code.append("/<init>()V\n");
@@ -146,12 +146,7 @@ public class OllirToJasmin {
             for (Instruction instruction: method.getInstructions()) {
                 addInstruction(instruction, method.getVarTable());
             }
-            if (method.getMethodName().equals("main"))
-                code.append("\treturn\n");
-            else {
-                if (method.getReturnType().getTypeOfElement() != VOID)
-                    code.append("\tireturn\n");
-            }
+
             code.append(".end method\n");
         }
 

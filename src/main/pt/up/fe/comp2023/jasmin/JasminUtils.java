@@ -5,6 +5,7 @@ import org.specs.comp.ollir.*;
 import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class JasminUtils {
@@ -15,6 +16,7 @@ public class JasminUtils {
         Operand object;
         Operand field;
         String prefix;
+        String constType;
 
         switch(instruction.getInstType()){
             case ASSIGN :
@@ -31,6 +33,24 @@ public class JasminUtils {
                 code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
                 return code.toString();
 
+            case NOPER:
+                SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
+                Element onlyOperand                      = singleOpInstruction.getSingleOperand();
+
+                if (onlyOperand instanceof LiteralElement) {
+                    LiteralElement op = (LiteralElement) onlyOperand;
+                    constType = constantPusher(op);
+                    code.append(constType + op.getLiteral() + '\n');
+                }
+                else {
+                        Operand op = (Operand) onlyOperand;
+                        prefix = "i";
+                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
+                            prefix = "a";
+                        code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                }
+
+                return code.toString();
             case BINARYOPER:
 
                 BinaryOpInstruction binaryInstruction = (BinaryOpInstruction) instruction;
@@ -62,28 +82,29 @@ public class JasminUtils {
                 String methodName;
 
                 if (callInstruction.getInvocationType() == CallType.NEW) {
-                    invokeInstruction.append("invokespecial " );
+
                     code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
-                    methodName = "<init>";
+                    return code.toString();
                 }
                 else if (callInstruction.getInvocationType() == CallType.invokestatic) {
 
-                    methodName = method.getLiteral();
+                    methodName = method.getLiteral().replace("\"","");
                     invokeInstruction.append("invokestatic " + object.getName() + "/");
                 }
                 else {
                     invokeInstruction.append(callInstruction.getInvocationType() + " " );
-                    methodName = method.getLiteral();
+                    methodName = method.getLiteral().replace("\"","");
                     code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
-                    invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports));
+                    invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
                 }
-
-                invokeInstruction.append(methodName + '(');
+                invokeInstruction.append("" + methodName + "(");
 
                 for (Element operand: callInstruction.getListOfOperands()) {
                     if (operand instanceof LiteralElement) {
                         LiteralElement constant = ((LiteralElement) operand);
-                        code.append("iconst " + constant.getLiteral() + '\n');
+
+                        constType = constantPusher(constant);
+                        code.append(constType + constant.getLiteral() + '\n');
                     }
                     else {
                         Operand op = (Operand) operand;
@@ -97,12 +118,10 @@ public class JasminUtils {
                 }
 
                 invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
-                String invokeCode;
-                if (callInstruction.getInvocationType() != CallType.invokevirtual) {
-                    invokeCode = invokeInstruction.toString();
-                    System.out.println(invokeCode);
-                    code.append(invokeCode);
+                if (callInstruction.getInvocationType() != CallType.invokevirtual || methodName != "<init>") {
+                    code.append(invokeInstruction);
                 }
+
 
                 return code.toString();
 
@@ -124,10 +143,54 @@ public class JasminUtils {
                 LiteralElement newValue                   = (LiteralElement) putFieldInstruction.getThirdOperand();
 
                 code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
-                code.append("bipush " +    newValue.getLiteral() + "\n");
+
+                constType = constantPusher(newValue);
+                code.append(constType +    newValue.getLiteral() + "\n");
                 code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
                 return code.toString();
+            case RETURN:
+
+
+                ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
+                if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
+                    return "return\n";
+                }
+
+
+                else {
+
+                    Element operand = returnInstruction.getOperand();
+                    if (operand instanceof LiteralElement) {
+
+                        LiteralElement constant = ((LiteralElement) operand);
+                        constType = constantPusher(constant);
+                        code.append(constType + constant.getLiteral() + '\n');
+
+                        try {
+                            Integer.parseInt(constant.getLiteral());
+                        } catch (NumberFormatException e) {
+                            code.append("areturn\n");
+                            return code.toString();
+
+                        }
+
+                        code.append("ireturn\n");
+
+                    } else {
+
+                        Operand op = (Operand) operand;
+                        prefix = "i";
+                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
+                            prefix = "a";
+                        code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                        code.append(prefix + "return\n");
+
+                    }
+                }
+
+                return code.toString();
+
 
         }
         return "";
@@ -138,6 +201,7 @@ public class JasminUtils {
 
 
         switch (fieldType.getTypeOfElement()) {
+            case THIS:
             case ARRAYREF:
             case OBJECTREF:
                 String objectClass;
@@ -168,6 +232,10 @@ public class JasminUtils {
         }
     }
 
+    public static String constantPusher (LiteralElement op) {
+        return "ldc ";
+
+    }
     public static String jasminType(Type fieldType) {
 
         switch (fieldType.getTypeOfElement()) {
