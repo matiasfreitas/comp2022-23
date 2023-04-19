@@ -270,7 +270,7 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(dimensions) + 'L' + jasminType(newFieldType, imports);
+                    return "[".repeat(dimensions) + jasminType(newFieldType, imports);
                 }
 
             default:
