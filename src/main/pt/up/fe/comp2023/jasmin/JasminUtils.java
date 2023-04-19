@@ -19,6 +19,7 @@ public class JasminUtils {
         String constType;
 
         switch(instruction.getInstType()){
+
             case ASSIGN :
 
                 AssignInstruction assignInstruction = (AssignInstruction) instruction;
@@ -86,19 +87,29 @@ public class JasminUtils {
 
                     return code.toString();
                 }
+                if (!right.isLiteral()) {
+                    Operand r = (Operand) right;
+                    code.append("aload " + varTable.get(((Operand) right).getName()).getVirtualReg() + "\n");
 
-                Operand l = (Operand) left;
-                Operand r = (Operand) right;
+                }
+                else {
+                    LiteralElement r = (LiteralElement) right;
+                    code.append(constantPusher(r) + r.getLiteral() + "\n");
 
-                prefix = "i";
-                if (jasminType(l.getType(), imports) != "I" && jasminType(l.getType(), imports) != "Z")
-                    return "a";
-                code.append(prefix + "load " +  varTable.get(l.getName()).getVirtualReg() + "\n");
 
-                prefix = "i";
-                if (jasminType(r.getType(), imports) != "I" && jasminType(r.getType(), imports) != "Z")
-                    return "a";
-                code.append(prefix + "load " +  varTable.get(r.getName()).getVirtualReg() + "\n");
+                }
+
+                if (!left.isLiteral()) {
+                    Operand l = (Operand) left;
+                    code.append("aload " + varTable.get(((Operand) left).getName()).getVirtualReg() + "\n");
+
+                }
+                else {
+                    LiteralElement l = (LiteralElement) left;
+                    code.append(constantPusher(l) + l.getLiteral() + "\n");
+
+                }
+
 
 
                 switch (opType) {
@@ -110,7 +121,6 @@ public class JasminUtils {
                     default:
                         code.append("\n");
                 }
-
                 return code.toString();
 
             case CALL:
