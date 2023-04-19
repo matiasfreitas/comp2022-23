@@ -66,6 +66,7 @@ public class OllirGenerator implements JmmOptimization {
         List<Report> reports = new ArrayList<>();
         Map<String, String> config = new HashMap<>();
         JmmParserResult result = new JmmParserResult(semanticsResult.getRootNode(), reports, config);
+        System.out.printf("OK");
         return new OllirResult(semanticsResult, ollirCode.toString(), reports);
     }
 
@@ -89,7 +90,14 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append("import ");
             ollirCode.append(rootNode.get("ID"));
             ollirCode.append(";\n");
-            ollirCode = dealMethodDeclaration(rootNode, ollirCode);
+        }
+
+        else if (rootNode.getKind().equals("VarDeclaration")){
+            ollirCode.append(".field");
+            System.out.println(rootNode.getAttributes());
+        }
+
+        else if (rootNode.getKind().equals("VarTypeSpecification")){
         }
 
         else if (rootNode.getKind().equals("MethodDeclaration")){
@@ -100,18 +108,26 @@ public class OllirGenerator implements JmmOptimization {
             dealWithOperation(rootNode, ollirCode);
         }
         for (JmmNode childrenNode: rootNode.getChildren()) {
-
+            System.out.println(childrenNode.getKind());
             ollirCode.append(iterateOverCode(childrenNode, new StringBuilder()));
 
         }
         if (rootNode.getKind().equals("ClassDeclaration")){
-            ollirCode.append(" }");
+            ollirCode.append(" }\n");
 
         }
+
+        else if (rootNode.getKind().equals("VarTypeSpecification")){
+            ollirCode.append(rootNode.get("varName"));
+        }
+
         if (rootNode.getKind().equals("MethodDeclaration")){
             ollirCode = finishMethodDeclaration(rootNode, ollirCode);
         }
 
+
+
+        System.out.println(ollirCode.toString());
         return ollirCode.toString();
 
 
@@ -131,7 +147,7 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private StringBuilder dealMethodDeclaration(JmmNode rootNode, StringBuilder ollirCode) {
-        ollirCode.append("\t.method public ").append(rootNode.get("name")).append("(");
+        ollirCode.append("\t.method public ").append(rootNode.get("methodName")).append("(");
         return ollirCode;
     }
 
