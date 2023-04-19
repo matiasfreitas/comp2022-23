@@ -138,11 +138,18 @@ public class OllirToJasmin {
             code.append(")");
             try {
 
+                boolean addComma = false;
+
                 ArrayList<String> imports = classUnit.getImports();
                 imports.add(classUnit.getClassName());
-                if (method.getReturnType().getTypeOfElement() == OBJECTREF)
+                if (method.getReturnType().getTypeOfElement() == OBJECTREF) {
                     code.append("L");
-                code.append(JasminUtils.jasminType(method.getReturnType(), imports) + "\n");
+                    addComma = true;
+                }
+                code.append(JasminUtils.jasminType(method.getReturnType(), imports));
+                if (addComma)
+                    code.append(";");
+                code.append("\n");
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
