@@ -26,7 +26,7 @@ public class OllirToJasmin {
 
     public void addAccessModifiers(String info, Boolean isStatic, Boolean isFinal) {
         if (info != "DEFAULT")
-            code.append(info.toLowerCase() + " ");
+            code.append("public " + info.toLowerCase() + " ");
         if (isStatic) code.append("static ");
         if (isFinal) code.append("final ");
     }
