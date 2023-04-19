@@ -87,30 +87,9 @@ public class JasminUtils {
 
                     return code.toString();
                 }
-                if (!right.isLiteral()) {
-                    Operand r = (Operand) right;
-                    code.append("aload " + varTable.get(((Operand) right).getName()).getVirtualReg() + "\n");
 
-                }
-                else {
-                    LiteralElement r = (LiteralElement) right;
-                    code.append(constantPusher(r) + r.getLiteral() + "\n");
-
-
-                }
-
-                if (!left.isLiteral()) {
-                    Operand l = (Operand) left;
-                    code.append("aload " + varTable.get(((Operand) left).getName()).getVirtualReg() + "\n");
-
-                }
-                else {
-                    LiteralElement l = (LiteralElement) left;
-                    code.append(constantPusher(l) + l.getLiteral() + "\n");
-
-                }
-
-
+                addCodeOperand(varTable, code, left);
+                addCodeOperand(varTable, code, right);
 
                 switch (opType) {
 
@@ -244,6 +223,22 @@ public class JasminUtils {
 
         }
         return "";
+    }
+
+    private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
+        if (!element.isLiteral()) {
+            Operand el = (Operand) element;
+            if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
+                code.append("iload ");
+            else
+                code.append("aload ");
+            code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
+        }
+        else {
+            LiteralElement el = (LiteralElement) element;
+            code.append(constantPusher(el) + el.getLiteral() + "\n");
+
+        }
     }
 
 
