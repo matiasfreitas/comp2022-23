@@ -12,7 +12,7 @@ public class OllirToJasmin {
     private StringBuilder code;
     public OllirToJasmin(ClassUnit classUnit) {
         this.classUnit = classUnit;
-        this.code = new StringBuilder("");
+        this.code      = new StringBuilder("");
     }
 
     public String jasminCode() {
@@ -153,6 +153,7 @@ public class OllirToJasmin {
     }
 
     public void addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
+
         ArrayList<String> imports = classUnit.getImports();
         imports.add(classUnit.getClassName());
         code.append(JasminUtils.addInstruction(instruction, varTable, imports).replace("Dummy", classUnit.getClassName()));

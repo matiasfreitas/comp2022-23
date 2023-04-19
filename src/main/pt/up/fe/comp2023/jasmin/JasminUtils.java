@@ -54,12 +54,52 @@ public class JasminUtils {
             case BINARYOPER:
 
                 BinaryOpInstruction binaryInstruction = (BinaryOpInstruction) instruction;
-                Operand left                          = (Operand) binaryInstruction.getLeftOperand();
-                Operand right                         = (Operand) binaryInstruction.getRightOperand();
+                Element left                          =  binaryInstruction.getLeftOperand();
+                Element right                         =  binaryInstruction.getRightOperand();
                 OperationType opType                  = binaryInstruction.getOperation().getOpType();
 
-                code.append("iload " +  varTable.get(left.getName()).getVirtualReg() + "\n");
-                code.append("iload " +  varTable.get(right.getName()).getVirtualReg() + "\n");
+                if (right.isLiteral() && left.isLiteral()) {
+
+                    LiteralElement l = (LiteralElement) left;
+                    LiteralElement r = (LiteralElement) right;
+
+
+                    switch (opType) {
+
+                        case ADD:
+                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral())));
+                            code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
+
+                        case SUB:
+                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) - Integer.parseInt(r.getLiteral())));
+                            code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
+
+                        case MUL:
+                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) * Integer.parseInt(r.getLiteral())));
+                            code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
+                        case DIV:
+                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral())));
+                            code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
+                        default:
+                            code.append("\n");
+                    }
+
+                    return code.toString();
+                }
+
+                Operand l = (Operand) left;
+                Operand r = (Operand) right;
+
+                prefix = "i";
+                if (jasminType(l.getType(), imports) != "I" && jasminType(l.getType(), imports) != "Z")
+                    return "a";
+                code.append(prefix + "load " +  varTable.get(l.getName()).getVirtualReg() + "\n");
+
+                prefix = "i";
+                if (jasminType(r.getType(), imports) != "I" && jasminType(r.getType(), imports) != "Z")
+                    return "a";
+                code.append(prefix + "load " +  varTable.get(r.getName()).getVirtualReg() + "\n");
+
 
                 switch (opType) {
 
@@ -240,6 +280,15 @@ public class JasminUtils {
             return "ldc ";
 
         }
+
+        if (-1 < num && num < 5) return "iconst_";
+        else if (-127 < num && num < 128) return "bipush ";
+        else if (-32768 < num && num < 32767) return "sipush ";
+        else return "ldc ";
+
+    }
+
+    public static String constantPusher (int num) {
 
         if (-1 < num && num < 5) return "iconst_";
         else if (-127 < num && num < 128) return "bipush ";

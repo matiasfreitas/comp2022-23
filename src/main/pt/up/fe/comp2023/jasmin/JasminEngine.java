@@ -17,7 +17,6 @@ public class JasminEngine implements JasminBackend {
         var jasminResult = new JasminResult(jasminCode);
         jasminResult.compile();
 
-        return new JasminResult(ollirResult, jasminCode, Collections.emptyList());
-
+        return new JasminResult(ollirResult, jasminCode, ollirResult.getReports());
     }
 }
