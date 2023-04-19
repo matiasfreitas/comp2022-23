@@ -264,7 +264,7 @@ public class JasminUtils {
                 for (String statement : imports) {
                     String[] importArray = statement.split("\\.");
                     if (importArray[importArray.length - 1].equals(objectClass)) {
-                        return "[".repeat(dimensions) + statement.replace("\\.", "/");
+                        return "[".repeat(dimensions) + statement.replace('.', '/');
                     }
                 }
 
