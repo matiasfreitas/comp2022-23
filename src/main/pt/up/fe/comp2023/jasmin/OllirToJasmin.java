@@ -103,7 +103,7 @@ public class OllirToJasmin {
                 String[] importArray = statement.split("\\.");
 
                 if (importArray[importArray.length - 1].equals(classUnit.getSuperClass())) {
-                    code.append(statement.replace('.', '/'));
+                    code.append(statement.replace("\\.", "/"));
 
                     break;
                 }
