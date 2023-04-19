@@ -4,6 +4,7 @@ import org.specs.comp.ollir.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static org.specs.comp.ollir.ElementType.OBJECTREF;
 import static org.specs.comp.ollir.ElementType.VOID;
 
 public class OllirToJasmin {
@@ -138,6 +139,8 @@ public class OllirToJasmin {
 
                 ArrayList<String> imports = classUnit.getImports();
                 imports.add(classUnit.getClassName());
+                if (method.getReturnType().getTypeOfElement() == OBJECTREF)
+                    code.append("L");
                 code.append(JasminUtils.jasminType(method.getReturnType(), imports) + "\n");
 
             } catch (Exception e) {

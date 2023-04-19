@@ -126,6 +126,7 @@ public class JasminUtils {
                     code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
                     invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
                 }
+
                 invokeInstruction.append("" + methodName + "(");
 
                 for (Element operand: callInstruction.getListOfOperands()) {
@@ -269,7 +270,7 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(dimensions) + jasminType(newFieldType, imports);
+                    return "[".repeat(dimensions) + 'L' + jasminType(newFieldType, imports);
                 }
 
             default:
