@@ -11,29 +11,17 @@ import pt.up.fe.comp2023.JavammParser;
 import java.util.*;
 /*
 All:
-
-varTypeSpecification
-varDeclaration
-methodArguments
-classVarDeclaration
-
 SingleStatement
 VarDeclarationStatement
-Assignment
 ReturnStatement
-
 MethodCalling
 BinaryOp
 NewObject
-
-Identifier
 This
  */
 /*
 IN PROGRESS
-
-
-
+Assignment
  */
 /*
 MADE
@@ -45,6 +33,11 @@ simpleType
 Integer
 Boolean
 STRING
+varTypeSpecification
+varDeclaration
+classVarDeclaration
+Identifier
+methodArguments
  */
 public class OllirGenerator implements JmmOptimization {
 
@@ -112,6 +105,42 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(newLine());
             dealWithOperation(rootNode, ollirCode);
         }
+        else if(rootNode.getKind().equals("MethodCalling")){
+            ollirCode.append(newLine());
+            ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            ollirCode.append(".");
+            ollirCode.append(rootNode.get("methodName"));
+            ollirCode.append("(");
+            for (int i = 1; i < rootNode.getChildren().size()-1; i++) {
+                ollirCode.append(rootNode.getChildren().get(i).get("value"));
+                ollirCode.append(", ");
+            }
+            int lastValue = rootNode.getChildren().size()-1;
+            ollirCode.append(rootNode.getChildren().get(lastValue).get("value"));
+            ollirCode.append(");\n");
+        }
+        else if (rootNode.getKind().equals("Assignment")){
+            ollirCode.append(newLine());
+            ollirCode.append(rootNode.get("varName"));
+            String kind = rootNode.getChildren().get(0).getKind();
+            if(kind.equals("Integer")) kind = "int32";
+            else if(kind.equals("Boolean")){
+                kind = "bool";
+            } else if (kind.equals("Identifier")) {
+                System.out.println("oi");
+
+            }
+            ollirCode.append(".");
+            ollirCode.append(kind);
+            ollirCode.append(" :=.");
+            ollirCode.append(kind);
+            for (JmmNode children: rootNode.getChildren()) {
+                ollirCode.append(iterateOverCode(children, new StringBuilder()));
+            }
+            ollirCode.append(";\n");
+            return ollirCode.toString();
+        }
+
 
 
         for (JmmNode childrenNode: rootNode.getChildren()) {
@@ -169,6 +198,7 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode = dealWithVar(childrenNode, ollirCode);
             ollirCode.append(" ");
         }
+        ollirCode.deleteCharAt(ollirCode.length() - 1);
         return ollirCode;
     }
     private StringBuilder dealMethodDeclaration(JmmNode rootNode, StringBuilder ollirCode) {
@@ -183,7 +213,7 @@ public class OllirGenerator implements JmmOptimization {
             }
             else if(childrenNode.getKind().equals("MethodBody")){
                 ollirCode.append("){\n");
-                ollirCode.append(iterateOverCode(childrenNode, ollirCode));
+                ollirCode = new StringBuilder(iterateOverCode(childrenNode, ollirCode));
 
             }
         }
