@@ -4,8 +4,7 @@ import org.specs.comp.ollir.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.specs.comp.ollir.ElementType.OBJECTREF;
-import static org.specs.comp.ollir.ElementType.VOID;
+import static org.specs.comp.ollir.ElementType.*;
 
 public class OllirToJasmin {
 

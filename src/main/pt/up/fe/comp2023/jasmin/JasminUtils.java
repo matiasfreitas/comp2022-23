@@ -150,8 +150,8 @@ public class JasminUtils {
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
                     }
-                    addComma = false;
 
+                    addComma = false;
                     if (operand.getType().getTypeOfElement() == OBJECTREF) {
                         code.append("L");
                         addComma = true;
@@ -284,7 +284,7 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(dimensions) + jasminType(newFieldType, imports);
+                    return "[".repeat(dimensions) + "L" + jasminType(newFieldType, imports);
                 }
 
             default:
@@ -322,7 +322,7 @@ public class JasminUtils {
             case BOOLEAN:
                 return "Z";
             case STRING:
-                return "Ljava/lang/String;";
+                return "java/lang/String;";
             case VOID:
                 return "V";
             case INT32:
