@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class JasminUtils {
 
+    private static boolean hasAssign = false;
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         StringBuilder code = new StringBuilder();
@@ -30,7 +31,9 @@ public class JasminUtils {
                 if (type.getTypeOfElement() == ElementType.OBJECTREF)
                     prefix = "a";
 
+                hasAssign = true;
                 code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+                hasAssign = false;
                 code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
                 return code.toString();
 
@@ -151,8 +154,9 @@ public class JasminUtils {
                 if (callInstruction.getInvocationType() != CallType.invokevirtual || methodName != "<init>") {
                     code.append(invokeInstruction);
                 }
-
-
+                System.out.println(hasAssign);
+                if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+                    code.append("pop\n");
                 return code.toString();
 
             case GETFIELD:
