@@ -111,6 +111,10 @@ public class JasminUtils {
 
                 StringBuilder invokeInstruction = new StringBuilder();
                 CallInstruction callInstruction = (CallInstruction) instruction;
+
+                if (callInstruction.getInvocationType() == CallType.ldc)
+                    return "ldc " + ((LiteralElement) callInstruction.getFirstArg()).getLiteral() + "\n";
+
                 object                          = (Operand) callInstruction.getFirstArg();
                 LiteralElement method           = (LiteralElement) callInstruction.getSecondArg();
                 boolean addComma;
@@ -127,6 +131,7 @@ public class JasminUtils {
                     methodName = method.getLiteral().replace("\"","");
                     invokeInstruction.append("invokestatic " + object.getName() + "/");
                 }
+
                 else {
                     invokeInstruction.append(callInstruction.getInvocationType() + " " );
                     methodName = method.getLiteral().replace("\"","");
@@ -287,8 +292,12 @@ public class JasminUtils {
                 }
 
                 if (fieldType instanceof ArrayType) {
+                    boolean reference = false;
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(dimensions) + "L" + jasminType(newFieldType, imports) + ";";
+                    if (jasminType(newFieldType, imports) != "I" && jasminType(newFieldType) != "Z")
+                        reference = true;
+
+                    return "[".repeat(dimensions) + (reference ? "L" : "") + jasminType(newFieldType, imports) + (reference ? ";" : "");
                 }
 
             default:
