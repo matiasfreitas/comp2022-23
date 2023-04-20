@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.specs.comp.ollir.ElementType.OBJECTREF;
+
 
 public class JasminUtils {
 
@@ -111,7 +113,9 @@ public class JasminUtils {
                 CallInstruction callInstruction = (CallInstruction) instruction;
                 object                          = (Operand) callInstruction.getFirstArg();
                 LiteralElement method           = (LiteralElement) callInstruction.getSecondArg();
+                boolean addComma;
                 String methodName;
+
 
                 if (callInstruction.getInvocationType() == CallType.NEW) {
 
@@ -146,15 +150,22 @@ public class JasminUtils {
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
                     }
+                    addComma = false;
 
+                    if (operand.getType().getTypeOfElement() == OBJECTREF) {
+                        code.append("L");
+                        addComma = true;
+                    }
                     invokeInstruction.append(jasminType(operand.getType(), imports));
+                    if (addComma)
+                        code.append(";");
                 }
 
                 invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
                 if (callInstruction.getInvocationType() != CallType.invokevirtual || methodName != "<init>") {
                     code.append(invokeInstruction);
                 }
-                System.out.println(hasAssign);
+
                 if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID)
                     code.append("pop\n");
                 return code.toString();
@@ -190,7 +201,6 @@ public class JasminUtils {
                 if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
                     return "return\n";
                 }
-
 
                 else {
 
