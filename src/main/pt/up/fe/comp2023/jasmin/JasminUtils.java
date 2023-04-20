@@ -278,13 +278,17 @@ public class JasminUtils {
                 for (String statement : imports) {
                     String[] importArray = statement.split("\\.");
                     if (importArray[importArray.length - 1].equals(objectClass)) {
-                        return "[".repeat(dimensions) + statement.replace("\\.", "/");
+                        if (fieldType instanceof ArrayType) {
+                            return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
+                        }
+                        else
+                            return statement.replace("\\.", "/");
                     }
                 }
 
                 if (fieldType instanceof ArrayType) {
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    return "[".repeat(dimensions) + "L" + jasminType(newFieldType, imports);
+                    return "[".repeat(dimensions) + "L" + jasminType(newFieldType, imports) + ";";
                 }
 
             default:
@@ -322,7 +326,7 @@ public class JasminUtils {
             case BOOLEAN:
                 return "Z";
             case STRING:
-                return "java/lang/String;";
+                return "java/lang/String";
             case VOID:
                 return "V";
             case INT32:
