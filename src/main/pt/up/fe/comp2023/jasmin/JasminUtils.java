@@ -153,12 +153,12 @@ public class JasminUtils {
 
                     addComma = false;
                     if (operand.getType().getTypeOfElement() == OBJECTREF) {
-                        code.append("L");
+                        invokeInstruction.append("L");
                         addComma = true;
                     }
                     invokeInstruction.append(jasminType(operand.getType(), imports));
                     if (addComma)
-                        code.append(";");
+                        invokeInstruction.append(";");
                 }
 
                 invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
