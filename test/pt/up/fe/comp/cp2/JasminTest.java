@@ -57,4 +57,8 @@ public class JasminTest {
     public static void testOllirToJasmin(String resource) {
         testOllirToJasmin(resource, null);
     }
+    @Test
+    public void ollirToJasminSimple() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/apps/example_ollir/Simple.ollir");
+    }
 }
