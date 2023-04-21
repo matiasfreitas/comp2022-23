@@ -9,6 +9,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.JavammParser;
 
 import java.util.*;
+
 /*
 All:
 SingleStatement
@@ -49,7 +50,7 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     @Override
-    public  OllirResult toOllir(JmmSemanticsResult semanticsResult) {
+    public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
         JmmNode node = semanticsResult.getRootNode();
 
         // Convert the AST to a String containing the equivalent OLLIR code
@@ -74,155 +75,222 @@ public class OllirGenerator implements JmmOptimization {
     int nested = 0;
     boolean hasReturn;
     Collection<String> attributes;
+
     public String iterateOverCode(JmmNode rootNode, StringBuilder ollirCode) {
 
-        if (rootNode.getKind().equals("ClassDeclaration")){
-            nested ++;
+        if (rootNode.getKind().equals("ClassDeclaration")) {
+            nested++;
             ollirCode.append(rootNode.get("className"));
-            ollirCode.append(" { \n");
+            ollirCode.append(" { \n\n");
+            ollirCode.append(newLine());
 
-        }
-        else if (rootNode.getKind().equals("ImportDeclaration")){
+            //Constructor
+            ollirCode.append(".construct ");
+            ollirCode.append(rootNode.get("className"));
+            ollirCode.append("().V {\n");
+            nested++;
+            ollirCode.append(newLine());
+            ollirCode.append("invokespecial(this, \"<init>\").V;\n");
+            nested--;
+            ollirCode.append(newLine());
+            ollirCode.append("}\n\n");
+
+        } else if (rootNode.getKind().equals("ImportDeclaration")) {
             ollirCode.append("import ");
             ollirCode.append(rootNode.get("ID"));
             ollirCode.append(";\n");
         }
 
         //Attributes
-        else if (rootNode.getKind().equals("VarTypeSpecification") && rootNode.getJmmParent().getKind().equals("ClassDeclaration")){
+        else if (rootNode.getKind().equals("VarDeclarationStatement") && rootNode.getJmmParent().getKind().equals("ClassDeclaration")) {
             ollirCode.append(newLine());
             ollirCode.append(".field ");
-            ollirCode = dealWithVar(rootNode, ollirCode);
-        }
-        //local variables
-        else if (rootNode.getKind().equals("VarTypeSpecification")){
-            ollirCode.append(newLine());
-            ollirCode = dealWithVar(rootNode, ollirCode);
+            JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
+            ollirCode = dealWithVar(children, ollirCode);
         }
 
-        else if (rootNode.getKind().equals("MethodDeclaration")){
+        //local variables
+        else if (rootNode.getKind().equals("VarDeclarationStatement")) {
+            ollirCode.append(newLine());
+            JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
+            ollirCode = dealWithVar(children, ollirCode);
+        }
+        else if (rootNode.getKind().equals("MethodDeclaration")) {
             ollirCode = dealMethodDeclaration(rootNode, ollirCode);
             return ollirCode.toString();
         }
-        else if(rootNode.getKind().equals("Operation")){
+        else if (rootNode.getKind().equals("Operation")) {
             ollirCode.append(newLine());
             dealWithOperation(rootNode, ollirCode);
         }
-        else if(rootNode.getKind().equals("MethodCalling")){
+        else if (rootNode.getKind().equals("MethodCalling")) {
             ollirCode.append(newLine());
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
             ollirCode.append(rootNode.get("methodName"));
             ollirCode.append("(");
-            for (int i = 1; i < rootNode.getChildren().size()-1; i++) {
+            for (int i = 1; i < rootNode.getChildren().size() - 1; i++) {
                 ollirCode.append(rootNode.getChildren().get(i).get("value"));
                 ollirCode.append(", ");
             }
-            int lastValue = rootNode.getChildren().size()-1;
+
+            int lastValue = rootNode.getChildren().size() - 1;
             ollirCode.append(rootNode.getChildren().get(lastValue).get("value"));
             ollirCode.append(");\n");
         }
-        else if (rootNode.getKind().equals("Assignment")){
+        else if (rootNode.getKind().equals("Assignment")) {
             ollirCode.append(newLine());
             ollirCode.append(rootNode.get("varName"));
-            String kind = rootNode.getChildren().get(0).getKind();
-            if(kind.equals("Integer")) kind = "int32";
-            else if(kind.equals("Boolean")){
-                kind = "bool";
-            } else if (kind.equals("Identifier")) {
-                System.out.println("oi");
 
-            }
+            ollirCode.append(rootNode);
+
             ollirCode.append(".");
-            ollirCode.append(kind);
+            ollirCode.append(rootNode);
             ollirCode.append(" :=.");
-            ollirCode.append(kind);
-            for (JmmNode children: rootNode.getChildren()) {
+            ollirCode.append(rootNode);
+
+            for (JmmNode children : rootNode.getChildren()) {
                 ollirCode.append(iterateOverCode(children, new StringBuilder()));
             }
+
             ollirCode.append(";\n");
             return ollirCode.toString();
         }
 
 
+        for (JmmNode childrenNode : rootNode.getChildren()) {
 
-        for (JmmNode childrenNode: rootNode.getChildren()) {
             System.out.println(childrenNode.getKind());
             ollirCode.append(iterateOverCode(childrenNode, new StringBuilder()));
-
         }
-        if (rootNode.getKind().equals("ClassDeclaration")){
-            nested --;
+
+        if (rootNode.getKind().equals("ClassDeclaration")) {
+
+            nested--;
             ollirCode.append(newLine());
             ollirCode.append(" }\n");
         }
-
-        else if (rootNode.getKind().equals("VarDeclaration")){
+        else if (rootNode.getKind().equals("VarDeclaration")) {
             ollirCode.append(";\n");
         }
 
-
         System.out.println(ollirCode.toString());
         return ollirCode.toString();
-
-
     }
 
-    private String newLine(){
+    private String newLine() {
+
         StringBuilder tab = new StringBuilder();
+
         for (int i = 0; i < nested; i++) {
             tab.append("\t");
         }
+
         return tab.toString();
     }
 
-    private StringBuilder dealWithOperation(JmmNode jmmNode, StringBuilder ollirCode) {
-        if (jmmNode.getKind().equals("OPERATION"))
+    private String dealWithType(JmmNode rootNode){
+
+        StringBuilder ollirCode = new StringBuilder();
+
+        JmmNode type = rootNode.getChildren().get(0);
+
+        if (type.getKind().equals("ArrayType")) {
+
+            ollirCode.append("array.");
+            type = type.getChildren().get(0);
+        }
+
+        String typeKind = type.get("typeName");
+        if (typeKind.equals("int")) ollirCode.append("i32");
+        else if (typeKind.equals("boolean")) ollirCode.append("bool");
+        else if (typeKind.equals("void")) ollirCode.append("V");
+        else ollirCode.append(typeKind);
+
+        return ollirCode.toString();
+    }
+
+    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
+
+        if (rootNode.getKind().equals("OPERATION"))
             ollirCode.append(".i32 ");
+
         return ollirCode;
     }
 
-    private StringBuilder dealWithVar(JmmNode rootNode, StringBuilder ollirCode){
+    private StringBuilder dealWithVar(JmmNode rootNode, StringBuilder ollirCode) {
+
         ollirCode.append(rootNode.get("varName")).append(".");
-        if(rootNode.getChildren().get(0).getChildren().get(0).getKind().equals("ArrayType")){
-            ollirCode.append("array.");
-            ollirCode.append(rootNode.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("typeName"));
-        }
-        else{
-            String type = rootNode.getChildren().get(0).getChildren().get(0).get("typeName");
-            if (type.equals("int")) ollirCode.append("i32");
-            else if (type.equals("boolean")) ollirCode.append("bool");
-            else ollirCode.append(type);
-        }
+
+        ollirCode.append(dealWithType(rootNode.getChildren().get(0)));
+
         return ollirCode;
     }
-    private StringBuilder dealWithArguments(JmmNode rootNode, StringBuilder ollirCode){
-        for (JmmNode childrenNode: rootNode.getChildren()) {
+
+    private StringBuilder dealWithArguments(JmmNode rootNode, StringBuilder ollirCode) {
+
+        for (JmmNode childrenNode : rootNode.getChildren()) {
+
             ollirCode = dealWithVar(childrenNode, ollirCode);
             ollirCode.append(" ");
         }
+
         ollirCode.deleteCharAt(ollirCode.length() - 1);
         return ollirCode;
     }
+
     private StringBuilder dealMethodDeclaration(JmmNode rootNode, StringBuilder ollirCode) {
+
         ollirCode.append(newLine());
         ollirCode.append(".method ").append(rootNode.get("visibility")).append(" ");
-        nested ++;
-        if (rootNode.hasAttribute("isStatic")) ollirCode.append(rootNode.get("isStatic")).append(" ");
-        ollirCode.append(rootNode.get("methodName")).append("(");
-        for (JmmNode childrenNode: rootNode.getChildren()) {
-            if (childrenNode.getKind().equals("MethodArguments")){
-                ollirCode = dealWithArguments(childrenNode, ollirCode);
-            }
-            else if(childrenNode.getKind().equals("MethodBody")){
-                ollirCode.append("){\n");
-                ollirCode = new StringBuilder(iterateOverCode(childrenNode, ollirCode));
 
-            }
+        nested++;
+
+        if (rootNode.hasAttribute("isStatic")) ollirCode.append(rootNode.get("isStatic")).append(" ");
+
+
+        List<JmmNode> childrens =  rootNode.getChildren();
+
+        int index = 0;
+        String type = ".V";
+
+        if (childrens.size() > index && childrens.get(index).getKind().equals("Type")){
+
+            type = dealWithType(childrens.get(index));
+
+            index++;
         }
+
+
+        ollirCode.append(rootNode.get("methodName")).append("(");
+
+        if (childrens.size() > index && childrens.get(index).getKind().equals("MethodArguments")){
+
+            ollirCode = dealWithArguments(childrens.get(index), ollirCode);
+
+
+            index++;
+        }
+
+
+
+        ollirCode.append(")");
+        ollirCode.append(".");
+        if (type.equals(""))  ollirCode.append(".V");
+        else ollirCode.append(type);
+        ollirCode.append(" ");
+        ollirCode.append("{\n\n");
+
+        if (childrens.size() > index && childrens.get(index).getKind().equals("MethodBody")){
+
+            ollirCode = new StringBuilder(iterateOverCode(childrens.get(index), ollirCode));
+
+            index++;
+        }
+
         nested--;
         ollirCode.append(newLine());
-        ollirCode.append("}\n");
+        ollirCode.append("}\n\n");
         return ollirCode;
     }
 
