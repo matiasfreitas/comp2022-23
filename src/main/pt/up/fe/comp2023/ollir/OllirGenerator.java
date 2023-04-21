@@ -109,7 +109,7 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         //Attributes
-        else if (rootNode.getKind().equals("VarDeclarationStatement") && rootNode.getJmmParent().getKind().equals("ClassDeclaration")) {
+        else if (rootNode.getKind().equals("ClassVarDeclaration")) {
             ollirCode.append(newLine());
             ollirCode.append(".field ");
 
