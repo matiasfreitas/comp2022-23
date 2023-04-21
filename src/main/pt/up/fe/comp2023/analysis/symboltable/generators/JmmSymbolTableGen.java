@@ -33,7 +33,14 @@ public class JmmSymbolTableGen extends AJmmVisitor<Void,Void> {
     }
 
     private Void handleImportDeclaration(JmmNode jmmNode, Void unused) {
-        String module = jmmNode.get("moduleName");
+        StringBuilder nameImport = new StringBuilder();
+        for (Object value: (List) jmmNode.getObject("moduleName")) {
+            nameImport.append(value);
+            nameImport.append(".");
+
+        }
+        String module = nameImport.deleteCharAt(nameImport.length()).toString();
+
         this.imports.add(module);
         return null;
     }
