@@ -76,6 +76,7 @@ public class OllirGenerator implements JmmOptimization {
 
     int nested = 0;
     HashMap<String, String> attributes = new HashMap<>();
+    boolean dontHasConstructor = true;
 
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
@@ -85,19 +86,9 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(rootNode.get("className"));
             ollirCode.append(" { \n\n");
             ollirCode.append(newLine());
+        }
 
-            //Constructor
-            ollirCode.append(".construct ");
-            ollirCode.append(rootNode.get("className"));
-            ollirCode.append("().V {\n");
-            nested++;
-            ollirCode.append(newLine());
-            ollirCode.append("invokespecial(this, \"<init>\").V;\n");
-            nested--;
-            ollirCode.append(newLine());
-            ollirCode.append("}\n\n");
-
-        } else if (rootNode.getKind().equals("ImportDeclaration")) {
+         else if (rootNode.getKind().equals("ImportDeclaration")) {
             ollirCode.append("import ");
             ollirCode.append(rootNode.get("ID"));
             while(rootNode.getChildren().size() > 0){
@@ -110,6 +101,12 @@ public class OllirGenerator implements JmmOptimization {
 
         //Attributes
         else if (rootNode.getKind().equals("ClassVarDeclaration")) {
+
+            if(dontHasConstructor){
+                dontHasConstructor = false;
+                createConstructors(ollirCode, rootNode);
+            }
+
             ollirCode.append(newLine());
             ollirCode.append(".field ");
 
@@ -193,6 +190,23 @@ public class OllirGenerator implements JmmOptimization {
 
 
         return ollirCode.toString();
+    }
+
+    private StringBuilder createConstructors(StringBuilder ollirCode, JmmNode rootNode) {
+
+
+        //Constructor
+        ollirCode.append(".construct ");
+        ollirCode.append(rootNode.get("className"));
+        ollirCode.append("().V {\n");
+        nested++;
+        ollirCode.append(newLine());
+        ollirCode.append("invokespecial(this, \"<init>\").V;\n");
+        nested--;
+        ollirCode.append(newLine());
+        ollirCode.append("}\n\n");
+
+        return ollirCode;
     }
 
     private String newLine() {
