@@ -102,14 +102,8 @@ public class OllirGenerator implements JmmOptimization {
         //Attributes
         else if (rootNode.getKind().equals("ClassVarDeclaration")) {
 
-            if(dontHasConstructor){
-                dontHasConstructor = false;
-                createConstructors(ollirCode, rootNode);
-            }
-
             ollirCode.append(newLine());
             ollirCode.append(".field ");
-
             JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
             attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
             ollirCode = dealWithVar(children, ollirCode, attributes);
@@ -122,6 +116,12 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode = dealWithVar(children, ollirCode, scopeVariables);
         }
         else if (rootNode.getKind().equals("MethodDeclaration")) {
+
+            if(dontHasConstructor){
+                dontHasConstructor = false;
+                ollirCode = createConstructors(ollirCode, rootNode);
+            }
+
             ollirCode = dealMethodDeclaration(rootNode, ollirCode);
             return ollirCode.toString();
         }
@@ -194,10 +194,9 @@ public class OllirGenerator implements JmmOptimization {
 
     private StringBuilder createConstructors(StringBuilder ollirCode, JmmNode rootNode) {
 
-
         //Constructor
         ollirCode.append(".construct ");
-        ollirCode.append(rootNode.get("className"));
+        ollirCode.append(rootNode.getJmmParent().get("className"));
         ollirCode.append("().V {\n");
         nested++;
         ollirCode.append(newLine());
