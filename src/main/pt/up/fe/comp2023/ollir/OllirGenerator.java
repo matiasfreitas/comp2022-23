@@ -99,8 +99,8 @@ public class OllirGenerator implements JmmOptimization {
 
         } else if (rootNode.getKind().equals("ImportDeclaration")) {
             ollirCode.append("import ");
-
-            while(rootNode.getKind().equals("ImportDeclaration")){
+            ollirCode.append(rootNode.get("ID"));
+            while(rootNode.getChildren().size() > 0){
                 ollirCode.append(rootNode.get("ID"));
                 rootNode = rootNode.getChildren().get(0);
             }
