@@ -6,7 +6,6 @@ import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp2023.JavammParser;
 
 import java.util.*;
 
@@ -57,7 +56,9 @@ public class OllirGenerator implements JmmOptimization {
         // Convert the AST to a String containing the equivalent OLLIR code
         StringBuilder ollirCode = new StringBuilder(); // Convert node ...
 
-        iterateOverCode(semanticsResult.getRootNode(), ollirCode, new HashMap<>());
+        iterateOverCodeScope(semanticsResult.getRootNode(), ollirCode, new HashMap<>(), "");
+
+        System.out.println(ollirCode.toString());
         // More reports from this stage
         reports.addAll(semanticsResult.getReports());
         Map<String, String> config = new HashMap<>();
@@ -76,7 +77,8 @@ public class OllirGenerator implements JmmOptimization {
     int nested = 0;
     HashMap<String, String> attributes;
 
-    public String iterateOverCode(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
+
+    public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
 
         if (rootNode.getKind().equals("ClassDeclaration")) {
             nested++;
@@ -119,9 +121,8 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode = dealMethodDeclaration(rootNode, ollirCode);
             return ollirCode.toString();
         }
-        else if (rootNode.getKind().equals("Operation")) {
-            ollirCode.append(newLine());
-            dealWithOperation(rootNode, ollirCode);
+        else if (rootNode.getKind().equals("BinaryOp")) {
+            dealWithOperation(rootNode, ollirCode, scopeVariables, returnType);
         }
         else if (rootNode.getKind().equals("MethodCalling")) {
             ollirCode.append(newLine());
@@ -155,7 +156,7 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".i32 ");
                 }
-                else if (children.getKind().equals("Boolean")) {
+                else if (children.getKind().equals("boolean")) {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".bool ");
                 }
@@ -171,20 +172,33 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         else if(rootNode.getKind().equals("ReturnStatement")){
-            System.out.println("oi");
+            ollirCode.append(newLine());
+            ollirCode.append("ret.");
+            ollirCode.append(returnType);
+            ollirCode.append(" ");
+            if (rootNode.getChildren().size() > 1){
+                for (JmmNode children:  rootNode.getChildren()) {
+                    ollirCode.append(iterateOverCodeScope(children, ollirCode, scopeVariables, returnType));
+                }
+            }
+            else if (rootNode.getChildren().get(0).hasAttribute("value")){
+                if(rootNode.getChildren().get(0).get("value").equals("0")){
+                    ollirCode.append(".V");
+                }
+                else ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            }
+            else if (rootNode.getChildren().get(0).hasAttribute("varName")){
+                ollirCode.append(rootNode.getChildren().get(0).get("varName"));
+            }
 
         }
 
-        else if(rootNode.getKind().equals("BinaryOp")){
-            System.out.println("oi");
-
-        }
 
 
         for (JmmNode childrenNode : rootNode.getChildren()) {
 
-            System.out.println(childrenNode.getKind());
-            ollirCode.append(iterateOverCode(childrenNode, new StringBuilder(), new HashMap<>()));
+
+            ollirCode.append(iterateOverCodeScope(childrenNode, new StringBuilder(), scopeVariables, returnType));
         }
 
         if (rootNode.getKind().equals("ClassDeclaration")) {
@@ -196,6 +210,10 @@ public class OllirGenerator implements JmmOptimization {
         else if (rootNode.getKind().equals("VarDeclaration")) {
             ollirCode.append(";\n");
         }
+        else if (rootNode.getKind().equals("ReturnStatement")) {
+            ollirCode.append(";\n");
+        }
+
 
         return ollirCode.toString();
     }
@@ -224,11 +242,13 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if (rootNode.getKind().equals("Assignment")) typeKind = type.getKind();
-        else typeKind = type.get("typeName");
+        else if (rootNode.getKind().equals("ReturnStatement")) typeKind = type.getKind();
+        else if(type.hasAttribute("typeName")) typeKind = type.get("typeName");
+        else typeKind = scopeVariables.get(type.get("varName"));
 
         if (typeKind.equals("int")) ollirCode.append("i32");
         else if (typeKind.equals("Integer")) ollirCode.append("i32");
-        else if (typeKind.equals("Boolean")) ollirCode.append("bool");
+        else if (typeKind.equals("boolean")) ollirCode.append("bool");
         else if (typeKind.equals("STRING")) ollirCode.append("String");
         else if (typeKind.equals("void")) ollirCode.append("V");
         else if (typeKind.equals("Identifier")) {
@@ -241,9 +261,38 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode.toString();
     }
 
-    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
+    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode,
+                                            HashMap<String, String> scopeVariables, String returnType) {
 
-        if (rootNode.getKind().equals("OPERATION")){}
+        if (rootNode.getChildren().get(0).getKind().equals("Identifier")){
+            if (rootNode.getChildren().get(0).hasAttribute("varName")){
+                ollirCode.append(rootNode.getChildren().get(0).get("varName"));
+                ollirCode.append(".");
+                ollirCode.append(scopeVariables.get(rootNode.getChildren().get(0).get("varName")));
+            }
+            else if (rootNode.getChildren().get(0).hasAttribute("value")){
+                ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            }
+
+        }
+        else{
+            ollirCode.append(iterateOverCodeScope(rootNode.getChildren().get(0), ollirCode, scopeVariables, returnType));
+        }
+        ollirCode.append(rootNode.get("op"));
+        if (rootNode.getChildren().get(1).getKind().equals("Identifier")){
+            if (rootNode.getChildren().get(1).hasAttribute("varName")){
+                ollirCode.append(rootNode.getChildren().get(1).get("varName"));
+                ollirCode.append(".");
+                ollirCode.append(scopeVariables.get(rootNode.getChildren().get(1).get("varName")));
+            }
+            else if (rootNode.getChildren().get(1).hasAttribute("value")){
+                ollirCode.append(rootNode.getChildren().get(1).get("value"));
+            }
+
+        }
+        else{
+            ollirCode.append(iterateOverCodeScope(rootNode.getChildren().get(1), ollirCode, scopeVariables, returnType));
+        }
 
         return ollirCode;
     }
@@ -285,7 +334,7 @@ public class OllirGenerator implements JmmOptimization {
         List<JmmNode> childrens =  rootNode.getChildren();
 
         int index = 0;
-        String type = ".V";
+        String type =  "";
 
         if (childrens.size() > index && childrens.get(index).getKind().equals("Type")){
 
@@ -316,10 +365,11 @@ public class OllirGenerator implements JmmOptimization {
 
         if (childrens.size() > index && childrens.get(index).getKind().equals("MethodBody")){
 
-            ollirCode = new StringBuilder(iterateOverCode(childrens.get(index), ollirCode, new HashMap<>()));
+            ollirCode = new StringBuilder(iterateOverCodeScope(childrens.get(index), ollirCode, new HashMap<>(), type));
 
             index++;
         }
+
 
         nested--;
         ollirCode.append(newLine());
