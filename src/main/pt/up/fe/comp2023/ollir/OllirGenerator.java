@@ -22,7 +22,7 @@ This
  */
 /*
 IN PROGRESS
-Assignment
+
  */
 /*
 MADE
@@ -39,6 +39,7 @@ varDeclaration
 classVarDeclaration
 Identifier
 methodArguments
+Assignment
  */
 public class OllirGenerator implements JmmOptimization {
 
@@ -73,7 +74,6 @@ public class OllirGenerator implements JmmOptimization {
 
 
     int nested = 0;
-    boolean hasReturn;
     HashMap<String, String> attributes;
 
     public String iterateOverCode(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
@@ -148,13 +148,36 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(type);
             ollirCode.append(" :=.");
             ollirCode.append(type);
+            ollirCode.append(" ");
 
             for (JmmNode children : rootNode.getChildren()) {
-                ollirCode.append(iterateOverCode(children, new StringBuilder(), new HashMap<>()));
+                if (children.getKind().equals("Integer")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".i32 ");
+                }
+                else if (children.getKind().equals("Boolean")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".bool ");
+                }
+                else if (children.equals("Identifier")) {
+                    ollirCode.append(children.getKind());
+                    ollirCode.append(children.get("varName"));
+                }
+
             }
 
             ollirCode.append(";\n");
             return ollirCode.toString();
+        }
+
+        else if(rootNode.getKind().equals("ReturnStatement")){
+            System.out.println("oi");
+
+        }
+
+        else if(rootNode.getKind().equals("BinaryOp")){
+            System.out.println("oi");
+
         }
 
 
@@ -174,7 +197,6 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(";\n");
         }
 
-        System.out.println(ollirCode.toString());
         return ollirCode.toString();
     }
 
