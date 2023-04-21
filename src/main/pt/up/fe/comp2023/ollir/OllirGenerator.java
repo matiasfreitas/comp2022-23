@@ -75,7 +75,7 @@ public class OllirGenerator implements JmmOptimization {
 
 
     int nested = 0;
-    HashMap<String, String> attributes;
+    HashMap<String, String> attributes = new HashMap<>();
 
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
@@ -107,7 +107,9 @@ public class OllirGenerator implements JmmOptimization {
         else if (rootNode.getKind().equals("VarDeclarationStatement") && rootNode.getJmmParent().getKind().equals("ClassDeclaration")) {
             ollirCode.append(newLine());
             ollirCode.append(".field ");
+
             JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
+            attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
             ollirCode = dealWithVar(children, ollirCode, attributes);
         }
 
@@ -140,35 +142,7 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(");\n");
         }
         else if (rootNode.getKind().equals("Assignment")) {
-            ollirCode.append(newLine());
-            ollirCode.append(rootNode.get("varName"));
-
-            String type = dealWithType(rootNode, scopeVariables);
-
-            ollirCode.append(".");
-            ollirCode.append(type);
-            ollirCode.append(" :=.");
-            ollirCode.append(type);
-            ollirCode.append(" ");
-
-            for (JmmNode children : rootNode.getChildren()) {
-                if (children.getKind().equals("Integer")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".i32 ");
-                }
-                else if (children.getKind().equals("boolean")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".bool ");
-                }
-                else if (children.equals("Identifier")) {
-                    ollirCode.append(children.getKind());
-                    ollirCode.append(children.get("varName"));
-                }
-
-            }
-
-            ollirCode.append(";\n");
-            return ollirCode.toString();
+            ollirCode = dealWithAssignments(rootNode, ollirCode, scopeVariables);
         }
 
         else if(rootNode.getKind().equals("ReturnStatement")){
@@ -375,5 +349,67 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
+    public StringBuilder dealWithAssignments(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables){
 
+        ollirCode.append(newLine());
+
+        StringBuilder newExpression = new StringBuilder();
+        //Deal with Atributtes:
+        if(attributes.containsKey(rootNode.get("varName"))){
+            ollirCode.append("pulField(this, ");
+            ollirCode.append(rootNode.get("varName"));
+            ollirCode.append(".");
+            ollirCode.append(attributes.get(rootNode.get("varName")));
+            ollirCode.append(",");
+
+            for (JmmNode children : rootNode.getChildren()) {
+                if (children.getKind().equals("Integer")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".i32 ");
+                }
+                else if (children.getKind().equals("boolean")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".bool ");
+                }
+                else if (children.equals("Identifier")) {
+                    ollirCode.append(children.getKind());
+                    ollirCode.append(children.get("varName"));
+                }
+
+            }
+        }
+        else{
+            ollirCode.append(rootNode.get("varName"));
+
+            String type = dealWithType(rootNode, scopeVariables);
+
+            ollirCode.append(".");
+            ollirCode.append(type);
+            ollirCode.append(" :=.");
+            ollirCode.append(type);
+            ollirCode.append(" ");
+
+            for (JmmNode children : rootNode.getChildren()) {
+                if (children.getKind().equals("Integer")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".i32 ");
+                }
+                else if (children.getKind().equals("boolean")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".bool ");
+                }
+                else if (children.getKind().equals("Identifier")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".");
+                    ollirCode.append(scopeVariables.get(children.get("value")));
+                }
+
+            }
+
+        }
+
+
+        ollirCode.append(";\n");
+        return ollirCode;
+    }
 }
