@@ -41,6 +41,8 @@ methodArguments
  */
 public class OllirGenerator implements JmmOptimization {
 
+    List<Report> reports = new ArrayList<>();
+
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         return JmmOptimization.super.optimize(semanticsResult);
@@ -55,11 +57,12 @@ public class OllirGenerator implements JmmOptimization {
 
         iterateOverCode(semanticsResult.getRootNode(), ollirCode);
         // More reports from this stage
-        List<Report> reports = new ArrayList<>();
+        reports.addAll(semanticsResult.getReports());
         Map<String, String> config = new HashMap<>();
+
         JmmParserResult result = new JmmParserResult(semanticsResult.getRootNode(), reports, config);
 
-        return new OllirResult(semanticsResult, ollirCode.toString(), reports);
+        return new OllirResult(semanticsResult, ollirCode.toString(), semanticsResult.getReports());
     }
 
     @Override
