@@ -47,6 +47,11 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
 
     }
 
+    private Type handleParen(JmmNode jmmNode, UsageContext context) {
+        return this.visit(jmmNode.getJmmChild(0),context);
+    }
+
+
     private Type handleThis(JmmNode jmmNode, UsageContext context) {
         // Se o contexto for class Declaration
         if(context.isClassContext()){
