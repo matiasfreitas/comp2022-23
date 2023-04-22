@@ -43,6 +43,9 @@ public class MethodSymbolTable {
     public void setIsStatic(Boolean isStatic) {
         this.isStatic = isStatic;
     }
+    public Boolean isStatic(){
+        return  this.isStatic;
+    }
 
     public void setReturnType(Type returnType) {
         this.returnType = returnType;

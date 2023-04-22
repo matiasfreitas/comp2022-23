@@ -24,7 +24,10 @@ public class JmmSymbolTable implements SymbolTable {
         }
     }
 
-
+    public Boolean isStaticMethod(String s){
+        MethodSymbolTable m = methods.get(s);
+        return m.isStatic();
+    }
     @Override
     public List<String> getImports() {
         return imports;

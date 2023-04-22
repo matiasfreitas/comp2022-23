@@ -47,6 +47,24 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
 
     }
 
+    private Type handleThis(JmmNode jmmNode, UsageContext context) {
+        // Se o contexto for class Declaration
+        if(context.isClassContext()){
+            // Error
+            return  null;
+        }
+        JmmSymbolTable table = context.getSymbolTable();
+        if(table.isStaticMethod(context.getMethodSignature())){
+            // Error static cannot have this
+            return  null;
+        }
+        // How to see if method is static?
+        // se o contexto for um método estático temos que retornar erro
+        // Caso contradio retornamos o tipo da class em que estamos
+        String className = table.getClassName();
+
+        return new  Type(className,false);
+    }
 
     private Type handleLiteral(JmmNode jmmNode, UsageContext context) {
 
