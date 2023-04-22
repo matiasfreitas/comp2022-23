@@ -422,6 +422,19 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".bool ");
                 }
+                else if(children.getKind().equals("NewObject")){
+                    ollirCode.append("new(");
+                    ollirCode.append(type);
+                    ollirCode.append(").");
+                    ollirCode.append(type);
+                    ollirCode.append(";\n");
+                    ollirCode.append(newLine());
+                    ollirCode.append("invokespecial(");
+                    ollirCode.append(rootNode.get("varName"));
+                    ollirCode.append(".");
+                    ollirCode.append(type);
+                    ollirCode.append(",\"<init>\").V");
+                }
                 else if (children.getKind().equals("Identifier")) {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".");
