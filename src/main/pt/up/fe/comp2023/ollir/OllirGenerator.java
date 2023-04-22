@@ -137,23 +137,39 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         else if(rootNode.getKind().equals("ReturnStatement")){
-            ollirCode.append(newLine());
-            ollirCode.append("ret.");
-            ollirCode.append(returnType);
-            ollirCode.append(" ");
-            if (rootNode.getChildren().size() > 1){
+            if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
+                    !rootNode.getChildren().get(0).hasAttribute("value")){
+                ollirCode.append(newLine());
+                ollirCode.append("returnVariable ");
                 for (JmmNode children:  rootNode.getChildren()) {
-                    ollirCode.append(iterateOverCodeScope(children, ollirCode, scopeVariables, returnType));
+                    ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
                 }
+                ollirCode.append(newLine());
+                ollirCode.append("ret.");
+                ollirCode.append(returnType);
+                ollirCode.append(" returnVariable.");
+                ollirCode.append(returnType);
+                ollirCode.append(";\n");
+                return ollirCode.toString();
             }
-            else if (rootNode.getChildren().get(0).hasAttribute("value")){
-                ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            else{
+                ollirCode.append(newLine());
+                ollirCode.append("ret.");
+                ollirCode.append(returnType);
+                ollirCode.append(" ");
+                if (rootNode.getChildren().get(0).hasAttribute("value")){
+                    ollirCode.append(rootNode.getChildren().get(0).get("value"));
+                }
+                else if (rootNode.getChildren().get(0).hasAttribute("varName")){
+                    ollirCode.append(rootNode.getChildren().get(0).get("varName"));
+                }
+                ollirCode.append(".");
+                ollirCode.append(returnType);
+                ollirCode.append(";\n");
+                return ollirCode.toString();
             }
-            else if (rootNode.getChildren().get(0).hasAttribute("varName")){
-                ollirCode.append(rootNode.getChildren().get(0).get("varName"));
-            }
-            ollirCode.append(".");
-            ollirCode.append(returnType);
+
+
         }
 
 
@@ -450,7 +466,7 @@ public class OllirGenerator implements JmmOptimization {
         if(rootNode.getJmmChild(1).getKind().equals("Integer") || rootNode.getJmmChild(1).getKind().equals("Identifier")){
             secondTerm = rootNode.getJmmChild(1).get("value");
             expression.append(op);
-            expression.append("'.i32 ");
+            expression.append(".i32 ");
             expression.append(secondTerm);
             expression.append(".i32");
         }
