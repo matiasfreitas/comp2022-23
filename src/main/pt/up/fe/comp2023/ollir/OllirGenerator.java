@@ -142,7 +142,7 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(dealWithOperation(rootNode, ollirCode).toString());
         }
         else if (rootNode.getKind().equals("MethodCalling")) {
-            ollirCode.append(dealWithMethodCalling(rootNode, ollirCode).toString());
+            ollirCode = dealWithMethodCalling(rootNode, ollirCode);
         }
         else if (rootNode.getKind().equals("Assignment")) {
             ollirCode = dealWithAssignments(rootNode, ollirCode, scopeVariables);
