@@ -25,7 +25,14 @@ public class JmmSymbolTable implements SymbolTable {
     }
 
 
-
+    public Optional<Type>getFieldTry(String t){
+        for(Symbol s : this.getFields()){
+            if(s.getName().equals(t)){
+                return Optional.ofNullable(s.getType());
+            }
+        }
+        return Optional.empty();
+    }
     public Boolean isStaticMethod(String s){
         MethodSymbolTable m = methods.get(s);
         return m.isStatic();
