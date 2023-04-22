@@ -127,7 +127,7 @@ public class OllirGenerator implements JmmOptimization {
             return ollirCode.toString();
         }
         else if (rootNode.getKind().equals("BinaryOp")) {
-            dealWithOperation(rootNode, ollirCode, scopeVariables, returnType);
+            ollirCode.append(dealWithOperation(rootNode, ollirCode).toString());
         }
         else if (rootNode.getKind().equals("MethodCalling")) {
             ollirCode = dealWithMethodCalling(rootNode, ollirCode);
@@ -182,16 +182,30 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private StringBuilder dealWithMethodCalling(JmmNode rootNode, StringBuilder ollirCode) {
-
+        ollirCode.append(newLine());
         if(semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"))) {
-            ollirCode.append("invokespecial(this, \"<init>\").V;\n");
+            ollirCode.append("invokespecial(");
+            ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            ollirCode.append(".");
+            ollirCode.append(rootNode.getChildren().get(1).get("value"));
+            ollirCode.append(", \\\"");
+            ollirCode.append(rootNode.get("methodName"));
+            ollirCode.append("\\\")");
+            Object myObjm = semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"));
+            System.out.println(rootNode.getAttributes());
+
+
 
         }
         else if(semanticsResult.getSymbolTable().getImports().contains(rootNode.getChildren().get(0).hasAttribute("ID"))){
-            ollirCode.append("invokestatic(this, \"<init>\").V;\n");
+            ollirCode.append("invokestatic(");
+            ollirCode.append("this, \\\"<init>\\\").V;\\n\"");
+            System.out.println(rootNode.getAttributes());
+
         }
         else {
-            ollirCode.append(newLine());
+
+
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
             ollirCode.append(rootNode.get("methodName"));
@@ -265,38 +279,6 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         return ollirCode.toString();
-    }
-
-    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode,
-                                            HashMap<String, String> scopeVariables, String returnType) {
-
-        if (rootNode.getChildren().get(0).getKind().equals("Identifier")){
-           if (rootNode.getChildren().get(0).hasAttribute("value")){
-                ollirCode.append(rootNode.getChildren().get(0).get("value"));
-               ollirCode.append(".");
-                ollirCode.append(scopeVariables.get(rootNode.getChildren().get(0).get("value")));
-            }
-
-        }
-        else{
-            ollirCode.append(iterateOverCodeScope(rootNode.getChildren().get(0), ollirCode, scopeVariables, returnType));
-        }
-        ollirCode.append(" ");
-        ollirCode.append(rootNode.get("op"));
-        ollirCode.append(" ");
-        if (rootNode.getChildren().get(1).getKind().equals("Identifier")){
-            if (rootNode.getChildren().get(0).hasAttribute("value")){
-                ollirCode.append(rootNode.getChildren().get(0).get("value"));
-                ollirCode.append(".");
-                ollirCode.append(scopeVariables.get(rootNode.getChildren().get(0).get("value")));
-            }
-
-        }
-        else{
-            ollirCode.append(iterateOverCodeScope(rootNode.getChildren().get(1), ollirCode, scopeVariables, returnType));
-        }
-
-        return ollirCode;
     }
 
     private StringBuilder dealWithVar(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
@@ -441,5 +423,49 @@ public class OllirGenerator implements JmmOptimization {
 
         ollirCode.append(";\n");
         return ollirCode;
+    }
+
+
+    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
+        StringBuilder expression = new StringBuilder();
+        String op = rootNode.get("op");
+        String firstTerm;
+        String secondTerm;
+        String aux;
+        String var = rootNode.getAncestor("Assignment").get().get("var");
+
+        expression.append(String.format("%s.i32 ", var));
+
+        if(rootNode.getJmmChild(0).getKind().equals("INTEGER") || rootNode.getJmmChild(0).getKind().equals("ID")) {
+            firstTerm = rootNode.getJmmChild(0).get("value");
+
+            expression.append(":=.i32 ");
+            expression.append(firstTerm);
+            expression.append(".i32");
+        } else{
+            aux = "";
+            for(JmmNode children: rootNode.getJmmChild(0).getChildren()){
+                aux.concat(dealWithOperation(children,ollirCode).toString());
+            }
+            expression.append(aux);
+        }
+        if(rootNode.getJmmChild(1).getKind().equals("INTEGER") || rootNode.getJmmChild(1).getKind().equals("ID")){
+            secondTerm = rootNode.getJmmChild(1).get("value");
+            expression.append(op);
+            expression.append("'.i32 ");
+            expression.append(secondTerm);
+            expression.append(".i32");
+        }
+        else{
+            aux = "";
+            for(JmmNode child: rootNode.getJmmChild(1).getChildren()){
+                aux.concat(dealWithOperation(child,ollirCode).toString());
+            }
+            expression.append(aux);
+        }
+
+        expression.append(";\n");
+
+        return expression;
     }
 }
