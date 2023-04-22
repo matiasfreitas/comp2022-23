@@ -432,11 +432,9 @@ public class OllirGenerator implements JmmOptimization {
         String firstTerm;
         String secondTerm;
         String aux;
-        String var = rootNode.getAncestor("Assignment").get().get("var");
 
-        expression.append(String.format("%s.i32 ", var));
 
-        if(rootNode.getJmmChild(0).getKind().equals("INTEGER") || rootNode.getJmmChild(0).getKind().equals("ID")) {
+        if(rootNode.getJmmChild(0).getKind().equals("Integer") || rootNode.getJmmChild(0).getKind().equals("Identifier")) {
             firstTerm = rootNode.getJmmChild(0).get("value");
 
             expression.append(":=.i32 ");
@@ -449,7 +447,7 @@ public class OllirGenerator implements JmmOptimization {
             }
             expression.append(aux);
         }
-        if(rootNode.getJmmChild(1).getKind().equals("INTEGER") || rootNode.getJmmChild(1).getKind().equals("ID")){
+        if(rootNode.getJmmChild(1).getKind().equals("Integer") || rootNode.getJmmChild(1).getKind().equals("Identifier")){
             secondTerm = rootNode.getJmmChild(1).get("value");
             expression.append(op);
             expression.append("'.i32 ");
