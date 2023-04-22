@@ -225,7 +225,9 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
 
             }
-            ollirCode.append(");\n");
+            ollirCode.append(").");
+            ollirCode.append(semanticsResult.getSymbolTable().getReturnTypeTry(rootNode.get("methodName")));
+            ollirCode.append(";");
         }
         else if(rootNode.getChildren().get(0).hasAttribute("value") &&
                 semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
@@ -240,7 +242,9 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
 
             }
-            ollirCode.append(");\n");
+            ollirCode.append(").");
+            ollirCode.append(semanticsResult.getSymbolTable().getReturnTypeTry(rootNode.get("methodName")));
+            ollirCode.append(";");
         }
         return ollirCode;
     }
@@ -433,40 +437,39 @@ public class OllirGenerator implements JmmOptimization {
             }
         }
         else{
-            ollirCode.append(rootNode.get("varName"));
 
             String type = dealWithType(rootNode, scopeVariables);
 
-            ollirCode.append(".");
-            ollirCode.append(type);
-            ollirCode.append(" :=.");
-            ollirCode.append(type);
-            ollirCode.append(" ");
-
-            for (JmmNode children : rootNode.getChildren()) {
-                if (children.getKind().equals("Integer")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".i32 ");
-                }
-                else if (children.getKind().equals("boolean")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".bool ");
-                }
-                else if(children.getKind().equals("NewObject")){
-                    ollirCode.append("invokespecial(");
-                    ollirCode.append(type);
-                    ollirCode.append(".");
-                    ollirCode.append(type);
-                    ollirCode.append(",\"<init>\").V");
-                }
-                else if (children.getKind().equals("Identifier")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".");
-                    ollirCode.append(scopeVariables.get(children.get("value")));
-                }
-
+            if(rootNode.getChildren().get(0).getKind().equals("NewObject")){
+                ollirCode.append("invokespecial(");
+                ollirCode.append(type);
+                ollirCode.append(".");
+                ollirCode.append(type);
+                ollirCode.append(",\"<init>\").V");
             }
+            else {
+                ollirCode.append(rootNode.get("varName"));
+                ollirCode.append(".");
+                ollirCode.append(type);
+                ollirCode.append(" :=.");
+                ollirCode.append(type);
+                ollirCode.append(" ");
 
+                for (JmmNode children : rootNode.getChildren()) {
+                    if (children.getKind().equals("Integer")) {
+                        ollirCode.append(children.get("value"));
+                        ollirCode.append(".i32 ");
+                    } else if (children.getKind().equals("boolean")) {
+                        ollirCode.append(children.get("value"));
+                        ollirCode.append(".bool ");
+                    } else if (children.getKind().equals("Identifier")) {
+                        ollirCode.append(children.get("value"));
+                        ollirCode.append(".");
+                        ollirCode.append(scopeVariables.get(children.get("value")));
+                    }
+
+                }
+            }
         }
 
 
