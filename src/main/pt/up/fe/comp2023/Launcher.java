@@ -8,6 +8,7 @@ import java.util.Map;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp2023.analysis.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.generators.JmmSymbolTableGen;
@@ -44,14 +45,15 @@ public class Launcher {
         // Check if there are parsing errors
         TestUtils.noErrors(parserResult.getReports());
         JmmNode rootNode = parserResult.getRootNode();
+
         System.out.println(rootNode.toTree());
 
-        JmmSymbolTableGen symbolTableGen = new JmmSymbolTableGen();
-        symbolTableGen.visit(rootNode);
-        JmmSymbolTable symbolTable = symbolTableGen.getJmmSymbolTable();
-        MyJmmSymbolTable mySymbolTable = symbolTableGen.getMyJmmSymbolTable();
+        // Analysis stage
+        Analyser analyser = new Analyser();
 
-        System.out.println(mySymbolTable.tableToString(""));
+        analyser.semanticAnalysis(parserResult);
+
+
 
 
         // ... add remaining stages
