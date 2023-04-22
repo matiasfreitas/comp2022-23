@@ -199,7 +199,7 @@ public class OllirGenerator implements JmmOptimization {
 
     private StringBuilder dealWithMethodCalling(JmmNode rootNode, StringBuilder ollirCode) {
         ollirCode.append(newLine());
-        String io = new StringBuilder().append("[").append(rootNode.getChildren().get(0).get("value")).append("]").toString();
+        String packages = new StringBuilder().append(rootNode.getChildren().get(0).get("value")).toString();
         if(semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"))) {
             ollirCode.append("invokespecial(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
@@ -213,7 +213,7 @@ public class OllirGenerator implements JmmOptimization {
 
         }
         else if(rootNode.getChildren().get(0).hasAttribute("value") &&
-                semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(io))){
+                semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
             ollirCode.append("invokestatic(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
