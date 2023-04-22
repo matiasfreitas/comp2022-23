@@ -47,3 +47,12 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
 
     }
 
+
+    private Type handleLiteral(JmmNode jmmNode, UsageContext context) {
+
+        TypeGen typeGen = new TypeGen();
+        typeGen.visit(jmmNode);
+        return typeGen.getType();
+    }
+
+}
