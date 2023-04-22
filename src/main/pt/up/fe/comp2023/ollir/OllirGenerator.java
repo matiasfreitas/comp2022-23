@@ -85,6 +85,10 @@ public class OllirGenerator implements JmmOptimization {
         if (rootNode.getKind().equals("ClassDeclaration")) {
             nested++;
             ollirCode.append(rootNode.get("className"));
+            if (rootNode.hasAttribute("extendsName")) {
+                ollirCode.append(" extends ");
+                ollirCode.append(rootNode.get("extendsName"));
+            }
             ollirCode.append(" { \n\n");
             ollirCode.append(newLine());
         }
