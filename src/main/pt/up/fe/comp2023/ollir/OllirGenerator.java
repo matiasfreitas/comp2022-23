@@ -91,12 +91,10 @@ public class OllirGenerator implements JmmOptimization {
 
         else if (rootNode.getKind().equals("ImportDeclaration")) {
             ollirCode.append("import ");
-            ollirCode.append(rootNode.get("ID"));
-            while(rootNode.getChildren().size() > 0){
-                ollirCode.append(".");
-                ollirCode.append(rootNode.get("ID"));
-                rootNode = rootNode.getChildren().get(0);
-            }
+            ollirCode.append(String.join( ".", rootNode.get("moduleName")
+                    .replace("[", "").replace("]", "")
+                    .replace(", ", ".")));
+
             ollirCode.append(";\n");
         }
 
@@ -111,7 +109,7 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         //local variables
-        else if (rootNode.getKind().equals("VarDeclarationStatement")) {
+        else if (rootNode.getKind().equals("VarDeclaration")) {
             ollirCode.append(newLine());
             JmmNode children = rootNode.getChildren().get(0);
             ollirCode = dealWithVar(children, ollirCode, scopeVariables);

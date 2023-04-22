@@ -46,7 +46,7 @@ public class JmmSymbolTableGen extends AJmmVisitor<Void,Void> {
             if(c == '[' || c==' '){
                 continue;
             }
-            else if(c ==']'){
+            else if(c == ']'){
                 break;
             }
             else if(c==','){
