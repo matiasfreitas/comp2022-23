@@ -493,4 +493,3 @@ public class OllirGenerator implements JmmOptimization {
         return expression;
     }
 }
-("VarDeclarationStatement")
