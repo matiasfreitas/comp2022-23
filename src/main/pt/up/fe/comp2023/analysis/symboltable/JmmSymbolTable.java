@@ -30,6 +30,19 @@ public class JmmSymbolTable implements SymbolTable {
         MethodSymbolTable m = methods.get(s);
         return m.isStatic();
     }
+
+    public Boolean isThisClassType(String t){
+        return t.equals(this.getClassName());
+    }
+
+    public Boolean isImportedSymbol(String s){
+        String last = '.' + s;
+        for(String module: imports){
+            if(module.endsWith(last) || module.equals(s)){
+                return true; }
+        }
+        return false;
+    }
     @Override
     public List<String> getImports() {
         return imports;

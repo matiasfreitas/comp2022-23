@@ -52,6 +52,16 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
 
     }
 
+    private Type handleNewObject(JmmNode jmmNode, List<Report> reports) {
+        String typeName = jmmNode.get("typeName");
+        if (symbolTable.isImportedSymbol(typeName) || symbolTable.isThisClassType(typeName)){
+            return new Type(typeName,false);
+        }
+        // TODO: Adicionar erro!!!
+        return null
+
+    }
+
     private Type handleNewArray(JmmNode jmmNode, List<Report> reports) {
         JmmNode arrayNode = jmmNode.getJmmChild(0);
         Type arrayType =  this.visit(arrayNode,reports);
