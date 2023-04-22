@@ -84,7 +84,8 @@ expression
     | expression op='|' expression #BinaryOp
     | expression op='&&' expression #BinaryOp
     | expression op='||' expression #BinaryOp
-    | expression '?' expression ':' expression #TernaryOp
+    // Maybe try to do ternary operators
+    //| expression '?' expression ':' expression #TernaryOp
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject

@@ -34,10 +34,10 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
         this.addVisit("MethodCalling",this::handleMethodCalling);
         this.addVisit("AttributeAccessing",this::handleAttributeAccessing);
         this.addVisit("ArrayIndexing",this::handleArrayIndexing);
-        this.addVisit("PostFix",this::handlePostFix);
-        this.addVisit("Unary",this::handleUnary);
+        this.addVisit("PostFix",this::handleSingleOp);
+        this.addVisit("Unary",this::handleSingleOp);
         this.addVisit("BinaryOp",this::handleBinaryOp);
-        this.addVisit("TernaryOp",this::handleTernaryOp);
+        //this.addVisit("TernaryOp",this::handleTernaryOp);
         this.addVisit("NewArray",this::handleNewArray);
         this.addVisit("NewObject",this::handleNewObject);
         this.addVisit("Identifier",this::handleIdentifier);
@@ -50,6 +50,23 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
         this.addVisit("CHAR",this::handleLiteral);
         this.addVisit("STRING",this::handleLiteral);
 
+    }
+
+    private Type handleBinaryOp(JmmNode jmmNode, List<Report> reports) {
+        String op = jmmNode.get("op");
+        JmmNode left = jmmNode.getJmmChild(0);
+        Type leftType = this.visit(left,reports);
+        JmmNode right = jmmNode.getJmmChild(1);
+        Type rightType = this.visit(right,reports);
+
+    }
+
+    private Type handleSingleOp(JmmNode jmmNode, List<Report> reports) {
+        String op = jmmNode.get("op");
+        System.out.println(op);
+        Type t = this.visit(jmmNode.getJmmChild(0),reports);
+        // TODO: checking
+        return t;
     }
 
     private Type handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
