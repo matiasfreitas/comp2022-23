@@ -1,4 +1,4 @@
-package pt.up.fe.comp2023.analysis.symboltable.generators;
+package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -6,7 +6,6 @@ import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -1,8 +1,9 @@
-package pt.up.fe.comp2023.analysis.symboltable.generators;
+package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
 public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {

@@ -1,4 +1,4 @@
-package pt.up.fe.comp2023.analysis.symboltable.generators;
+package pt.up.fe.comp2023.analysis.generators;
 
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;

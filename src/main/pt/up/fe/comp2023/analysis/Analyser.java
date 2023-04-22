@@ -7,7 +7,7 @@ import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.semantics.SemanticAnalyser;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
-import pt.up.fe.comp2023.analysis.symboltable.generators.JmmSymbolTableGen;
+import pt.up.fe.comp2023.analysis.generators.symboltable.JmmSymbolTableGen;
 
 import java.util.ArrayList;
 import java.util.List;
