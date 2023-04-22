@@ -6,6 +6,7 @@ import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,8 +35,28 @@ public class JmmSymbolTableGen extends AJmmVisitor<Void,Void> {
 
     private Void handleImportDeclaration(JmmNode jmmNode, Void unused) {
         String module = jmmNode.get("moduleName");
-        this.imports.add(module);
+        String formattedModules= stringToList(module);
+        this.imports.add(formattedModules);
         return null;
+    }
+    private String stringToList(String moduleString){
+        StringBuilder current = new StringBuilder();
+        for(int i=0; i < moduleString.length(); i++){
+            var c = moduleString.charAt(i);
+            if(c == '[' || c==' '){
+                continue;
+            }
+            else if(c ==']'){
+                break;
+            }
+            else if(c==','){
+                current.append('.');
+            }
+            else {
+                current.append(c);
+            }
+        }
+        return current.toString();
     }
 
 
