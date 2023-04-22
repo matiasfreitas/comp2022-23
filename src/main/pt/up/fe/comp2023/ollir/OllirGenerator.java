@@ -111,9 +111,9 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         //local variables
-        else if (rootNode.getKind().equals("VarDeclarationStatement")) {
+        else if (rootNode.getKind().equals("VarDeclaration")) {
             ollirCode.append(newLine());
-            JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
+            JmmNode children = rootNode.getChildren().get(0);
             ollirCode = dealWithVar(children, ollirCode, scopeVariables);
         }
         else if (rootNode.getKind().equals("MethodDeclaration")) {
