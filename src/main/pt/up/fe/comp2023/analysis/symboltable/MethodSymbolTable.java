@@ -19,16 +19,21 @@ public class MethodSymbolTable {
         this.parentClass = parent;
     }
 
-    public String getStringRepresentation() {
-        StringBuilder repr = new StringBuilder(this.parentClass.name);
-        repr.append("::").append(this.name).append("->").append(this.returnType).append("(");
-        for(Symbol p : parameters){
-            repr.append("_").append(p.getType().toString());
+    public static String getStringRepresentation(String methodName,List<Type>parameters) {
+        StringBuilder repr = new StringBuilder(methodName);
+        for(Type t : parameters){
+            repr.append("_").append(t.getName());
         }
-        repr.append(")");
         return repr.toString();
     }
 
+    public String getStringRepresentation(){
+        List<Type> types = new LinkedList<>();
+        for(Symbol s : this.parameters){
+            types.add(s.getType());
+        }
+        return getStringRepresentation(this.name,types);
+    }
     public void setMethodScope(ScopeSymbolTable methodScope) {
         this.methodScope = methodScope;
     }

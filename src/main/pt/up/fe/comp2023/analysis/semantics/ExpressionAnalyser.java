@@ -6,13 +6,17 @@ import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
+import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
+public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
 
     private JmmNode root;
+    JmmSymbolTable symbolTable;
     private UsageContext context;
     ExpressionAnalyser(JmmNode root,UsageContext context){
         this.root = root;
@@ -47,16 +51,47 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
 
     }
 
-    private Type handleArrayIndexing(JmmNode jmmNode, UsageContext context) {
+    private Type handleMethodCalling(JmmNode jmmNode,List<Report> reports) {
+        JmmNode object = jmmNode.getJmmChild(0);
+        Type objectType = this.visit(object,reports);
+        String method = jmmNode.get("methodName");
+        System.out.println(method);
+        List<Type> parameters = new LinkedList<>();
+        for(int i=2; i< jmmNode.getNumChildren(); i++){
+            JmmNode parameter = jmmNode.getJmmChild(i);
+            parameters.add(this.visit(parameter,reports));
+        }
+        // Check if method signature is correct
+        String signature = MethodSymbolTable.getStringRepresentation(method,parameters);
+        String className = this.symbolTable.getClassName();
+        if(objectType.getName().equals(className)){
+            Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
+            if(t.isPresent()){
+                return t.get();
+            }
+            else{
+                // TODO:  Retornar Erro Class não tem esse methodo
+                return null;
+            }
+        }
+        else{
+            // TODO:  Verificar que object é um import
+            // Se não for  retornar erro
+            return  null;
+        }
+
+    }
+
+    private Type handleArrayIndexing(JmmNode jmmNode,List<Report> reports) {
 
         JmmNode arrayNode = jmmNode.getJmmChild(0);
-        Type arrayType =  this.visit(arrayNode,context);
+        Type arrayType =  this.visit(arrayNode,reports);
         if(! arrayType.isArray()){
             // TODO: Add Errror not being Array
             return  null;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
-        Type indexType = this.visit(indexNode,context);
+        Type indexType = this.visit(indexNode,reports);
         if (!indexType.getName().equals("int")){
             // TODO: Add error not index not being  number
             return null;
@@ -64,31 +99,30 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
         return new Type(arrayType.getName(),false);
     }
 
-    private Type handleParen(JmmNode jmmNode, UsageContext context) {
-        return this.visit(jmmNode.getJmmChild(0),context);
+    private Type handleParen(JmmNode jmmNode, List<Report> reports) {
+        return this.visit(jmmNode.getJmmChild(0),reports);
     }
 
 
-    private Type handleThis(JmmNode jmmNode, UsageContext context) {
+    private Type handleThis(JmmNode jmmNode, List<Report>reports) {
         // Se o contexto for class Declaration
-        if(context.isClassContext()){
+        if(this.context.isClassContext()){
             // Error
             return  null;
         }
-        JmmSymbolTable table = context.getSymbolTable();
-        if(table.isStaticMethod(context.getMethodSignature())){
+        if(this.symbolTable.isStaticMethod(this.context.getMethodSignature())){
             // Error static cannot have this
             return  null;
         }
         // How to see if method is static?
         // se o contexto for um método estático temos que retornar erro
         // Caso contradio retornamos o tipo da class em que estamos
-        String className = table.getClassName();
+        String className = this.symbolTable.getClassName();
 
         return new  Type(className,false);
     }
 
-    private Type handleLiteral(JmmNode jmmNode, UsageContext context) {
+    private Type handleLiteral(JmmNode jmmNode, List<Report> reports) {
 
         TypeGen typeGen = new TypeGen();
         typeGen.visit(jmmNode);
