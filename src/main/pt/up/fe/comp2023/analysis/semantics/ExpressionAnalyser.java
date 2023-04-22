@@ -47,6 +47,23 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<UsageContext,Type>{
 
     }
 
+    private Type handleArrayIndexing(JmmNode jmmNode, UsageContext context) {
+
+        JmmNode arrayNode = jmmNode.getJmmChild(0);
+        Type arrayType =  this.visit(arrayNode,context);
+        if(! arrayType.isArray()){
+            // TODO: Add Errror not being Array
+            return  null;
+        }
+        JmmNode indexNode = jmmNode.getJmmChild(1);
+        Type indexType = this.visit(indexNode,context);
+        if (!indexType.getName().equals("int")){
+            // TODO: Add error not index not being  number
+            return null;
+        }
+        return new Type(arrayType.getName(),false);
+    }
+
     private Type handleParen(JmmNode jmmNode, UsageContext context) {
         return this.visit(jmmNode.getJmmChild(0),context);
     }
