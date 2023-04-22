@@ -203,17 +203,14 @@ public class OllirGenerator implements JmmOptimization {
     private StringBuilder dealWithMethodCalling(JmmNode rootNode, StringBuilder ollirCode) {
         ollirCode.append(newLine());
         String packages = new StringBuilder().append(rootNode.getChildren().get(0).get("value")).toString();
-        if(semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"))) {
+        if(semanticsResult.getSymbolTable().getMethods().stream().anyMatch(s -> s.equals(rootNode.get("methodName")))) {
             ollirCode.append("invokespecial(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
             ollirCode.append(rootNode.getChildren().get(1).get("value"));
-            ollirCode.append(", \\\"");
+            ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
-            ollirCode.append("\\\")");
-            Object myObjm = semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"));
-            System.out.println(rootNode.getAttributes());
-
+            ollirCode.append("\");\n");
         }
         else if(rootNode.getChildren().get(0).hasAttribute("value") &&
                 semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
@@ -221,30 +218,10 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
             ollirCode.append(rootNode.getChildren().get(1).get("value"));
-            ollirCode.append(", \\\"");
+            ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
-            ollirCode.append("\\\")");
-            Object myObjm = semanticsResult.getSymbolTable().getMethods().contains(rootNode.get("methodName"));
-            System.out.println(rootNode.getAttributes());
-
+            ollirCode.append("\");\n");
         }
-        else {
-
-
-            ollirCode.append(rootNode.getChildren().get(0).get("value"));
-            ollirCode.append(".");
-            ollirCode.append(rootNode.get("methodName"));
-            ollirCode.append("(");
-            for (int i = 1; i < rootNode.getChildren().size() - 1; i++) {
-                ollirCode.append(rootNode.getChildren().get(i).get("value"));
-                ollirCode.append(", ");
-            }
-
-            int lastValue = rootNode.getChildren().size() - 1;
-            ollirCode.append(rootNode.getChildren().get(lastValue).get("value"));
-
-        }
-        ollirCode.append(");\n");
         return ollirCode;
     }
 
