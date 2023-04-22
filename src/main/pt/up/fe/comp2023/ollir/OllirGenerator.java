@@ -206,11 +206,14 @@ public class OllirGenerator implements JmmOptimization {
         if(semanticsResult.getSymbolTable().getMethods().stream().anyMatch(s -> s.equals(rootNode.get("methodName")))) {
             ollirCode.append("invokespecial(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
-            ollirCode.append(".");
-            ollirCode.append(rootNode.getChildren().get(1).get("value"));
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
-            ollirCode.append("\");\n");
+            ollirCode.append("\"");
+            for (int i = 1; i < rootNode.getChildren().size(); i++) {
+                ollirCode.append(", ");
+                ollirCode.append(rootNode.getChildren().get(i).get("value"));
+            }
+            ollirCode.append(");\n");
         }
         else if(rootNode.getChildren().get(0).hasAttribute("value") &&
                 semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
@@ -220,7 +223,12 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(rootNode.getChildren().get(1).get("value"));
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
-            ollirCode.append("\");\n");
+            ollirCode.append("\"");
+            for (int i = 2; i < rootNode.getChildren().size(); i++) {
+                ollirCode.append(", ");
+                ollirCode.append(rootNode.getChildren().get(i).get("value"));
+            }
+            ollirCode.append(");\n");
         }
         return ollirCode;
     }
