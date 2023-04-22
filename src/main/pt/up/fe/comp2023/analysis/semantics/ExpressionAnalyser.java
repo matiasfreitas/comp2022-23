@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.analysis.semantics;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
@@ -48,6 +49,29 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
         this.addVisit("Boolean",this::handleLiteral);
         this.addVisit("CHAR",this::handleLiteral);
         this.addVisit("STRING",this::handleLiteral);
+
+    }
+
+    private Type handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
+        JmmNode object = jmmNode.getJmmChild(0);
+        Type objectType = this.visit(object,reports);
+        String attributeName= jmmNode.get("attributeName");
+        String className = this.symbolTable.getClassName();
+        if(objectType.getName().equals(className)){
+            List<Symbol> fields = this.symbolTable.getFields();
+            for (Symbol f:fields) {
+                if(f.getName().equals(attributeName)){
+                    return f.getType();
+                }
+            }
+            // TODO:  Retornar Erro Class não tem esse methodo
+            return null;
+            }
+        else{
+            // TODO:  Verificar que object é um import
+            // Se não for  retornar erro
+            return  null;
+        }
 
     }
 
