@@ -106,6 +106,7 @@ public class OllirGenerator implements JmmOptimization {
             JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
             attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
             ollirCode = dealWithVar(children, ollirCode, attributes);
+            return ollirCode.append(";\n").toString();
         }
 
         //local variables
@@ -244,7 +245,7 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private StringBuilder createConstructors(StringBuilder ollirCode, JmmNode rootNode) {
-
+        ollirCode.append(newLine());
         //Constructor
         ollirCode.append(".construct ");
         ollirCode.append(rootNode.getJmmParent().get("className"));
