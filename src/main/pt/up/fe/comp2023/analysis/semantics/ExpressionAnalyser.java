@@ -52,6 +52,19 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>,Type>{
 
     }
 
+    private Type handleNewArray(JmmNode jmmNode, List<Report> reports) {
+        JmmNode arrayNode = jmmNode.getJmmChild(0);
+        Type arrayType =  this.visit(arrayNode,reports);
+        JmmNode indexNode = jmmNode.getJmmChild(1);
+        Type indexType = this.visit(indexNode,reports);
+        if (!indexType.getName().equals("int")){
+            // TODO: Add error not index not being  number
+            return null;
+        }
+        return new Type(arrayType.getName(),true);
+
+    }
+
     private Type handleBinaryOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
         JmmNode left = jmmNode.getJmmChild(0);
