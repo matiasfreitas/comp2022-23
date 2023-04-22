@@ -46,7 +46,7 @@ public class GrammarTest {
 
    @Test
     public void testVarDeclString() {
-        TestUtils.parseVerbose("String aString;", "statement");
+        TestUtils.parseVerbose("String aString;", "varDeclaration");
     }
 
     @Test

@@ -27,7 +27,7 @@ ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 // one or more classes?
 // variable declaration with visibility specifiers inside class?
 
-program : importDeclaration* classDeclaration+ EOF;
+program : importDeclaration* classDeclaration EOF;
 
 // Submodules not working as a list
 importDeclaration : 'import' moduleName+=ID ( '.' moduleName+=ID )* ';' ;
@@ -37,7 +37,7 @@ methodDeclaration
     : visibility=VISIBILITY? isStatic='static'? type methodName=ID '(' methodArguments?')' methodBody
     ;
 
-methodBody: '{' statement*'}';
+methodBody: '{' (varDeclaration ';')* statement*'}';
 // Fazer distinção do builtin type e custom types?
 simpleType
     : typeName=TYPE #BuiltInType
@@ -62,7 +62,6 @@ statement
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
-    | varDeclaration ';'  #VarDeclarationStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
     | 'return' expression ';' #ReturnStatement
