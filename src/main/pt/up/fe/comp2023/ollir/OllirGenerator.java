@@ -119,9 +119,7 @@ public class OllirGenerator implements JmmOptimization {
             JmmNode children = rootNode.getChildren().get(0);
             ollirCode = dealWithVar(children, ollirCode, scopeVariables);
             String type = dealWithType(children.getChildren().get(0), scopeVariables);
-            if (!type.equals("Integer") && !type.equals("int") &&
-                !type.equals("Boolean") && !type.equals("bool") &&
-                    !type.equals("String")){
+            if (!type.equals("i32") && !type.equals("String") && !type.equals("bool")){
                 ollirCode.append(" = ");
                 ollirCode.append("new(");
                 ollirCode.append(type);
