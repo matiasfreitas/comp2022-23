@@ -118,6 +118,17 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(newLine());
             JmmNode children = rootNode.getChildren().get(0);
             ollirCode = dealWithVar(children, ollirCode, scopeVariables);
+            String type = dealWithType(children.getChildren().get(0), scopeVariables);
+            if (!type.equals("Integer") && !type.equals("int") &&
+                !type.equals("Boolean") && !type.equals("bool") &&
+                    !type.equals("String")){
+                ollirCode.append(" = ");
+                ollirCode.append("new(");
+                ollirCode.append(type);
+                ollirCode.append(").");
+                ollirCode.append(type);
+
+            }
         }
         else if (rootNode.getKind().equals("MethodDeclaration")) {
 
@@ -273,6 +284,7 @@ public class OllirGenerator implements JmmOptimization {
         if (rootNode.getKind().equals("Assignment")) typeKind = type.getKind();
         else if (rootNode.getKind().equals("ReturnStatement")) typeKind = type.getKind();
         else if(type.hasAttribute("typeName")) typeKind = type.get("typeName");
+        else if (rootNode.getKind().equals("NewObject")) typeKind = type.get("typeName");
         else typeKind = scopeVariables.get(type.get("varName"));
 
         if (typeKind.equals("int")) ollirCode.append("i32");
@@ -423,14 +435,8 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode.append(".bool ");
                 }
                 else if(children.getKind().equals("NewObject")){
-                    ollirCode.append("new(");
-                    ollirCode.append(type);
-                    ollirCode.append(").");
-                    ollirCode.append(type);
-                    ollirCode.append(";\n");
-                    ollirCode.append(newLine());
                     ollirCode.append("invokespecial(");
-                    ollirCode.append(rootNode.get("varName"));
+                    ollirCode.append(children.get("typeName"));
                     ollirCode.append(".");
                     ollirCode.append(type);
                     ollirCode.append(",\"<init>\").V");
