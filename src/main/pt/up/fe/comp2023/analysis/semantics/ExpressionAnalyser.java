@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.analysis.semantics;
 
+
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -10,10 +11,8 @@ import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
 import javax.swing.text.html.Option;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiFunction;
 
 public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Type> {
 
@@ -24,7 +23,6 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Type> 
     ExpressionAnalyser(JmmNode root, UsageContext context) {
         this.root = root;
         this.context = context;
-
     }
 
     public Type type() {
@@ -33,26 +31,33 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Type> 
 
     @Override
     protected void buildVisitor() {
-        this.addVisit("Paren", this::handleParen);
-        this.addVisit("MethodCalling", this::handleMethodCalling);
-        this.addVisit("AttributeAccessing", this::handleAttributeAccessing);
-        this.addVisit("ArrayIndexing", this::handleArrayIndexing);
-        this.addVisit("PostFix", this::handleSingleOp);
-        this.addVisit("Unary", this::handleSingleOp);
-        this.addVisit("BinaryOp", this::handleBinaryOp);
-        //this.addVisit("TernaryOp",this::handleTernaryOp);
-        this.addVisit("NewArray", this::handleNewArray);
-        this.addVisit("NewObject", this::handleNewObject);
-        this.addVisit("Identifier", this::handleIdentifier);
+        Map<String, BiFunction<JmmNode,List<Report>,Type>> map = new HashMap<>();
+        map.put("Paren", this::handleParen);
+        map.put("MethodCalling", this::handleMethodCalling);
+        map.put("AttributeAccessing", this::handleAttributeAccessing);
+        map.put("ArrayIndexing", this::handleArrayIndexing);
+        map.put("PostFix", this::handleSingleOp);
+        map.put("Unary", this::handleSingleOp);
+        map.put("BinaryOp", this::handleBinaryOp);
+        map.put("NewArray", this::handleNewArray);
+        map.put("NewObject", this::handleNewObject);
+        map.put("Identifier", this::handleIdentifier);
+        map.put("This", this::handleThis);
+        map.put("Integer", this::handleLiteral);
+        map.put("Boolean", this::handleLiteral);
+        map.put("CHAR", this::handleLiteral);
+        map.put("STRING", this::handleLiteral);
 
-        this.addVisit("This", this::handleThis);
+        map.forEach((k,v) -> {
+            this.addVisit(k,this.assignNodeType(v));
+        });
+    }
 
-
-        this.addVisit("Integer", this::handleLiteral);
-        this.addVisit("Boolean", this::handleLiteral);
-        this.addVisit("CHAR", this::handleLiteral);
-        this.addVisit("STRING", this::handleLiteral);
-
+    private BiFunction<JmmNode,List<Report>,Type> assignNodeType(BiFunction<JmmNode,List<Report>,Type> function){
+        return (JmmNode jmmNode, List<Report> reports) -> {
+            Type t = function(jmmNode,reports);
+            return t;
+        };
     }
 
     private Optional<Type> checkUpperScopes(String identifier) {
