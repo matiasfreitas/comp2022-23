@@ -26,7 +26,9 @@ public class MethodSymbolTable {
         }
         return repr.toString();
     }
-
+    public boolean isOverload(String method){
+        return name.equals(method);
+    }
     public String getStringRepresentation(){
         List<Type> types = new LinkedList<>();
         for(Symbol s : this.parameters){
@@ -43,6 +45,10 @@ public class MethodSymbolTable {
     }
     public void setMethodName(String methodName) {
         this.name = methodName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setIsStatic(Boolean isStatic) {

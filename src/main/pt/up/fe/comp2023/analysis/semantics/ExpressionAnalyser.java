@@ -12,6 +12,7 @@ import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
 import javax.swing.text.html.Option;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -49,12 +50,14 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
             this.addVisit(k, this.assignNodeType(v));
         });
     }
-    private Report createReport(JmmNode node,String message){
+
+    private Report createReport(JmmNode node, String message) {
         int line = Integer.parseInt(node.get("LINE"));
-        int column  = Integer.parseInt(node.get("COLUMN"));
-        return  Report.newError(Stage.SEMANTIC,line,column,message,null);
+        int column = Integer.parseInt(node.get("COLUMN"));
+        return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
     }
+
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
             Optional<Type> t = function.apply(jmmNode, reports);
@@ -116,8 +119,8 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
         Optional<Type> arrayType = this.visit(arrayNode, reports);
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if(arrayType.isEmpty() || indexType.isEmpty()){
-            return   Optional.empty();
+        if (arrayType.isEmpty() || indexType.isEmpty()) {
+            return Optional.empty();
         }
         if (indexType.get().getName().equals("int")) {
             // TODO: Add error not index not being  number
@@ -132,7 +135,7 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
         JmmNode left = jmmNode.getJmmChild(0);
         Optional<Type> leftType = this.visit(left, reports);
         JmmNode right = jmmNode.getJmmChild(1);
-        Optional<Type> rightType= this.visit(right, reports);
+        Optional<Type> rightType = this.visit(right, reports);
         return leftType;
 
     }
@@ -149,7 +152,7 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> objectType = this.visit(object, reports);
         String attributeName = jmmNode.get("attributeName");
-        if (this.symbolTable.isThisClassType(objectType.get().getName())){
+        if (this.symbolTable.isThisClassType(objectType.get().getName())) {
             List<Symbol> fields = this.symbolTable.getFields();
             for (Symbol f : fields) {
                 if (f.getName().equals(attributeName)) {
@@ -168,31 +171,37 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
 
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
-        Optional<Type> objectType = this.visit(object, reports);
-        if(objectType.isEmpty()){
-            //Probably will not do nothing?
+        Optional<Type> maybeObjectType = this.visit(object, reports);
+        if (maybeObjectType.isEmpty()) {
+            // Não faz sentido continuar a checkar?
+            return Optional.empty();
         }
+        Type objectType = maybeObjectType.get();
+        boolean error = false;
         String method = jmmNode.get("methodName");
         System.out.println(method);
         List<Type> parameters = new LinkedList<>();
         for (int i = 2; i < jmmNode.getNumChildren(); i++) {
             JmmNode parameter = jmmNode.getJmmChild(i);
             Optional<Type> parameterType = this.visit(parameter, reports);
-            if(parameterType.isEmpty()){
-                // write errorr
-                // Show possible overloads for methods?
-            }
-            else{
+            if (parameterType.isEmpty()) {
+                // show possible overloads
+            } else {
                 parameters.add(parameterType.get());
             }
 
         }
         // Check if method signature is correct
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
-        if (this.symbolTable.isThisClassType(objectType.get().getName())) {
+        if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
-            if(t.isEmpty()){
-                // add error
+            if (t.isEmpty()) {
+                reports.add(this.createReport(jmmNode, "Is Not an available Method"));
+                List<MethodSymbolTable> similars = this.symbolTable.getOverloads(method);
+                if (similars.size()> 0) {
+                    String message = this.createOverloadReports(method, parameters, similars);
+                    reports.add(this.createReport(jmmNode, message));
+                }
             }
             return t;
         } else {
@@ -203,23 +212,63 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
 
     }
 
+    private String createOverloadReports(String method, List<Type> parameters, List<MethodSymbolTable> similars) {
+
+        StringBuilder s = new StringBuilder("Your Method: \n");
+        s.append(
+                this.methodString(
+                        method,
+                        (List<String>) parameters.stream().map(type -> type.toString())
+                )
+        );
+        s.append("\n");
+        if (similars.size() == 1) {
+            s.append("Did you Mean: \n");
+
+        } else {
+            s.append("Possible Overloads: \n");
+        }
+        for (MethodSymbolTable mt : similars) {
+            String mtString = this.methodString(mt.getName(), (List<String>) mt.getParameters().stream().map((ms) -> s.toString()));
+            s.append(mtString);
+            s.append("\n");
+        }
+
+        return s.toString();
+
+    }
+
+    private String methodString(String method, List<String> parameters) {
+        StringBuilder s = new StringBuilder(method);
+        s.append('(');
+        int i = 0;
+        for (; i < parameters.size() - 1; i++) {
+            s.append(parameters.get(i));
+            s.append(", ");
+        }
+        if (i < parameters.size())
+            s.append(parameters.get(i));
+        s.append(')');
+        return s.toString();
+    }
+
     private Optional<Type> handleArrayIndexing(JmmNode jmmNode, List<Report> reports) {
 
         JmmNode arrayNode = jmmNode.getJmmChild(0);
         Optional<Type> arrayType = this.visit(arrayNode, reports);
         boolean error = false;
         if (arrayType.isEmpty() || !arrayType.get().isArray()) {
-            reports.add(this.createReport(jmmNode,"Trying To Index over a type that is not an array"));
+            reports.add(this.createReport(jmmNode, "Trying To Index over a type that is not an array"));
             error = true;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isEmpty() || !indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode,"Index of an Array Must be an integer"));
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
             error = true;
         }
-        if (error){
-            return  Optional.empty();
+        if (error) {
+            return Optional.empty();
         }
         return Optional.of(new Type(arrayType.get().getName(), false));
     }
@@ -231,11 +280,11 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
 
     private Optional<Type> handleThis(JmmNode jmmNode, List<Report> reports) {
         if (this.context.isClassContext()) {
-            reports.add(this.createReport(jmmNode,"Usage Of `this` in class fields is not allowed"));
+            reports.add(this.createReport(jmmNode, "Usage Of `this` in class fields is not allowed"));
             return Optional.empty();
         }
         if (this.symbolTable.isStaticMethod(this.context.getMethodSignature())) {
-            reports.add(this.createReport(jmmNode,"Usage Of `this` in static method is not allowed"));
+            reports.add(this.createReport(jmmNode, "Usage Of `this` in static method is not allowed"));
             return Optional.empty();
         }
         String className = this.symbolTable.getClassName();
