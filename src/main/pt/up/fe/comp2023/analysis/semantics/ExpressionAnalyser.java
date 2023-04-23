@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
@@ -48,7 +49,12 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
             this.addVisit(k, this.assignNodeType(v));
         });
     }
+    private Report createReport(JmmNode node,String message){
+        int line = Integer.parseInt(node.get("LINE"));
+        int column  = Integer.parseInt(node.get("COLUMN"));
+        return  Report.newError(Stage.SEMANTIC,line,column,message,null);
 
+    }
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
             Optional<Type> t = function.apply(jmmNode, reports);
