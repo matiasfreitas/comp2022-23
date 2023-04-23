@@ -16,16 +16,12 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Optional<Type>> {
+public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
-    private JmmNode root;
-    JmmSymbolTable symbolTable;
-    private UsageContext context;
-
-    ExpressionAnalyser(JmmNode root, UsageContext context) {
-        this.root = root;
-        this.context = context;
+    ExpressionAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
+        super(root,symbolTable,context);
     }
+
 
     @Override
     protected void buildVisitor() {
@@ -51,17 +47,16 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
         });
     }
 
-    private Report createReport(JmmNode node, String message) {
-        int line = Integer.parseInt(node.get("LINE"));
-        int column = Integer.parseInt(node.get("COLUMN"));
-        return Report.newError(Stage.SEMANTIC, line, column, message, null);
-
-    }
 
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
-            Optional<Type> t = function.apply(jmmNode, reports);
-            return t;
+            Optional<Type> maybeT = function.apply(jmmNode, reports);
+            if(maybeT.isPresent()){
+                Type t = maybeT.get();
+                jmmNode.put("type",t.getName());
+                jmmNode.put("isArray",(t.isArray())? "true":"false");
+            }
+            return maybeT;
         };
     }
 
@@ -71,7 +66,6 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
             if (symbolTable.isImportedSymbol(identifier)) {
                 return Optional.of(new Type(identifier, false));
             }
-            // TODO: error undefined identifier
         }
         return classField;
     }
@@ -98,7 +92,7 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
             t = checkUpperScopes(identifier);
         }
         if (t.isEmpty()) {
-            // TODO: add errors
+            reports.add(this.createReport(jmmNode,"Undefined Identifier"));
         }
         return t;
     }
@@ -109,7 +103,6 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
         if (symbolTable.isImportedSymbol(typeName) || symbolTable.isThisClassType(typeName)) {
             return Optional.of(new Type(typeName, false));
         }
-        // TODO: Adicionar erro!!!
         return Optional.empty();
 
     }
@@ -123,7 +116,7 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
             return Optional.empty();
         }
         if (indexType.get().getName().equals("int")) {
-            // TODO: Add error not index not being  number
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
             return Optional.empty();
         }
         return Optional.of(new Type(arrayType.get().getName(), true));
