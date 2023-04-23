@@ -57,6 +57,7 @@ methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 
 classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
+// TODO: Need to correct this  scopedBlock should disapear
 statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
