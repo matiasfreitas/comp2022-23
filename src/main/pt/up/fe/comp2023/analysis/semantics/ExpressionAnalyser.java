@@ -207,15 +207,19 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
 
         JmmNode arrayNode = jmmNode.getJmmChild(0);
         Optional<Type> arrayType = this.visit(arrayNode, reports);
+        boolean error = false;
         if (arrayType.isEmpty() || !arrayType.get().isArray()) {
-            // TODO: Add Errror not being Array
-            return Optional.empty();
+            reports.add(this.createReport(jmmNode,"Trying To Index over a type that is not an array"));
+            error = true;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isEmpty() || !indexType.get().getName().equals("int")) {
-            // TODO: Add error not index not being  number
-            return Optional.empty();
+            reports.add(this.createReport(jmmNode,"Index of an Array Must be an integer"));
+            error = true;
+        }
+        if (error){
+            return  Optional.empty();
         }
         return Optional.of(new Type(arrayType.get().getName(), false));
     }
