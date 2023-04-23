@@ -58,9 +58,10 @@ methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
 // TODO: Need to correct this  scopedBlock should disapear
-statement:
-     'if' '(' expression ')' '{' statement* '}' 'else' '{'statement* '}' #IfStatement
-    | 'while' '(' expression ')' '{' statement '}' #WhileLoop
+statement
+    : '{' statement* '}' #ScopedBlock
+    | 'if' '(' expression ')' statement 'else' statement  #IfStatement
+    | 'while' '(' expression ')' statement #WhileLoop
     | expression ';' #SingleStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
