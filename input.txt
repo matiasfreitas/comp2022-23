@@ -1,9 +1,4 @@
 import java.io.File;
-import utils.M;
-import utils.N;
-// ...
-
-
 class Test {
     private int x;
     private int l;
