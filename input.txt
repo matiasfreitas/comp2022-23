@@ -5,12 +5,11 @@ import utils.N;
 
 
 class Test {
+    private int x;
+    private int l;
     public static void main(String[] args){
         Boolean[] boolArray = new Boolean[5];
-        Arrays.fill(boolArray, Boolean.FALSE);
-         System.out.println(!boolArray[0]);
+        System.out.println(boolArray[0]);
     }
 }
 
-// (!M).foo()
-// !(M.foo()) x

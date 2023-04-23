@@ -57,10 +57,10 @@ methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 
 classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
-statement
-    : '{' statement* '}' #ScopedBlock
-    | 'if' '(' expression ')' statement 'else' statement  #IfStatement
-    | 'while' '(' expression ')' statement #WhileLoop
+// TODO: Need to correct this  scopedBlock should disapear
+statement:
+     'if' '(' expression ')' '{' statement* '}' 'else' '{'statement* '}' #IfStatement
+    | 'while' '(' expression ')' '{' statement '}' #WhileLoop
     | expression ';' #SingleStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
@@ -84,7 +84,8 @@ expression
     | expression op='|' expression #BinaryOp
     | expression op='&&' expression #BinaryOp
     | expression op='||' expression #BinaryOp
-    | expression '?' expression ':' expression #TernaryOp
+    // Maybe try to do ternary operators
+    //| expression '?' expression ':' expression #TernaryOp
     // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject

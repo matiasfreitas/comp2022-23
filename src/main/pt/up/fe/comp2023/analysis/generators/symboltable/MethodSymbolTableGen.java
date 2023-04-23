@@ -1,7 +1,9 @@
-package pt.up.fe.comp2023.analysis.symboltable.generators;
+package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
+import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
