@@ -22,6 +22,7 @@ public class SemanticAnalyser extends  Analyser<Void>{
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
+        return null;
     }
 
     private Void handleImports(JmmNode jmmNode, List<Report> reports) {

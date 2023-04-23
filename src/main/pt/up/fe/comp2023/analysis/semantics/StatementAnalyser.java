@@ -24,20 +24,26 @@ public class StatementAnalyser extends  Analyser<Void>{
     }
 
     private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 
     private Void handleAssignment(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 
     private Void handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 
     private Void handleReturnStatement(JmmNode jmmNode, List<Report> reports) {
+        return  null;
     }
 }
