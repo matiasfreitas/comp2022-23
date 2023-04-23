@@ -226,25 +226,19 @@ public class ExpressionAnalyser extends PostorderJmmVisitor<List<Report>, Option
 
 
     private Optional<Type> handleThis(JmmNode jmmNode, List<Report> reports) {
-        // Se o contexto for class Declaration
         if (this.context.isClassContext()) {
-            // Error
+            reports.add(this.createReport(jmmNode,"Usage Of `this` in class fields is not allowed"));
             return Optional.empty();
         }
         if (this.symbolTable.isStaticMethod(this.context.getMethodSignature())) {
-            // Error static cannot have this
+            reports.add(this.createReport(jmmNode,"Usage Of `this` in static method is not allowed"));
             return Optional.empty();
         }
-        // How to see if method is static?
-        // se o contexto for um método estático temos que retornar erro
-        // Caso contradio retornamos o tipo da class em que estamos
         String className = this.symbolTable.getClassName();
-
         return Optional.of(new Type(className, false));
     }
 
     private Optional<Type> handleLiteral(JmmNode jmmNode, List<Report> reports) {
-
         TypeGen typeGen = new TypeGen();
         typeGen.visit(jmmNode);
         return Optional.ofNullable(typeGen.getType());
