@@ -45,9 +45,12 @@ public class Launcher {
         System.out.println(rootNode.toTree());
 
         // Analysis stage
+        /*
         Analyser analyser = new Analyser();
 
         analyser.semanticAnalysis(parserResult);
+
+         */
 
 
 
