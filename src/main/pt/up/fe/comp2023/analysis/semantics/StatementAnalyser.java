@@ -34,6 +34,8 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
+        ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
+        reports.addAll(ex.analyse());
         return null;
     }
 
@@ -42,7 +44,8 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
-        return null;
+
+
     }
 
     private Void handleReturnStatement(JmmNode jmmNode, List<Report> reports) {
