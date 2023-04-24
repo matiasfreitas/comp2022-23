@@ -61,41 +61,9 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         };
     }
 
-    private Optional<Type> checkUpperScopes(String identifier) {
-        Optional<Type> classField = symbolTable.getFieldTry(identifier);
-        if (classField.isEmpty()) {
-            if (symbolTable.isImportedSymbol(identifier)) {
-                return Optional.of(new Type(identifier, false));
-            }
-        }
-        return classField;
-    }
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        String identifier = jmmNode.get("value");
-        Optional<Type> t = Optional.empty();
-        if (context.isClassContext()) {
-            t = checkUpperScopes(identifier);
-        }
-        // Method context
-        else {
-            String currentMethod = context.getMethodSignature();
-            for (Symbol s : symbolTable.getParameters(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
-            for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
-            t = checkUpperScopes(identifier);
-        }
-        if (t.isEmpty()) {
-            reports.add(this.createReport(jmmNode,"Undefined Identifier"));
-        }
-        return t;
+        return this.checkIdentifier(jmmNode.get("value"),jmmNode,reports);
     }
 
 

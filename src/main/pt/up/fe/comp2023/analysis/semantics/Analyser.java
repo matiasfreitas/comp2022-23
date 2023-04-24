@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.analysis.semantics;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
@@ -12,7 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>,T> {
+public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
     protected JmmSymbolTable symbolTable;
     protected JmmNode root;
 
@@ -35,6 +36,42 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>,T> {
         int column = Integer.parseInt(node.get("COLUMN"));
         return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
+    }
+
+    private Optional<Type> checkUpperScopes(String identifier) {
+        Optional<Type> classField = symbolTable.getFieldTry(identifier);
+        if (classField.isEmpty()) {
+            if (symbolTable.isImportedSymbol(identifier)) {
+                return Optional.of(new Type(identifier, false));
+            }
+        }
+        return classField;
+    }
+
+    public Optional<Type> checkIdentifier(String identifier,JmmNode jmmNode, List<Report> reports) {
+        Optional<Type> t = Optional.empty();
+        if (context.isClassContext()) {
+            t = checkUpperScopes(identifier);
+        }
+        // Method context
+        else {
+            String currentMethod = context.getMethodSignature();
+            for (Symbol s : symbolTable.getParameters(currentMethod)) {
+                if (s.getName().equals(identifier)) {
+                    return Optional.ofNullable(s.getType());
+                }
+            }
+            for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
+                if (s.getName().equals(identifier)) {
+                    return Optional.ofNullable(s.getType());
+                }
+            }
+            t = checkUpperScopes(identifier);
+        }
+        if (t.isEmpty()) {
+            reports.add(this.createReport(jmmNode, "Undefined Identifier"));
+        }
+        return t;
     }
 
 }
