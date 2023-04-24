@@ -35,7 +35,6 @@ public class MethodAnalyser extends  Analyser<Void>{
     }
 
     private Void handleStatement(JmmNode jmmNode, List<Report> reports) {
-        return o;
     }
 
 }

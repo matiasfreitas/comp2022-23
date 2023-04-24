@@ -40,7 +40,24 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleAssignment(JmmNode jmmNode, List<Report> reports) {
+        String varName = jmmNode.get("varName");
+        Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
+        if (maybeType.isPresent()) {
+            Type type = maybeType.get();
+            JmmNode expressionNode = jmmNode.getJmmChild(1);
+            ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
+            reports.addAll(ex.analyse());
+            Optional<Type> maybeAssignedType = ex.getType();
+            if (maybeAssignedType.isPresent() && !maybeAssignedType.get().equals(type)) {
+                StringBuilder b = new StringBuilder("Trying to assign ");
+                b.append(maybeAssignedType.get());
+                b.append("To a variable of type ");
+                b.append(type);
+                reports.add(this.createReport(jmmNode, b.toString()));
+            }
+        }
         return null;
+
     }
 
     private Void handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
@@ -61,11 +78,12 @@ public class StatementAnalyser extends Analyser<Void> {
             JmmNode expressionNode = jmmNode.getJmmChild(1);
             ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
-            if (maybeIndexType.isPresent() && !maybeIndexType.get().getName().equals(arrayType.getName())) {
+            Optional<Type> maybeAssignType = ex.getType();
+            if (maybeAssignType.isPresent() && !maybeAssignType.get().getName().equals(arrayType.getName())) {
                 StringBuilder b = new StringBuilder("Trying to assign ");
-                b.append(maybeIndexType.get().toString());
+                b.append(maybeAssignType.get());
                 b.append("To an array of ");
-                b.append(arrayType.toString());
+                b.append(arrayType);
                 reports.add(this.createReport(jmmNode, b.toString()));
             }
         }
@@ -80,9 +98,9 @@ public class StatementAnalyser extends Analyser<Void> {
         Type methodReturnType = symbolTable.getReturnType(this.context.getMethodSignature());
         if (exType.isPresent() && !methodReturnType.equals(exType.get())) {
             StringBuilder error = new StringBuilder("Method Returns ");
-            error.append(methodReturnType.toString())
+            error.append(methodReturnType)
                     .append(" But ")
-                    .append(exType.get().toString())
+                    .append(exType.get())
                     .append(" is being returned");
             reports.add(this.createReport(jmmNode, error.toString()));
         }
