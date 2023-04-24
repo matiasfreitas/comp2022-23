@@ -43,7 +43,8 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
-        return null;
+        JmmNode conditionNode = jmmNode.getJmmChild(0);
+        return this.handleCondition(conditionNode,reports);
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
