@@ -22,7 +22,6 @@ public class StatementAnalyser extends Analyser<Void> {
         this.addVisit("SingleStatement", this::handleSingleStatement);
         this.addVisit("WhileLoop", this::handleWhileLoop);
         this.addVisit("IfStatement", this::handleIfStatement);
-        this.setDefaultVisit((a,b) -> null);
 
     }
 
@@ -63,7 +62,7 @@ public class StatementAnalyser extends Analyser<Void> {
         Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
         if (maybeType.isPresent()) {
             Type type = maybeType.get();
-            JmmNode expressionNode = jmmNode.getJmmChild(1);
+            JmmNode expressionNode = jmmNode.getJmmChild(0);
             ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignedType = ex.getType();

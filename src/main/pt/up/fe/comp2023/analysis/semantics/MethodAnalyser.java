@@ -32,6 +32,7 @@ public class MethodAnalyser extends  Analyser<Void>{
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting Var declaration");
         return null;
     }
 

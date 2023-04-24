@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
@@ -38,10 +39,10 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         map.put("NewObject", this::handleNewObject);
         map.put("Identifier", this::handleIdentifier);
         map.put("This", this::handleThis);
-        map.put("Integer", this::handleLiteral);
+        map.put("Int", this::handleLiteral);
         map.put("Boolean", this::handleLiteral);
-        map.put("CHAR", this::handleLiteral);
-        map.put("STRING", this::handleLiteral);
+        map.put("Char", this::handleLiteral);
+        map.put("String", this::handleLiteral);
 
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
@@ -51,6 +52,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
+            System.out.print("Visiting Node with " + jmmNode.getKind());
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if(maybeT.isPresent()){
                 Type t = maybeT.get();
@@ -112,9 +114,13 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
     private Optional<Type> handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
-        Optional<Type> objectType = this.visit(object, reports);
+        Optional<Type> maybeObjectType = this.visit(object, reports);
+        if(maybeObjectType.isEmpty()){
+            return maybeObjectType;
+        }
+        Type objectType = maybeObjectType.get();
         String attributeName = jmmNode.get("attributeName");
-        if (this.symbolTable.isThisClassType(objectType.get().getName())) {
+        if (this.symbolTable.isThisClassType(objectType.getName())) {
             List<Symbol> fields = this.symbolTable.getFields();
             for (Symbol f : fields) {
                 if (f.getName().equals(attributeName)) {
@@ -254,9 +260,8 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     }
 
     private Optional<Type> handleLiteral(JmmNode jmmNode, List<Report> reports) {
-        TypeGen typeGen = new TypeGen();
-        typeGen.visit(jmmNode);
-        return Optional.ofNullable(typeGen.getType());
+        Optional<Type> builtin = JmmBuiltins.fromJmmNode(jmmNode);
+        return builtin;
     }
 
     @Override

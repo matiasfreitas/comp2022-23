@@ -23,6 +23,10 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
         this.root = root;
         this.symbolTable = symbolTable;
         this.context = context;
+        this.setDefaultVisit((a, b) -> {
+                    return null;
+                }
+        );
     }
 
     public List<Report> analyse() {
@@ -32,8 +36,9 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
     }
 
     protected Report createReport(JmmNode node, String message) {
-        int line = Integer.parseInt(node.get("LINE"));
-        int column = Integer.parseInt(node.get("COLUMN"));
+        int line = Integer.parseInt(node.get("lineStart"));
+        int column = Integer.parseInt(node.get("colStart"));
+        System.out.println("Error:"+ message);
         return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
     }
@@ -48,7 +53,7 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
         return classField;
     }
 
-    public Optional<Type> checkIdentifier(String identifier,JmmNode jmmNode, List<Report> reports) {
+    public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
         Optional<Type> t = Optional.empty();
         if (context.isClassContext()) {
             t = checkUpperScopes(identifier);
