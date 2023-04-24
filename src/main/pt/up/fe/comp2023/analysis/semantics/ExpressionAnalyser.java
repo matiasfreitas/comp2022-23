@@ -52,7 +52,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
-            System.out.print("Visiting Node with " + jmmNode.getKind());
+            System.out.println("Node " + jmmNode.getKind());
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if(maybeT.isPresent()){
                 Type t = maybeT.get();
@@ -100,16 +100,27 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     private Optional<Type> handleBinaryOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
         JmmNode left = jmmNode.getJmmChild(0);
-        Optional<Type> leftType = this.visit(left, reports);
+        Optional<Type> maybeLeftType = this.visit(left, reports);
         JmmNode right = jmmNode.getJmmChild(1);
-        Optional<Type> rightType = this.visit(right, reports);
-        return leftType;
+        Optional<Type> maybeRightType = this.visit(right, reports);
+        if(maybeRightType.isPresent() && maybeLeftType.isPresent()){
+            Type rightType = maybeRightType.get();
+            Type leftType = maybeLeftType.get();
+            if(op.equals("+")){
+                if(rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
+                    return Optional.of(leftType);
+                }
+                reports.add(this.createReport(jmmNode,"+ operator expects int + int got:" + leftType.toString() + " + " +rightType.toString()));
+            }
+
+        }
+        return Optional.empty();
 
     }
 
     private Optional<Type> handleSingleOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
-        System.out.println(op);
+        System.out.println(jmmNode.getAttributes());
         Optional<Type> t = this.visit(jmmNode.getJmmChild(0), reports);
         // TODO: checking
         return t;
@@ -150,9 +161,8 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         Type objectType = maybeObjectType.get();
         boolean error = false;
         String method = jmmNode.get("methodName");
-        System.out.println(method);
         List<Type> parameters = new LinkedList<>();
-        for (int i = 2; i < jmmNode.getNumChildren(); i++) {
+        for (int i = 1; i < jmmNode.getNumChildren(); i++) {
             JmmNode parameter = jmmNode.getJmmChild(i);
             Optional<Type> parameterType = this.visit(parameter, reports);
             if (parameterType.isEmpty()) {
@@ -164,6 +174,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         }
         // Check if method signature is correct
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
+        System.out.println(signature);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
             if (t.isEmpty()) {

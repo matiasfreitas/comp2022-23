@@ -19,7 +19,7 @@ public class MethodAnalyser extends  Analyser<Void>{
         m.visit(root);
         this.methodTable= m.getMethodTable();
         String methodRepresentaion =this.methodTable.getStringRepresentation();
-
+        System.out.println("Method Analyser of method with following representation: "+methodRepresentaion);
         context.setMethodContext(methodRepresentaion);
     }
 
@@ -32,7 +32,6 @@ public class MethodAnalyser extends  Analyser<Void>{
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Visiting Var declaration");
         return null;
     }
 

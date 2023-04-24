@@ -115,7 +115,9 @@ public class StatementAnalyser extends Analyser<Void> {
         ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
         reports.addAll(ex.analyse());
         Optional<Type> exType = ex.getType();
-        Type methodReturnType = symbolTable.getReturnType(this.context.getMethodSignature());
+        String thisMethod = this.context.getMethodSignature();
+        System.out.println("We are returning from " + thisMethod);
+        Type methodReturnType = symbolTable.getReturnType(thisMethod);
         if (exType.isPresent() && !methodReturnType.equals(exType.get())) {
             StringBuilder error = new StringBuilder("Method Returns ");
             error.append(methodReturnType)
