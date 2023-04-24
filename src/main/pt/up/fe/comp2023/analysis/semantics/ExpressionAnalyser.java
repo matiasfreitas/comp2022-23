@@ -79,18 +79,21 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     }
 
     private Optional<Type> handleNewArray(JmmNode jmmNode, List<Report> reports) {
-        JmmNode arrayNode = jmmNode.getJmmChild(0);
-        Optional<Type> arrayType = this.visit(arrayNode, reports);
+        JmmNode typeNode = jmmNode.getJmmChild(0);
+        TypeGen typeGen = new TypeGen();
+        typeGen.visit(typeNode);
+        Type arrayType = typeGen.getType();
+        boolean availableType = true;
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (arrayType.isEmpty() || indexType.isEmpty()) {
+        if (availableType || indexType.isEmpty()) {
             return Optional.empty();
         }
         if (indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: "+ indexType.toString()));
             return Optional.empty();
         }
-        return Optional.of(new Type(arrayType.get().getName(), true));
+        return Optional.of(new Type(arrayType.getName(), true));
 
     }
 
@@ -231,8 +234,8 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (indexType.isEmpty() || !indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
+        if (indexType.isPresent() && !indexType.get().getName().equals("int")) {
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: "+ indexType.get().toString()));
             error = true;
         }
         if (error) {
