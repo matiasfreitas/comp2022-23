@@ -18,6 +18,7 @@ import java.util.function.BiFunction;
 
 public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
+    private Optional<Type> type = Optional.empty();
     ExpressionAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root,symbolTable,context);
     }
@@ -288,6 +289,16 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         TypeGen typeGen = new TypeGen();
         typeGen.visit(jmmNode);
         return Optional.ofNullable(typeGen.getType());
+    }
+
+    @Override
+    public List<Report> analyse() {
+        List<Report> reports = new LinkedList<>();
+        this.type = this.visit(this.root, reports);
+        return reports;
+    }
+    public Optional<Type> getType(){
+        return  this.type;
     }
 
 }
