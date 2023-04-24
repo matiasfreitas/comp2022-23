@@ -17,11 +17,12 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class ExpressionAnalyser extends Analyser<Optional<Type>>{
+public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
     private Optional<Type> type = Optional.empty();
+
     ExpressionAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
-        super(root,symbolTable,context);
+        super(root, symbolTable, context);
     }
 
 
@@ -32,7 +33,6 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         map.put("MethodCalling", this::handleMethodCalling);
         map.put("AttributeAccessing", this::handleAttributeAccessing);
         map.put("ArrayIndexing", this::handleArrayIndexing);
-        map.put("PostFix", this::handleSingleOp);
         map.put("Unary", this::handleSingleOp);
         map.put("BinaryOp", this::handleBinaryOp);
         map.put("NewArray", this::handleNewArray);
@@ -54,10 +54,10 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         return (JmmNode jmmNode, List<Report> reports) -> {
             System.out.println("Node " + jmmNode.getKind());
             Optional<Type> maybeT = function.apply(jmmNode, reports);
-            if(maybeT.isPresent()){
+            if (maybeT.isPresent()) {
                 Type t = maybeT.get();
-                jmmNode.put("type",t.getName());
-                jmmNode.put("isArray",(t.isArray())? "true":"false");
+                jmmNode.put("type", t.getName());
+                jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
             }
             return maybeT;
         };
@@ -65,7 +65,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        return this.checkIdentifier(jmmNode.get("value"),jmmNode,reports);
+        return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
     }
 
 
@@ -90,7 +90,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
             return Optional.empty();
         }
         if (indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: "+ indexType.toString()));
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.toString()));
             return Optional.empty();
         }
         return Optional.of(new Type(arrayType.getName(), true));
@@ -103,16 +103,19 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         Optional<Type> maybeLeftType = this.visit(left, reports);
         JmmNode right = jmmNode.getJmmChild(1);
         Optional<Type> maybeRightType = this.visit(right, reports);
-        if(maybeRightType.isPresent() && maybeLeftType.isPresent()){
+        if (maybeRightType.isPresent() && maybeLeftType.isPresent()) {
             Type rightType = maybeRightType.get();
             Type leftType = maybeLeftType.get();
-            if(op.equals("+")){
-                if(rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
+            if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("<")) {
+                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
                     return Optional.of(leftType);
                 }
-                reports.add(this.createReport(jmmNode,"+ operator expects int + int got:" + leftType.toString() + " + " +rightType.toString()));
+            } else if (op.equals("&&")) {
+                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmBoolean)) {
+                    return Optional.of(leftType);
+                }
             }
-
+            reports.add(this.createReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
         }
         return Optional.empty();
 
@@ -121,15 +124,21 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     private Optional<Type> handleSingleOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
         System.out.println(jmmNode.getAttributes());
-        Optional<Type> t = this.visit(jmmNode.getJmmChild(0), reports);
-        // TODO: checking
-        return t;
+        Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
+        if (maybeT.isPresent()) {
+            Type t = maybeT.get();
+            if (op.equals("!") && t.equals(JmmBuiltins.JmmBoolean)) {
+                return Optional.of(t);
+            }
+            reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
+        }
+        return Optional.empty();
     }
 
     private Optional<Type> handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
-        if(maybeObjectType.isEmpty()){
+        if (maybeObjectType.isEmpty()) {
             return maybeObjectType;
         }
         Type objectType = maybeObjectType.get();
@@ -180,7 +189,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
             if (t.isEmpty()) {
                 reports.add(this.createReport(jmmNode, "Is Not an available Method"));
                 List<MethodSymbolTable> similars = this.symbolTable.getOverloads(method);
-                if (similars.size()> 0) {
+                if (similars.size() > 0) {
                     String message = this.createOverloadReports(method, parameters, similars);
                     reports.add(this.createReport(jmmNode, message));
                 }
@@ -246,7 +255,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isPresent() && !indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: "+ indexType.get().toString()));
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }
         if (error) {
@@ -284,8 +293,9 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         this.type = this.visit(this.root, reports);
         return reports;
     }
-    public Optional<Type> getType(){
-        return  this.type;
+
+    public Optional<Type> getType() {
+        return this.type;
     }
 
 }

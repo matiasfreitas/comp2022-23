@@ -13,6 +13,7 @@ public class JmmBuiltins {
 
     public static Type JmmString = new Type("String",false);
 
+
     public static Optional<Type> fromJmmNode(JmmNode node){
         String kind = node.getKind();
         Type t = switch (kind) {

@@ -73,21 +73,11 @@ expression
     | expression '.' methodName=ID '(' ( expression ( ',' expression )* )? ')' #MethodCalling
     | expression '.' attributeName=ID #AttributeAccessing
     | expression '[' expression ']' #ArrayIndexing
-    | expression op=('++' | '--') #PostFix
-    | op=('++'|'--'|'+' |'-' |'!') expression #Unary
+    | op='!' expression #Unary
     | expression op=('*' | '/') expression #BinaryOp
     | expression op=('+'|'-') expression #BinaryOp
-    | expression op=('<<' | '>>' | '>>>') expression #BinaryOp
-    | expression op=('<' |'>' |'<=' | '>=') expression #BinaryOp
-    | expression op=('==' | '!=')  expression #BinaryOp
-    | expression op='&' expression #BinaryOp
-    | expression op='^' expression #BinaryOp
-    | expression op='|' expression #BinaryOp
+    | expression op='<'  expression #BinaryOp
     | expression op='&&' expression #BinaryOp
-    | expression op='||' expression #BinaryOp
-    // Maybe try to do ternary operators
-    //| expression '?' expression ':' expression #TernaryOp
-    // See how arrays work in java
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
     | value=INT  #Int
