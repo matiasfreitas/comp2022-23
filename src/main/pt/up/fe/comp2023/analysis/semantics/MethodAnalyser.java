@@ -32,9 +32,13 @@ public class MethodAnalyser extends  Analyser<Void>{
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
+        return null;
     }
 
     private Void handleStatement(JmmNode jmmNode, List<Report> reports) {
+        StatementAnalyser st = new StatementAnalyser(jmmNode,symbolTable,context);
+        reports.addAll(st.analyse());
+        return null;
     }
 
 }

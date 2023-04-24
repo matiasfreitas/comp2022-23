@@ -22,6 +22,7 @@ public class StatementAnalyser extends Analyser<Void> {
         this.addVisit("SingleStatement", this::handleSingleStatement);
         this.addVisit("WhileLoop", this::handleWhileLoop);
         this.addVisit("IfStatement", this::handleIfStatement);
+        this.setDefaultVisit((a,b) -> null);
 
     }
 
@@ -37,23 +38,27 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting if statement");
        JmmNode conditionNode = jmmNode.getJmmChild(0);
        return this.handleCondition(conditionNode,reports);
 
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting while loop");
         JmmNode conditionNode = jmmNode.getJmmChild(0);
         return this.handleCondition(conditionNode,reports);
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting single statement");
         ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
         return null;
     }
 
     private Void handleAssignment(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting assignment statement");
         String varName = jmmNode.get("varName");
         Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
         if (maybeType.isPresent()) {
@@ -75,6 +80,7 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting array assignment statement");
         String varName = jmmNode.get("varName");
         Optional<Type> maybeArrayType = this.checkIdentifier(varName, jmmNode, reports);
         if (maybeArrayType.isPresent()) {
@@ -105,6 +111,7 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleReturnStatement(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Visiting Return statement");
         JmmNode expressionNode = jmmNode.getJmmChild(0);
         ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
         reports.addAll(ex.analyse());
