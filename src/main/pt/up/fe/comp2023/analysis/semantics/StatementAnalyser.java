@@ -25,8 +25,21 @@ public class StatementAnalyser extends Analyser<Void> {
 
     }
 
-    private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+    private Void handleCondition(JmmNode jmmNode,List<Report> reports){
+        ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
+        reports.addAll(ex.analyse());
+        Optional<Type> conditionType = ex.getType();
+        if(conditionType.isPresent() && !conditionType.get().getName().equals("boolean")){
+            String message = "Condition expression evaluates to "+ conditionType.get()+ " but should evaluate to boolean";
+            reports.add(this.createReport(jmmNode,message));
+        }
         return null;
+    }
+
+    private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+       JmmNode conditionNode = jmmNode.getJmmChild(0);
+       return this.handleCondition(conditionNode,reports);
+
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
