@@ -38,7 +38,6 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
     protected Report createReport(JmmNode node, String message) {
         int line = Integer.parseInt(node.get("lineStart"));
         int column = Integer.parseInt(node.get("colStart"));
-        System.out.println("Error:"+ message);
         return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
     }

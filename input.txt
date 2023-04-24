@@ -1,11 +1,11 @@
 import java.io.File;
 class Test {
-    public static void main(String[] args){
-        int x = 0;
-        int y = 1;
-        String b = "abc";
-        x = y;
-        y = 'a';
+    public static boolean tres(){
+        return "abc";
+    }
+    public void a(){
+        int x;
+        x = this.tres();
     }
 }
 

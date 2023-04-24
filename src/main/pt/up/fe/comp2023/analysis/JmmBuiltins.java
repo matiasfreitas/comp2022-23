@@ -22,12 +22,6 @@ public class JmmBuiltins {
             case "String" -> JmmString;
             default -> null;
         };
-        System.out.println(t.toString());
-        if ( t == null){
-            return Optional.empty();
-        }
-        else{
-            return Optional.of(t);
-        }
+        return  Optional.ofNullable(t);
     }
 }
