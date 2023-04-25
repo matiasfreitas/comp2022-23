@@ -8,6 +8,7 @@ class A{
         x = a.bar(3,"asb");
     }
     public boolean bar(int a,String c){
+        this.v;
         return true;
     }
 }
