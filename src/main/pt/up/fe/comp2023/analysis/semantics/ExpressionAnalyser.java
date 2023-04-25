@@ -83,6 +83,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         TypeGen typeGen = new TypeGen();
         typeGen.visit(typeNode);
         Type arrayType = typeGen.getType();
+        // TODO: availableType is always true
         boolean availableType = true;
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
@@ -163,6 +164,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
+        // Undefined Object
         if (maybeObjectType.isEmpty()) {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
@@ -181,12 +183,17 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
             }
 
         }
-        // Check if method signature is correct
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
         System.out.println(signature);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
+            // The class we are defining does not contain that method
             if (t.isEmpty()) {
+                // Check if it extends an imported class if so assume it is correct
+                String superClass = this.symbolTable.getSuper();
+                if (this.symbolTable.isImportedSymbol(superClass)) {
+                    return Optional.of(JmmBuiltins.JmmAssumeType);
+                }
                 reports.add(this.createReport(jmmNode, "Is Not an available Method"));
                 List<MethodSymbolTable> similars = this.symbolTable.getOverloads(method);
                 if (similars.size() > 0) {

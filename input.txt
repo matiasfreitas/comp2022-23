@@ -1,20 +1,22 @@
-class IncompatibleReturn {
+import A;
+import B;
+
+class ObjectAssignmentPassImports {
 
     public static void main(String[] args) {
 
     }
 
-    public int foo(int a) {
-        return a + 1;
-    }
+    public A foo() {
+        A a;
+        B b;
 
-    public boolean bar() {
-        IncompatibleReturn a;
-        int b;
+        a = new A();
+        b = new B();
 
-        a = new IncompatibleReturn();
-        b = 0;
+        // A and B imported, assume it is correct
+        a = b;
 
-        return a.foo(b);
+        return a;
     }
 }
