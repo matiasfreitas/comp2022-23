@@ -131,7 +131,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
         if (maybeT.isPresent()) {
             Type t = maybeT.get();
-            if (op.equals("!") && t.equals(JmmBuiltins.JmmBoolean)) {
+            if (op.equals("!") && JmmBuiltins.typeEqualOrAssumed(t,JmmBuiltins.JmmBoolean)) {
                 return Optional.of(t);
             }
             reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
