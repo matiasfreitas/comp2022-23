@@ -402,7 +402,7 @@ public class OllirGenerator implements JmmOptimization {
             scopeVariables.put(name, kind);
         }
         else{
-            String name = rootNode.get("value");
+            String name = rootNode.get("type");
             ollirCode.append(name).append(".");
 
             String kind = dealWithType(rootNode, scopeVariables);
