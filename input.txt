@@ -1,7 +1,13 @@
 import hello.B;
-class A extends B{
-    public static void main(String[] args){
+class A{
+    int v;
+    public static void main(String[] args,A a){
+        boolean x;
+        A a;
+        x = A.bar(3,"abc");
+        x = a.bar(3,"asb");
     }
     public boolean bar(int a,String c){
+        return true;
     }
 }

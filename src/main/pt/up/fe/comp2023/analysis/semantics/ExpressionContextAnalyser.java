@@ -163,7 +163,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
-        // Undefined Object
+        System.out.println("Tring to call method of object" + maybeObjectType);
         if (maybeObjectType.isEmpty()) {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
