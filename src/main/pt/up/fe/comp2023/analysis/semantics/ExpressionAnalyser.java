@@ -47,7 +47,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
         });
-        this.setDefaultVisit((a,b) -> Optional.empty());
+        this.setDefaultVisit((a, b) -> Optional.empty());
     }
 
 
@@ -66,13 +66,14 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Im checking identifier "+ jmmNode.get("value"));
+        System.out.println("Im checking identifier " + jmmNode.get("value"));
         return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
     }
 
 
     private Optional<Type> handleNewObject(JmmNode jmmNode, List<Report> reports) {
         String typeName = jmmNode.get("typeName");
+        // TODO: inheritance can play a role here?
         if (symbolTable.isImportedSymbol(typeName) || symbolTable.isThisClassType(typeName)) {
             return Optional.of(new Type(typeName, false));
         }
@@ -81,19 +82,18 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
     }
 
     private Optional<Type> handleNewArray(JmmNode jmmNode, List<Report> reports) {
+        // TODO: checkar que o tipo existe?
         JmmNode typeNode = jmmNode.getJmmChild(0);
         TypeGen typeGen = new TypeGen();
         typeGen.visit(typeNode);
         Type arrayType = typeGen.getType();
-        // TODO: availableType is always true
-        boolean availableType = true;
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (availableType || indexType.isEmpty()) {
+        if (indexType.isEmpty()) {
             return Optional.empty();
         }
-        if (!indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.toString()));
+        if (!JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             return Optional.empty();
         }
         return Optional.of(new Type(arrayType.getName(), true));
@@ -109,13 +109,14 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         if (maybeRightType.isPresent() && maybeLeftType.isPresent()) {
             Type rightType = maybeRightType.get();
             Type leftType = maybeLeftType.get();
+            List<Type> types = Arrays.asList(leftType,rightType);
             if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("<")) {
-                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
-                    return Optional.of(leftType);
+                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmInt)) {
+                    return Optional.of(JmmBuiltins.JmmInt);
                 }
             } else if (op.equals("&&")) {
-                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmBoolean)) {
-                    return Optional.of(leftType);
+                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmBoolean)) {
+                    return Optional.of(JmmBuiltins.JmmBoolean);
                 }
             }
             reports.add(this.createReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
@@ -130,7 +131,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
         if (maybeT.isPresent()) {
             Type t = maybeT.get();
-            if (op.equals("!") && t.equals(JmmBuiltins.JmmBoolean)) {
+            if (op.equals("!") && JmmBuiltins.typeEqualOrAssumed(t,JmmBuiltins.JmmBoolean)) {
                 return Optional.of(t);
             }
             reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
@@ -257,13 +258,14 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         JmmNode arrayNode = jmmNode.getJmmChild(0);
         Optional<Type> arrayType = this.visit(arrayNode, reports);
         boolean error = false;
+        // Should this work with assumed types?
         if (arrayType.isEmpty() || !arrayType.get().isArray()) {
             reports.add(this.createReport(jmmNode, "Trying To Index over a type that is not an array"));
             error = true;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (indexType.isPresent() && !indexType.get().getName().equals("int")) {
+        if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(),JmmBuiltins.JmmInt)) {
             reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }

@@ -14,13 +14,10 @@ class A extends B {
     public int bazz(){
         int[] a;
         int x;
-        if(this.bar(3)){
-            x +1;
-
-        }else{
-            y;
-
-        }
+        // this is not throwing error should it ?
+        // it is searching in the extends probably
+        a = new int[this.bar()];
+        x = a[this.bar()];
 
         return 3;
 

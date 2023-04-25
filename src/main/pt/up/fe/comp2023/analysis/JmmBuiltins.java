@@ -3,6 +3,7 @@ package pt.up.fe.comp2023.analysis;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.List;
 import java.util.Optional;
 
 public class JmmBuiltins {
@@ -26,5 +27,17 @@ public class JmmBuiltins {
             default -> null;
         };
         return  Optional.ofNullable(t);
+    }
+    public static boolean typeEqualOrAssumed(Type left,Type right){
+        boolean assumed = left.equals(JmmAssumeType) || right.equals(JmmAssumeType);
+        boolean equal = left.equals(right);
+        return assumed || equal;
+    }
+    public static boolean typesEqualOrAssumed(List<Type> types, Type right){
+        boolean result = true;
+        for(Type t: types){
+            result = result && typeEqualOrAssumed(t,right);
+        }
+        return result;
     }
 }
