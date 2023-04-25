@@ -23,7 +23,7 @@ public class SemanticAnalyser extends  Analyser<Void>{
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Method Declaration");
+        //System.out.println("Method Declaration");
         MethodAnalyser ma = new MethodAnalyser(jmmNode,symbolTable,context);
         List<Report>  methodReports = ma.analyse();
         reports.addAll(methodReports);
@@ -32,12 +32,12 @@ public class SemanticAnalyser extends  Analyser<Void>{
     }
 
     private Void handleImports(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Import Declaration");
+        //System.out.println("Import Declaration");
         return null;
     }
 
     private Void handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Class Declaration");
+        //System.out.println("Class Declaration");
         return null;
     }
 
