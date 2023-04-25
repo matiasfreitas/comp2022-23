@@ -283,7 +283,6 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
             }
 
-            ollirCode.append(")");
             ollirCode.append(").V;");
         }
         else if(isPackage){
