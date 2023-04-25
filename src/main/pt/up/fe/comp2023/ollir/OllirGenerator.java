@@ -157,7 +157,7 @@ public class OllirGenerator implements JmmOptimization {
         //Finish Return Statement
         else if (rootNode.getKind().equals("ReturnStatement")) {
             ollirCode.append(";\n");
-            hasReturn = true;
+
         }
 
 
@@ -202,7 +202,7 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private String dealWithReturnStatement(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
-
+        hasReturn = true;
         if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
                 !rootNode.getChildren().get(0).hasAttribute("value")){
             ollirCode.append(newLine());
