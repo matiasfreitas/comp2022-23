@@ -15,7 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class ContextAnalyser<T>  extends Analyser<T> {
+public abstract class ContextAnalyser<T> extends Analyser<T> {
     protected JmmSymbolTable symbolTable;
 
     protected UsageContext context;
@@ -29,7 +29,7 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
         this.availableTypes = new ArrayList<>();
         availableTypes.addAll(JmmBuiltins.builtinTypes());
         availableTypes.addAll(symbolTable.getImportTypes());
-        availableTypes.add(new Type(symbolTable.getClassName(),false));
+        availableTypes.add(new Type(symbolTable.getClassName(), false));
 
 
     }
@@ -55,14 +55,14 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
 
     }
 
-    protected boolean validType(Type t){
+    protected boolean validType(Type t) {
         Type compareT = t;
-        if (t.isArray()){
-            compareT = new Type(t.getName(),false);
+        if (t.isArray()) {
+            compareT = new Type(t.getName(), false);
         }
-        for(Type available:availableTypes){
-            if(compareT.equals(available)){
-                return  true;
+        for (Type available : availableTypes) {
+            if (compareT.equals(available)) {
+                return true;
             }
         }
         return false;
@@ -77,6 +77,7 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
         }
         return null;
     }
+
     public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
         Optional<Type> t;
         if (context.isClassContext()) {
@@ -101,7 +102,7 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
                 if (t.isEmpty()) {
                     Optional<Type> accessingField = checkClassScope(identifier);
                     if (accessingField.isPresent()) {
-                        reports.add(this.createReport(jmmNode, "Trying to acess non static field "+ identifier+" in static method"));
+                        reports.add(this.createReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
                         return t;
                     }
                 }
@@ -109,13 +110,17 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
                 t = checkUpperScopes(identifier);
             }
         }
-        Type identifierType= new Type(identifier,false);
         // Could be an import
-        if (t.isEmpty() && !validType(identifierType)) {
-            reports.add(this.createReport(jmmNode, "Undefined Identifier"));
-            return t;
+        if (t.isEmpty()) {
+            Type identifierType = new Type(identifier, false);
+            if (!validType(identifierType)) {
+                reports.add(this.createReport(jmmNode, "Undefined Identifier"));
+                return Optional.empty();
+            } else {
+                return Optional.of(identifierType);
+            }
         }
-        return Optional.of(identifierType);
+        return t;
     }
 
 }
