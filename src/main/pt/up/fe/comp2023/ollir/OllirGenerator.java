@@ -465,6 +465,7 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if(! hasReturn){
+            ollirCode.append(newLine());
             ollirCode.append("ret.V;\n");
         }
 
