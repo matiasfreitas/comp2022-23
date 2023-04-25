@@ -3,6 +3,7 @@ package pt.up.fe.comp2023.analysis.semantics;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class StatementAnalyser extends Analyser<Void> {
         ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
         Optional<Type> conditionType = ex.getType();
-        if (conditionType.isPresent() && !conditionType.get().getName().equals("boolean")) {
+        if (conditionType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(conditionType.get(), JmmBuiltins.JmmBoolean)) {
             String message = "Condition expression evaluates to " + conditionType.get() + " but should evaluate to boolean";
             reports.add(this.createReport(jmmNode, message));
         }
@@ -68,7 +69,7 @@ public class StatementAnalyser extends Analyser<Void> {
             Optional<Type> maybeAssignedType = ex.getType();
             if (maybeAssignedType.isPresent()) {
                 Type assignedType = maybeAssignedType.get();
-                // If the type is imported we assume to be using it correctly
+                // TODO: If the type is imported we assume to be using it correctly
                 if (this.symbolTable.isImportedSymbol(assignedType.getName())) {
                     return null;
                 }
