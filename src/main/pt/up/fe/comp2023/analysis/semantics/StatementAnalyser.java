@@ -61,6 +61,7 @@ public class StatementAnalyser extends Analyser<Void> {
         //System.out.println("Visiting assignment statement");
         String varName = jmmNode.get("varName");
         Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
+        // TODO: what about inheritance
         if (maybeType.isPresent()) {
             Type type = maybeType.get();
             JmmNode expressionNode = jmmNode.getJmmChild(0);
@@ -73,7 +74,7 @@ public class StatementAnalyser extends Analyser<Void> {
                 if (this.symbolTable.isImportedSymbol(assignedType.getName())) {
                     return null;
                 }
-                if (!assignedType.equals(type)) {
+                if (!JmmBuiltins.typeEqualOrAssumed(type,assignedType)) {
                     boolean thisClass = this.symbolTable.isThisClassType(assignedType.getName());
                     String thisClassSuper = this.symbolTable.getSuper();
                     if (thisClass && thisClassSuper != null && thisClassSuper.equals(type.getName())) {
