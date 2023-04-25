@@ -258,13 +258,14 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         JmmNode arrayNode = jmmNode.getJmmChild(0);
         Optional<Type> arrayType = this.visit(arrayNode, reports);
         boolean error = false;
+        // Should this work with assumed types?
         if (arrayType.isEmpty() || !arrayType.get().isArray()) {
             reports.add(this.createReport(jmmNode, "Trying To Index over a type that is not an array"));
             error = true;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (indexType.isPresent() && !indexType.get().getName().equals("int")) {
+        if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(),JmmBuiltins.JmmInt)) {
             reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }
