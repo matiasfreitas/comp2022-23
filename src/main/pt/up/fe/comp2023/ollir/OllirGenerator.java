@@ -79,6 +79,7 @@ public class OllirGenerator implements JmmOptimization {
     int nested = 0;
     HashMap<String, String> attributes = new HashMap<>();
     boolean dontHasConstructor = true;
+    boolean hasReturn = false;
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
 
@@ -156,6 +157,7 @@ public class OllirGenerator implements JmmOptimization {
         //Finish Return Statement
         else if (rootNode.getKind().equals("ReturnStatement")) {
             ollirCode.append(";\n");
+            hasReturn = true;
         }
 
 
@@ -351,6 +353,7 @@ public class OllirGenerator implements JmmOptimization {
         String typeKind = rootNode.getKind();
 
         if (typeKind.equals("Integer")) return ollirCode.append("i32").toString();
+        if (typeKind.equals("Int")) return ollirCode.append("i32").toString();
         else if (typeKind.equals("boolean")) return  ollirCode.append("bool").toString();
         else if (typeKind.equals("STRING")) return ollirCode.append("String").toString();
         else if (typeKind.equals("void")) return ollirCode.append("V").toString();
@@ -461,10 +464,14 @@ public class OllirGenerator implements JmmOptimization {
             index++;
         }
 
+        if(! hasReturn){
+            ollirCode.append("ret.V;\n");
+        }
 
         nested--;
         ollirCode.append(newLine());
         ollirCode.append("}\n\n");
+        hasReturn = false;
         return ollirCode;
     }
 
