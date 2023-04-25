@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
@@ -16,10 +17,12 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class ExpressionAnalyser extends Analyser<Optional<Type>>{
+public class ExpressionAnalyser extends Analyser<Optional<Type>> {
+
+    private Optional<Type> type = Optional.empty();
 
     ExpressionAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
-        super(root,symbolTable,context);
+        super(root, symbolTable, context);
     }
 
 
@@ -30,17 +33,16 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         map.put("MethodCalling", this::handleMethodCalling);
         map.put("AttributeAccessing", this::handleAttributeAccessing);
         map.put("ArrayIndexing", this::handleArrayIndexing);
-        map.put("PostFix", this::handleSingleOp);
         map.put("Unary", this::handleSingleOp);
         map.put("BinaryOp", this::handleBinaryOp);
         map.put("NewArray", this::handleNewArray);
         map.put("NewObject", this::handleNewObject);
         map.put("Identifier", this::handleIdentifier);
         map.put("This", this::handleThis);
-        map.put("Integer", this::handleLiteral);
+        map.put("Int", this::handleLiteral);
         map.put("Boolean", this::handleLiteral);
-        map.put("CHAR", this::handleLiteral);
-        map.put("STRING", this::handleLiteral);
+        map.put("Char", this::handleLiteral);
+        map.put("String", this::handleLiteral);
 
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
@@ -50,51 +52,20 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
 
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
+            System.out.println("Node " + jmmNode.getKind());
             Optional<Type> maybeT = function.apply(jmmNode, reports);
-            if(maybeT.isPresent()){
+            if (maybeT.isPresent()) {
                 Type t = maybeT.get();
-                jmmNode.put("type",t.getName());
-                jmmNode.put("isArray",(t.isArray())? "true":"false");
+                jmmNode.put("type", t.getName());
+                jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
             }
             return maybeT;
         };
     }
 
-    private Optional<Type> checkUpperScopes(String identifier) {
-        Optional<Type> classField = symbolTable.getFieldTry(identifier);
-        if (classField.isEmpty()) {
-            if (symbolTable.isImportedSymbol(identifier)) {
-                return Optional.of(new Type(identifier, false));
-            }
-        }
-        return classField;
-    }
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        String identifier = jmmNode.get("value");
-        Optional<Type> t = Optional.empty();
-        if (context.isClassContext()) {
-            t = checkUpperScopes(identifier);
-        }
-        // Method context
-        else {
-            String currentMethod = context.getMethodSignature();
-            for (Symbol s : symbolTable.getParameters(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
-            for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
-            t = checkUpperScopes(identifier);
-        }
-        if (t.isEmpty()) {
-            reports.add(this.createReport(jmmNode,"Undefined Identifier"));
-        }
-        return t;
+        return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
     }
 
 
@@ -108,44 +79,72 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     }
 
     private Optional<Type> handleNewArray(JmmNode jmmNode, List<Report> reports) {
-        JmmNode arrayNode = jmmNode.getJmmChild(0);
-        Optional<Type> arrayType = this.visit(arrayNode, reports);
+        JmmNode typeNode = jmmNode.getJmmChild(0);
+        TypeGen typeGen = new TypeGen();
+        typeGen.visit(typeNode);
+        Type arrayType = typeGen.getType();
+        // TODO: availableType is always true
+        boolean availableType = true;
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (arrayType.isEmpty() || indexType.isEmpty()) {
+        if (availableType || indexType.isEmpty()) {
             return Optional.empty();
         }
-        if (indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
+        if (!indexType.get().getName().equals("int")) {
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.toString()));
             return Optional.empty();
         }
-        return Optional.of(new Type(arrayType.get().getName(), true));
+        return Optional.of(new Type(arrayType.getName(), true));
 
     }
 
     private Optional<Type> handleBinaryOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
         JmmNode left = jmmNode.getJmmChild(0);
-        Optional<Type> leftType = this.visit(left, reports);
+        Optional<Type> maybeLeftType = this.visit(left, reports);
         JmmNode right = jmmNode.getJmmChild(1);
-        Optional<Type> rightType = this.visit(right, reports);
-        return leftType;
+        Optional<Type> maybeRightType = this.visit(right, reports);
+        if (maybeRightType.isPresent() && maybeLeftType.isPresent()) {
+            Type rightType = maybeRightType.get();
+            Type leftType = maybeLeftType.get();
+            if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("<")) {
+                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
+                    return Optional.of(leftType);
+                }
+            } else if (op.equals("&&")) {
+                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmBoolean)) {
+                    return Optional.of(leftType);
+                }
+            }
+            reports.add(this.createReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
+        }
+        return Optional.empty();
 
     }
 
     private Optional<Type> handleSingleOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
-        System.out.println(op);
-        Optional<Type> t = this.visit(jmmNode.getJmmChild(0), reports);
-        // TODO: checking
-        return t;
+        System.out.println(jmmNode.getAttributes());
+        Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
+        if (maybeT.isPresent()) {
+            Type t = maybeT.get();
+            if (op.equals("!") && t.equals(JmmBuiltins.JmmBoolean)) {
+                return Optional.of(t);
+            }
+            reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
+        }
+        return Optional.empty();
     }
 
     private Optional<Type> handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
-        Optional<Type> objectType = this.visit(object, reports);
+        Optional<Type> maybeObjectType = this.visit(object, reports);
+        if (maybeObjectType.isEmpty()) {
+            return maybeObjectType;
+        }
+        Type objectType = maybeObjectType.get();
         String attributeName = jmmNode.get("attributeName");
-        if (this.symbolTable.isThisClassType(objectType.get().getName())) {
+        if (this.symbolTable.isThisClassType(objectType.getName())) {
             List<Symbol> fields = this.symbolTable.getFields();
             for (Symbol f : fields) {
                 if (f.getName().equals(attributeName)) {
@@ -165,6 +164,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
+        // Undefined Object
         if (maybeObjectType.isEmpty()) {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
@@ -172,9 +172,8 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         Type objectType = maybeObjectType.get();
         boolean error = false;
         String method = jmmNode.get("methodName");
-        System.out.println(method);
         List<Type> parameters = new LinkedList<>();
-        for (int i = 2; i < jmmNode.getNumChildren(); i++) {
+        for (int i = 1; i < jmmNode.getNumChildren(); i++) {
             JmmNode parameter = jmmNode.getJmmChild(i);
             Optional<Type> parameterType = this.visit(parameter, reports);
             if (parameterType.isEmpty()) {
@@ -184,14 +183,20 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
             }
 
         }
-        // Check if method signature is correct
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
+        System.out.println(signature);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
+            // The class we are defining does not contain that method
             if (t.isEmpty()) {
+                // Check if it extends an imported class if so assume it is correct
+                String superClass = this.symbolTable.getSuper();
+                if (this.symbolTable.isImportedSymbol(superClass)) {
+                    return Optional.of(JmmBuiltins.JmmAssumeType);
+                }
                 reports.add(this.createReport(jmmNode, "Is Not an available Method"));
                 List<MethodSymbolTable> similars = this.symbolTable.getOverloads(method);
-                if (similars.size()> 0) {
+                if (similars.size() > 0) {
                     String message = this.createOverloadReports(method, parameters, similars);
                     reports.add(this.createReport(jmmNode, message));
                 }
@@ -256,8 +261,8 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (indexType.isEmpty() || !indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer"));
+        if (indexType.isPresent() && !indexType.get().getName().equals("int")) {
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }
         if (error) {
@@ -285,9 +290,19 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>>{
     }
 
     private Optional<Type> handleLiteral(JmmNode jmmNode, List<Report> reports) {
-        TypeGen typeGen = new TypeGen();
-        typeGen.visit(jmmNode);
-        return Optional.ofNullable(typeGen.getType());
+        Optional<Type> builtin = JmmBuiltins.fromJmmNode(jmmNode);
+        return builtin;
+    }
+
+    @Override
+    public List<Report> analyse() {
+        List<Report> reports = new LinkedList<>();
+        this.type = this.visit(this.root, reports);
+        return reports;
+    }
+
+    public Optional<Type> getType() {
+        return this.type;
     }
 
 }

@@ -80,10 +80,10 @@ expression
     | expression op='&&' expression #BinaryOp
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
-    | value=INT  #Integer
+    | value=INT  #Int
     | value=BOOLEAN #Boolean
-    | value=CHAR #CHAR
-    | value=STRING #STRING
+    | value=CHAR #Char
+    | value=STRING #String
     | value=ID #Identifier
     | value='this' #This
     ;

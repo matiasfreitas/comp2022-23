@@ -1,15 +1,22 @@
-import java.io.File;
-import utils.M;
-import utils.N;
-// ...
+import A;
+import B;
 
+class ObjectAssignmentPassImports {
 
-class Test {
-    private int x;
-    private int l;
-    public static void main(String[] args){
-        Boolean[] boolArray = new Boolean[5];
-        System.out.println(boolArray[0]);
+    public static void main(String[] args) {
+
+    }
+
+    public A foo() {
+        A a;
+        B b;
+
+        a = new A();
+        b = new B();
+
+        // A and B imported, assume it is correct
+        a = b;
+
+        return a;
     }
 }
-

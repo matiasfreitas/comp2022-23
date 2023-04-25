@@ -20,11 +20,12 @@ public class Analyser implements JmmAnalysis {
         JmmSymbolTableGen symbolTableGen =  new JmmSymbolTableGen();
         symbolTableGen.visit(jmmParserResult.getRootNode());
         JmmSymbolTable symbolTable = symbolTableGen.getJmmSymbolTable();
+        System.out.println(symbolTable.print());
 
-        /*
         SemanticAnalyser semanticAnalyser = new SemanticAnalyser(jmmParserResult.getRootNode(),symbolTable,new UsageContext());
+        System.out.println("Performing Analysis");
         List<Report> reports = semanticAnalyser.analyse();
-         */
-        return new JmmSemanticsResult(jmmParserResult,symbolTable, new ArrayList<>());
+        System.out.println("Endend Analysis");
+        return new JmmSemanticsResult(jmmParserResult,symbolTable,reports);
     }
 }
