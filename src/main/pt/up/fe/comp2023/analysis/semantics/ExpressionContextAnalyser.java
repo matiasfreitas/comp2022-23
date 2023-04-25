@@ -105,13 +105,17 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         if (maybeRightType.isPresent() && maybeLeftType.isPresent()) {
             Type rightType = maybeRightType.get();
             Type leftType = maybeLeftType.get();
-            List<Type> types = Arrays.asList(leftType,rightType);
+            List<Type> types = Arrays.asList(leftType, rightType);
             if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("<")) {
-                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmInt)) {
-                    return Optional.of(JmmBuiltins.JmmInt);
+                if (JmmBuiltins.typesEqualOrAssumed(types, JmmBuiltins.JmmInt)) {
+                    if (op.equals("<")) {
+                        return Optional.of(JmmBuiltins.JmmBoolean);
+                    } else {
+                        return Optional.of(JmmBuiltins.JmmInt);
+                    }
                 }
             } else if (op.equals("&&")) {
-                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmBoolean)) {
+                if (JmmBuiltins.typesEqualOrAssumed(types, JmmBuiltins.JmmBoolean)) {
                     return Optional.of(JmmBuiltins.JmmBoolean);
                 }
             }
@@ -127,7 +131,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
         if (maybeT.isPresent()) {
             Type t = maybeT.get();
-            if (op.equals("!") && JmmBuiltins.typeEqualOrAssumed(t,JmmBuiltins.JmmBoolean)) {
+            if (op.equals("!") && JmmBuiltins.typeEqualOrAssumed(t, JmmBuiltins.JmmBoolean)) {
                 return Optional.of(t);
             }
             reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
@@ -151,7 +155,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 }
             }
             // TODO: check visibility
-            reports.add(this.createReport(jmmNode,"Attribute `" + attributeName + "` is not a valid attribute"));
+            reports.add(this.createReport(jmmNode, "Attribute `" + attributeName + "` is not a valid attribute"));
 
             return Optional.empty();
         } else {
@@ -263,7 +267,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(),JmmBuiltins.JmmInt)) {
+        if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
             reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }
