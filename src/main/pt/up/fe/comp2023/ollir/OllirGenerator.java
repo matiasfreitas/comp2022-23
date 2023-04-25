@@ -252,10 +252,6 @@ public class OllirGenerator implements JmmOptimization {
         ollirCode.append(newLine());
 
 
-        //Class Method verification
-        List<String> methods = semanticsResult.getSymbolTable().getMethods();
-        String methodName = rootNode.get("methodName");
-        boolean isClassMethod = methods.stream().anyMatch(s -> s.equals(methodName));
 
         //Variable verification
         String variable = rootNode.getChildren().get(0).get("value");
@@ -267,22 +263,28 @@ public class OllirGenerator implements JmmOptimization {
         List<String> packages = semanticsResult.getSymbolTable().getImports();
         boolean isPackage = packages.stream().anyMatch(s -> s.equals(thisPackage));
 
-        if(isClassMethod || isScopedVariable || isAttribute) {
+        if(isScopedVariable || isAttribute) {
+
             ollirCode.append("invokevirtual(");
-            ollirCode.append(rootNode.getChildren().get(0).get("value"));
+
+            ollirCode.append(variable);
             ollirCode.append(".");
-            ollirCode.append(rootNode.getChildren().get(1).get("value"));
+
+            if(isScopedVariable) ollirCode.append(scopeVariables.get(variable));
+            else if(isAttribute) ollirCode.append(attributes.get(variable));
+
+
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
             ollirCode.append("\"");
 
-            for (int i = 2; i < rootNode.getChildren().size(); i++) {
+            for (int i = 1; i < rootNode.getChildren().size(); i++) {
                 ollirCode.append(", ");
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
             }
 
-            ollirCode.append(".)");
-            ollirCode.append(semanticsResult.getSymbolTable().getReturnTypeTry(rootNode.get("methodName")));
+            ollirCode.append(")");
+            ollirCode.append(").V;");
         }
         else if(isPackage){
 
@@ -291,12 +293,14 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
             ollirCode.append("\"");
+
             for (int i = 1; i < rootNode.getChildren().size(); i++) {
                 ollirCode.append(", ");
 
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
 
             }
+
             ollirCode.append(").V;");
         }
         return ollirCode;
