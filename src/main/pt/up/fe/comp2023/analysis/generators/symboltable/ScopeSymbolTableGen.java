@@ -24,7 +24,6 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
     @Override
     protected void buildVisitor() {
         addVisit("VarTypeSpecification", this::handleVarDeclaration);
-        //addVisit("ScopedBlock", this::handleScopeBlock);
         this.setDefaultVisit(this::visitAllChildren);
     }
 
@@ -45,19 +44,6 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
         return null;
 
     }
-
-   // private Void handleScopeBlock(JmmNode jmmNode, List<Report> reports) {
-   //     //System.out.println("Handling new Scope inside scope");
-   //     // I think this will never be called so wtf?
-   //     ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
-   //     for (JmmNode child : jmmNode.getChildren()) {
-   //         childGen.visit(child, reports);
-   //     }
-   //     ScopeSymbolTable childScope = childGen.getScope();
-   //     this.thisScope.addSubScope(childScope);
-   //     return null;
-
-   // }
 
     public ScopeSymbolTable getScope() {
         return this.thisScope;
