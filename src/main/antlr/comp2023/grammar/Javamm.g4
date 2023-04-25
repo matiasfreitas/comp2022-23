@@ -51,7 +51,7 @@ type: simpleType | arrayType;
 
 varTypeSpecification : type varName=ID ;
 
-varDeclaration :  varTypeSpecification ( '=' expression)? ;
+varDeclaration :  varTypeSpecification ;
 
 methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 
