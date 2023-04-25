@@ -6,15 +6,17 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
+import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
 import java.util.List;
 import java.util.Optional;
 
-public class ScopeSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
+public class ScopeSymbolTableGen extends Analyser<Void> {
     ScopeSymbolTable thisScope;
 
-    public ScopeSymbolTableGen(ScopeSymbolTable parentScope) {
+    public ScopeSymbolTableGen(JmmNode root,ScopeSymbolTable parentScope) {
+        super(root);
         this.thisScope = new ScopeSymbolTable();
         this.thisScope.setParentScope(parentScope);
     }
@@ -22,15 +24,7 @@ public class ScopeSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
     @Override
     protected void buildVisitor() {
         addVisit("VarTypeSpecification", this::handleVarDeclaration);
-        addVisit("ScopedBlock", this::handleScopeBlock);
         this.setDefaultVisit(this::visitAllChildren);
-    }
-
-    protected Report createReport(JmmNode node, String message) {
-        int line = Integer.parseInt(node.get("lineStart"));
-        int column = Integer.parseInt(node.get("colStart"));
-        return Report.newError(Stage.SEMANTIC, line, column, message, null);
-
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -47,18 +41,6 @@ public class ScopeSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
         } else {
             this.thisScope.addSymbol(s);
         }
-        return null;
-
-    }
-
-    private Void handleScopeBlock(JmmNode jmmNode, List<Report> reports) {
-        //System.out.println("Handling new Scope inside scope");
-        ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
-        for (JmmNode child : jmmNode.getChildren()) {
-            childGen.visit(child, reports);
-        }
-        ScopeSymbolTable childScope = childGen.getScope();
-        this.thisScope.addSubScope(childScope);
         return null;
 
     }

@@ -4,24 +4,20 @@ package pt.up.fe.comp2023.analysis.semantics;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
-import javax.swing.text.html.Option;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class ExpressionAnalyser extends Analyser<Optional<Type>> {
+public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
     private Optional<Type> type = Optional.empty();
 
-    ExpressionAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
+    ExpressionContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root, symbolTable, context);
     }
 

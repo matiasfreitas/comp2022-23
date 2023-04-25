@@ -9,9 +9,9 @@ import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import java.util.List;
 import java.util.Optional;
 
-public class StatementAnalyser extends Analyser<Void> {
+public class StatementContextAnalyser extends ContextAnalyser<Void> {
 
-    public StatementAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
+    public StatementContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root, symbolTable, context);
     }
 
@@ -28,7 +28,7 @@ public class StatementAnalyser extends Analyser<Void> {
     }
 
     private Void handleCondition(JmmNode jmmNode, List<Report> reports) {
-        ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
+        ExpressionContextAnalyser ex = new ExpressionContextAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
         Optional<Type> conditionType = ex.getType();
         if (conditionType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(conditionType.get(), JmmBuiltins.JmmBoolean)) {
@@ -58,7 +58,7 @@ public class StatementAnalyser extends Analyser<Void> {
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Visiting single statement");
-        ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
+        ExpressionContextAnalyser ex = new ExpressionContextAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
         return null;
     }
@@ -71,7 +71,7 @@ public class StatementAnalyser extends Analyser<Void> {
         if (maybeType.isPresent()) {
             Type type = maybeType.get();
             JmmNode expressionNode = jmmNode.getJmmChild(0);
-            ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
+            ExpressionContextAnalyser ex = new ExpressionContextAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignedType = ex.getType();
             if (maybeAssignedType.isPresent()) {
@@ -108,14 +108,14 @@ public class StatementAnalyser extends Analyser<Void> {
                 reports.add(this.createReport(jmmNode, "Trying to index type that is not an array"));
             }
             JmmNode indexNode = jmmNode.getJmmChild(0);
-            ExpressionAnalyser ex = new ExpressionAnalyser(indexNode, symbolTable, context);
+            ExpressionContextAnalyser ex = new ExpressionContextAnalyser(indexNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeIndexType = ex.getType();
             if (maybeIndexType.isPresent() && !maybeIndexType.get().getName().equals("int")) {
                 reports.add(this.createReport(jmmNode, "Array Index Must Be of Type integer"));
             }
             JmmNode expressionNode = jmmNode.getJmmChild(1);
-            ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
+            ex = new ExpressionContextAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignType = ex.getType();
             Type acceptsType = new Type(arrayType.getName(),false);
@@ -133,7 +133,7 @@ public class StatementAnalyser extends Analyser<Void> {
     private Void handleReturnStatement(JmmNode jmmNode, List<Report> reports) {
         // System.out.println("Visiting Return statement");
         JmmNode expressionNode = jmmNode.getJmmChild(0);
-        ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
+        ExpressionContextAnalyser ex = new ExpressionContextAnalyser(expressionNode, symbolTable, context);
         reports.addAll(ex.analyse());
         Optional<Type> exType = ex.getType();
         String thisMethod = this.context.getMethodSignature();

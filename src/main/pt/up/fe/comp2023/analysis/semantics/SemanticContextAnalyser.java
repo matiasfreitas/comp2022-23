@@ -4,12 +4,11 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SemanticAnalyser extends  Analyser<Void>{
+public class SemanticContextAnalyser extends ContextAnalyser<Void> {
 
-    public SemanticAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
+    public SemanticContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root, symbolTable, context);
     }
 
@@ -22,7 +21,7 @@ public class SemanticAnalyser extends  Analyser<Void>{
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Method Declaration");
-        MethodAnalyser ma = new MethodAnalyser(jmmNode,symbolTable,context);
+        MethodContextAnalyser ma = new MethodContextAnalyser(jmmNode,symbolTable,context);
         List<Report>  methodReports = ma.analyse();
         reports.addAll(methodReports);
         context.setClassContext();

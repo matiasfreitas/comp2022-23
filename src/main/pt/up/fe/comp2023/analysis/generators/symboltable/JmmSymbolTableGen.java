@@ -3,6 +3,7 @@ package pt.up.fe.comp2023.analysis.generators.symboltable;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
@@ -11,11 +12,12 @@ import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class JmmSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
+public class JmmSymbolTableGen extends Analyser<Void> {
     List<String> imports;
     List<ClassSymbolTable> classes;
 
-    public JmmSymbolTableGen() {
+    public JmmSymbolTableGen(JmmNode root) {
+        super(root);
         imports = new LinkedList<>();
         classes = new LinkedList<>();
     }
@@ -29,8 +31,8 @@ public class JmmSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
     }
 
     private Void handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        ClassSymbolTableGen classGen = new ClassSymbolTableGen();
-        classGen.visit(jmmNode,reports);
+        ClassSymbolTableGen classGen = new ClassSymbolTableGen(jmmNode);
+        reports.addAll(classGen.analyse());
         classes.add(classGen.getClassTable());
         return null;
     }

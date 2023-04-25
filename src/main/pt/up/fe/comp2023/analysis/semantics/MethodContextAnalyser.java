@@ -8,17 +8,15 @@ import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiFunction;
 
-public class MethodAnalyser extends  Analyser<Void>{
+public class MethodContextAnalyser extends ContextAnalyser<Void> {
     private MethodSymbolTable methodTable;
 
-    public MethodAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
+    public MethodContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root, symbolTable, context);
         // All of this will be done in the MethodTable Generator
-        MethodSymbolTableGen m = new MethodSymbolTableGen();
-        List<Report> throwAway = new LinkedList<>();
-        m.visit(root,throwAway);
+        MethodSymbolTableGen m = new MethodSymbolTableGen(root);
+        List<Report> throwAway = m.analyse();
         this.methodTable= m.getMethodTable();
         String methodRepresentaion =this.methodTable.getStringRepresentation();
         //System.out.println("Method Analyser of method with following representation: "+methodRepresentaion);
@@ -37,7 +35,7 @@ public class MethodAnalyser extends  Analyser<Void>{
     }
 
     private Void handleStatement(JmmNode jmmNode, List<Report> reports) {
-        StatementAnalyser st = new StatementAnalyser(jmmNode,symbolTable,context);
+        StatementContextAnalyser st = new StatementContextAnalyser(jmmNode,symbolTable,context);
         reports.addAll(st.analyse());
         return null;
     }
