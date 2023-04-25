@@ -357,12 +357,10 @@ public class OllirGenerator implements JmmOptimization {
         else if (typeKind.equals("boolean")) return  ollirCode.append("bool").toString();
         else if (typeKind.equals("STRING")) return ollirCode.append("String").toString();
         else if (typeKind.equals("void")) return ollirCode.append("V").toString();
+        else if (typeKind.equals("Identifier")) typeKind = rootNode.get("type");
 
-        if (typeKind.equals("Identifier")) {
-            typeKind = rootNode.get("type");
-        }
-
-        JmmNode type = rootNode.getChildren().get(0);
+        JmmNode type = rootNode;
+        if (rootNode.getChildren().size() >0) type = rootNode.getChildren().get(0);
 
         if (type.getKind().equals("ArrayType")) {
             ollirCode.append("array.");
@@ -370,6 +368,7 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if(type.hasAttribute("typeName")) typeKind = type.get("typeName");
+        else if (type.getKind().equals("Identifier")) typeKind = type.get("type");
         else if (type.getKind().equals("MethodCalling")) typeKind = scopeVariables.get(rootNode.get("varName"));
         else if (rootNode.getKind().equals("ReturnStatement")) typeKind = type.getKind();
         else if (rootNode.getKind().equals("Assignment")) typeKind = type.getKind();
@@ -384,6 +383,7 @@ public class OllirGenerator implements JmmOptimization {
         else if (typeKind.equals("boolean")) ollirCode.append("bool");
         else if (typeKind.equals("STRING")) ollirCode.append("String");
         else if (typeKind.equals("void")) ollirCode.append("V");
+
         else ollirCode.append(typeKind);
 
 
