@@ -282,8 +282,19 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode.append(", ");
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
             }
+            ollirCode.append(").");
 
-            ollirCode.append(").V;");
+            String assignmentVariable = rootNode.getJmmParent().get("varName");
+
+            boolean isAssignmentVariable =  scopeVariables.containsKey(assignmentVariable);
+            boolean isAttributeVariable =  attributes.containsKey(assignmentVariable);
+
+            if(rootNode.getJmmParent().getKind().equals("Assignment") && isAssignmentVariable)
+                ollirCode.append(scopeVariables.get(assignmentVariable));
+            else if(rootNode.getJmmParent().getKind().equals("Assignment") && isAttributeVariable)
+                ollirCode.append(attributes.get(assignmentVariable));
+            else ollirCode.append("V");
+            ollirCode.append(";");
         }
         else if(isPackage){
 
