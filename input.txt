@@ -1,10 +1,7 @@
-class A extends B {
-    int x;
-    bool y;
+import hello.B;
+class A extends B{
     public static void main(String[] args){
     }
     public boolean bar(int a,String c){
-        int b;
-        List b;
     }
 }
