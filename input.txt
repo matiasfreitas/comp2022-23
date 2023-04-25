@@ -1,20 +1,22 @@
-
-
-// use of class field inside
+import C;
 import B;
+// use of class field inside
 class A extends B {
 
-    int x;
     public static void main(String[] args){
-        //A  a;
-        int y;
-        //a = new A()
-        // Call method that isn't defined in the class but could be in the extended class
-        // a.foo();
-        // using x  but it is static method
-        y = x + 1;
-        //y = "abc";
-
+    }
+    public boolean bar(int a){
+        return false;
+    }
+    public int foo(String a){
+        return 3;
+    }
+    public int bazz(){
+        int[] a;
+        // TODO: FIX THIS
+        // this is not causing error but it should!!!
+        a = new int[this.lara("lara")];
+        return 3;
 
     }
 }

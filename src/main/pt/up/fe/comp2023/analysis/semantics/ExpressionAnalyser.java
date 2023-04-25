@@ -73,6 +73,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
     private Optional<Type> handleNewObject(JmmNode jmmNode, List<Report> reports) {
         String typeName = jmmNode.get("typeName");
+        // TODO: inheritance can play a role here?
         if (symbolTable.isImportedSymbol(typeName) || symbolTable.isThisClassType(typeName)) {
             return Optional.of(new Type(typeName, false));
         }
@@ -81,19 +82,18 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
     }
 
     private Optional<Type> handleNewArray(JmmNode jmmNode, List<Report> reports) {
+        // TODO: checkar que o tipo existe?
         JmmNode typeNode = jmmNode.getJmmChild(0);
         TypeGen typeGen = new TypeGen();
         typeGen.visit(typeNode);
         Type arrayType = typeGen.getType();
-        // TODO: availableType is always true
-        boolean availableType = true;
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
-        if (availableType || indexType.isEmpty()) {
+        if (indexType.isEmpty()) {
             return Optional.empty();
         }
-        if (!indexType.get().getName().equals("int")) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.toString()));
+        if(!JmmBuiltins.typeEqualOrAssumed(indexType.get(),JmmBuiltins.JmmInt)){
+            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             return Optional.empty();
         }
         return Optional.of(new Type(arrayType.getName(), true));

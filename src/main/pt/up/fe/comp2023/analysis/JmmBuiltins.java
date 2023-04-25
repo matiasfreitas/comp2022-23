@@ -27,4 +27,9 @@ public class JmmBuiltins {
         };
         return  Optional.ofNullable(t);
     }
+    public static boolean typeEqualOrAssumed(Type left,Type right){
+        boolean assumed = left.equals(JmmAssumeType) || right.equals(JmmAssumeType);
+        boolean equal = left.equals(right);
+        return assumed || equal;
+    }
 }
