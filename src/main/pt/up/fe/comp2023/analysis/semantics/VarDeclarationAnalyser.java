@@ -11,6 +11,6 @@ public class VarDeclarationAnalyser extends  Analyser<Void>{
 
     @Override
     protected void buildVisitor() {
-        this.setDefaultVisit((a,b)->null);
+
     }
 }

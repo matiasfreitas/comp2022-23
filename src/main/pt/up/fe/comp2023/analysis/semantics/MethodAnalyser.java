@@ -25,10 +25,9 @@ public class MethodAnalyser extends  Analyser<Void>{
 
     @Override
     protected void buildVisitor() {
-        this.setDefaultVisit((a,b)->null);
         this.addVisit("VarDeclaration",this::handleVarDeclaration);
         this.addVisit("Statement",this::handleStatement);
-
+        this.setDefaultVisit(this::visitAllChildren);
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {

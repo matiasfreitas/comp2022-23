@@ -14,8 +14,14 @@ class A extends B {
     public int bazz(){
         int[] a;
         int x;
-        a[1] = this.hello();
-
+        a[1] = "a";
+        if(true){
+            x +1;
+        }
+        else{
+            y +3;
+            y -1 + y;
+        }
 
         return this.hello();
 

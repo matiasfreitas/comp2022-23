@@ -15,11 +15,9 @@ public class SemanticAnalyser extends  Analyser<Void>{
 
     @Override
     protected void buildVisitor() {
-        this.addVisit("ClassDeclaration",this::handleClassDeclaration);
         this.addVisit("ImportDeclaration",this::handleImports);
         this.addVisit("MethodDeclaration",this::handleMethodDeclaration);
-        this.setDefaultVisit((a,b) -> null);
-
+        this.setDefaultVisit(this::visitAllChildren);
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -35,10 +33,4 @@ public class SemanticAnalyser extends  Analyser<Void>{
         //System.out.println("Import Declaration");
         return null;
     }
-
-    private Void handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        //System.out.println("Class Declaration");
-        return null;
-    }
-
 }
