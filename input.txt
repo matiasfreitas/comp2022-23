@@ -13,9 +13,12 @@ class A extends B {
     }
     public int bazz(){
         int[] a;
+        int x;
         // TODO: FIX THIS
         // this is not causing error but it should!!!
         a = new int[this.lara("lara")];
+        x = 3 + this.lara("oi");
+
         return 3;
 
     }

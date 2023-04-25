@@ -47,7 +47,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
         });
-        this.setDefaultVisit((a,b) -> Optional.empty());
+        this.setDefaultVisit((a, b) -> Optional.empty());
     }
 
 
@@ -66,7 +66,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Im checking identifier "+ jmmNode.get("value"));
+        System.out.println("Im checking identifier " + jmmNode.get("value"));
         return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
     }
 
@@ -92,7 +92,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         if (indexType.isEmpty()) {
             return Optional.empty();
         }
-        if(!JmmBuiltins.typeEqualOrAssumed(indexType.get(),JmmBuiltins.JmmInt)){
+        if (!JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
             reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             return Optional.empty();
         }
@@ -109,13 +109,14 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         if (maybeRightType.isPresent() && maybeLeftType.isPresent()) {
             Type rightType = maybeRightType.get();
             Type leftType = maybeLeftType.get();
+            List<Type> types = Arrays.asList(leftType,rightType);
             if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("<")) {
-                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmInt)) {
-                    return Optional.of(leftType);
+                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmInt)) {
+                    return Optional.of(JmmBuiltins.JmmInt);
                 }
             } else if (op.equals("&&")) {
-                if (rightType.equals(leftType) && rightType.equals(JmmBuiltins.JmmBoolean)) {
-                    return Optional.of(leftType);
+                if (JmmBuiltins.typesEqualOrAssumed(types,JmmBuiltins.JmmBoolean)) {
+                    return Optional.of(JmmBuiltins.JmmBoolean);
                 }
             }
             reports.add(this.createReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
