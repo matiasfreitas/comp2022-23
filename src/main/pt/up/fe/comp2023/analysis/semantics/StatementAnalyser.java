@@ -25,28 +25,28 @@ public class StatementAnalyser extends Analyser<Void> {
 
     }
 
-    private Void handleCondition(JmmNode jmmNode,List<Report> reports){
+    private Void handleCondition(JmmNode jmmNode, List<Report> reports) {
         ExpressionAnalyser ex = new ExpressionAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
         Optional<Type> conditionType = ex.getType();
-        if(conditionType.isPresent() && !conditionType.get().getName().equals("boolean")){
-            String message = "Condition expression evaluates to "+ conditionType.get()+ " but should evaluate to boolean";
-            reports.add(this.createReport(jmmNode,message));
+        if (conditionType.isPresent() && !conditionType.get().getName().equals("boolean")) {
+            String message = "Condition expression evaluates to " + conditionType.get() + " but should evaluate to boolean";
+            reports.add(this.createReport(jmmNode, message));
         }
         return null;
     }
 
     private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
         System.out.println("Visiting if statement");
-       JmmNode conditionNode = jmmNode.getJmmChild(0);
-       return this.handleCondition(conditionNode,reports);
+        JmmNode conditionNode = jmmNode.getJmmChild(0);
+        return this.handleCondition(conditionNode, reports);
 
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
         System.out.println("Visiting while loop");
         JmmNode conditionNode = jmmNode.getJmmChild(0);
-        return this.handleCondition(conditionNode,reports);
+        return this.handleCondition(conditionNode, reports);
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
@@ -66,12 +66,19 @@ public class StatementAnalyser extends Analyser<Void> {
             ExpressionAnalyser ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignedType = ex.getType();
-            if (maybeAssignedType.isPresent() && !maybeAssignedType.get().equals(type)) {
-                StringBuilder b = new StringBuilder("Trying to assign ");
-                b.append(maybeAssignedType.get());
-                b.append("To a variable of type ");
-                b.append(type);
-                reports.add(this.createReport(jmmNode, b.toString()));
+            if (maybeAssignedType.isPresent()) {
+                Type assignedType = maybeAssignedType.get();
+                // If the type is imported we assume to be using it correctly
+                if (this.symbolTable.isImportedSymbol(assignedType.getName())) {
+                    return null;
+                }
+                if (!assignedType.equals(type)) {
+                    StringBuilder b = new StringBuilder("Trying to assign ");
+                    b.append(assignedType);
+                    b.append("To a variable of type ");
+                    b.append(type);
+                    reports.add(this.createReport(jmmNode, b.toString()));
+                }
             }
         }
         return null;

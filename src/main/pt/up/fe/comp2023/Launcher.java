@@ -55,6 +55,7 @@ public class Launcher {
         for(Report r : l){
             System.out.println(r.getMessage());
         }
+        System.out.println(rootNode.toTree());
 
 
 

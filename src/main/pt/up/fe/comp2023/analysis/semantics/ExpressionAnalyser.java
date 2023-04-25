@@ -90,7 +90,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         if (availableType || indexType.isEmpty()) {
             return Optional.empty();
         }
-        if (indexType.get().getName().equals("int")) {
+        if (!indexType.get().getName().equals("int")) {
             reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.toString()));
             return Optional.empty();
         }
