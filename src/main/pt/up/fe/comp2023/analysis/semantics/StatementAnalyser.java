@@ -61,6 +61,7 @@ public class StatementAnalyser extends Analyser<Void> {
         //System.out.println("Visiting assignment statement");
         String varName = jmmNode.get("varName");
         Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
+        // TODO: what about inheritance
         if (maybeType.isPresent()) {
             Type type = maybeType.get();
             JmmNode expressionNode = jmmNode.getJmmChild(0);
@@ -73,7 +74,7 @@ public class StatementAnalyser extends Analyser<Void> {
                 if (this.symbolTable.isImportedSymbol(assignedType.getName())) {
                     return null;
                 }
-                if (!assignedType.equals(type)) {
+                if (!JmmBuiltins.typeEqualOrAssumed(type,assignedType)) {
                     boolean thisClass = this.symbolTable.isThisClassType(assignedType.getName());
                     String thisClassSuper = this.symbolTable.getSuper();
                     if (thisClass && thisClassSuper != null && thisClassSuper.equals(type.getName())) {
@@ -111,11 +112,12 @@ public class StatementAnalyser extends Analyser<Void> {
             ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignType = ex.getType();
-            if (maybeAssignType.isPresent() && !maybeAssignType.get().getName().equals(arrayType.getName())) {
+            Type acceptsType = new Type(arrayType.getName(),false);
+            if (maybeAssignType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(acceptsType,maybeAssignType.get())) {
                 StringBuilder b = new StringBuilder("Trying to assign ");
                 b.append(maybeAssignType.get());
                 b.append("To an array of ");
-                b.append(arrayType);
+                b.append(acceptsType);
                 reports.add(this.createReport(jmmNode, b.toString()));
             }
         }
@@ -131,7 +133,7 @@ public class StatementAnalyser extends Analyser<Void> {
         String thisMethod = this.context.getMethodSignature();
         //System.out.println("We are returning from " + thisMethod);
         Type methodReturnType = symbolTable.getReturnType(thisMethod);
-        if (exType.isPresent() && !methodReturnType.equals(exType.get())) {
+        if (exType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(methodReturnType,exType.get())) {
             StringBuilder error = new StringBuilder("Method Returns ");
             error.append(methodReturnType)
                     .append(" But ")
