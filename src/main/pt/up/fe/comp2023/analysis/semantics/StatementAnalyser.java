@@ -112,11 +112,12 @@ public class StatementAnalyser extends Analyser<Void> {
             ex = new ExpressionAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignType = ex.getType();
-            if (maybeAssignType.isPresent() && !maybeAssignType.get().getName().equals(arrayType.getName())) {
+            Type acceptsType = new Type(arrayType.getName(),false);
+            if (maybeAssignType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(acceptsType,maybeAssignType.get())) {
                 StringBuilder b = new StringBuilder("Trying to assign ");
                 b.append(maybeAssignType.get());
                 b.append("To an array of ");
-                b.append(arrayType);
+                b.append(acceptsType);
                 reports.add(this.createReport(jmmNode, b.toString()));
             }
         }

@@ -14,7 +14,7 @@ class A extends B {
     public int bazz(){
         int[] a;
         int x;
-        x = this.hello();
+        a[1] = this.hello();
 
 
         return 3;
