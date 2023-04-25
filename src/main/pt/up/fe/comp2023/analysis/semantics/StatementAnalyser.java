@@ -133,7 +133,7 @@ public class StatementAnalyser extends Analyser<Void> {
         String thisMethod = this.context.getMethodSignature();
         //System.out.println("We are returning from " + thisMethod);
         Type methodReturnType = symbolTable.getReturnType(thisMethod);
-        if (exType.isPresent() && !methodReturnType.equals(exType.get())) {
+        if (exType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(methodReturnType,exType.get())) {
             StringBuilder error = new StringBuilder("Method Returns ");
             error.append(methodReturnType)
                     .append(" But ")
