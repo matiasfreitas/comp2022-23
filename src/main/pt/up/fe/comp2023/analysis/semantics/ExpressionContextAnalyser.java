@@ -150,7 +150,9 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                     return Optional.ofNullable(f.getType());
                 }
             }
-            // TODO:  Retornar Erro Class não tem esse methodo
+            // TODO: check visibility
+            reports.add(this.createReport(jmmNode,"Attribute `" + attributeName + "` is not a valid attribute"));
+
             return Optional.empty();
         } else {
             // TODO:  Verificar que object é um import
