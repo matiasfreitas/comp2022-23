@@ -44,10 +44,10 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         map.put("Char", this::handleLiteral);
         map.put("String", this::handleLiteral);
 
+        this.setDefaultVisit(this::visitAllChildren);
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
         });
-        this.setDefaultVisit((a, b) -> Optional.empty());
     }
 
 

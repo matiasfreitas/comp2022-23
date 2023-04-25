@@ -2,6 +2,7 @@ package pt.up.fe.comp2023.analysis.semantics;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
@@ -13,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
+public abstract class Analyser<T> extends AJmmVisitor<List<Report>, T> {
     protected JmmSymbolTable symbolTable;
     protected JmmNode root;
 
@@ -23,10 +24,6 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
         this.root = root;
         this.symbolTable = symbolTable;
         this.context = context;
-        this.setDefaultVisit((a, b) -> {
-                    return null;
-                }
-        );
     }
 
     public List<Report> analyse() {

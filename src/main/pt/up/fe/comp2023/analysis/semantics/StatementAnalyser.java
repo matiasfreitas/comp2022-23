@@ -23,6 +23,7 @@ public class StatementAnalyser extends Analyser<Void> {
         this.addVisit("SingleStatement", this::handleSingleStatement);
         this.addVisit("WhileLoop", this::handleWhileLoop);
         this.addVisit("IfStatement", this::handleIfStatement);
+        this.setDefaultVisit(this::visitAllChildren);
 
     }
 
@@ -40,14 +41,19 @@ public class StatementAnalyser extends Analyser<Void> {
     private Void handleIfStatement(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Visiting if statement");
         JmmNode conditionNode = jmmNode.getJmmChild(0);
-        return this.handleCondition(conditionNode, reports);
-
+        this.handleCondition(conditionNode, reports);
+        // Handle if
+        this.visit(jmmNode.getJmmChild(1),reports);
+        // Handle  else
+        return this.visit(jmmNode.getJmmChild(2),reports);
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Visiting while loop");
         JmmNode conditionNode = jmmNode.getJmmChild(0);
-        return this.handleCondition(conditionNode, reports);
+        this.handleCondition(conditionNode, reports);
+        // Handle while scope
+        return this.visit(jmmNode.getJmmChild(1),reports);
     }
 
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
