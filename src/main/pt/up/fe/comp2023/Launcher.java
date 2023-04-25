@@ -3,11 +3,14 @@ package pt.up.fe.comp2023;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.Analyser;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
@@ -45,12 +48,16 @@ public class Launcher {
         System.out.println(rootNode.toTree());
 
         // Analysis stage
-        /*
         Analyser analyser = new Analyser();
+        JmmSemanticsResult s  = analyser.semanticAnalysis(parserResult);
+        List<Report> l = s.getReports();
+        System.out.println("Reports:");
+        for(Report r : l){
+            System.out.println(r.getMessage());
+        }
+        System.out.println(rootNode.toTree());
 
-        analyser.semanticAnalysis(parserResult);
 
-         */
 
 
 

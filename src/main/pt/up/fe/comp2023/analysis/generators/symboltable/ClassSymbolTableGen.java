@@ -51,9 +51,10 @@ public class ClassSymbolTableGen extends AJmmVisitor<Void, Void> {
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, Void unused) {
-        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen(this.classTable);
+        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen();
         methodTableGen.visit(jmmNode);
         MethodSymbolTable methodSymbolTable = methodTableGen.getMethodTable();
+        methodSymbolTable.setParentClass(this.classTable);
         this.classTable.addMethod(methodSymbolTable);
         return null;
     }

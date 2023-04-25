@@ -81,6 +81,9 @@ public class JmmSymbolTable implements SymbolTable {
     @Override
     public Type getReturnType(String s) {
         MethodSymbolTable m = methods.get(s);
+        if (m == null) {
+            return  null;
+        }
         return m.getReturnType();
 
     }
@@ -88,12 +91,18 @@ public class JmmSymbolTable implements SymbolTable {
     @Override
     public List<Symbol> getParameters(String s) {
         MethodSymbolTable m = methods.get(s);
+        if(m == null){
+            return  null;
+        }
         return m.getParameters();
     }
 
     @Override
     public List<Symbol> getLocalVariables(String s) {
         MethodSymbolTable m = methods.get(s);
+        if(m == null){
+            return  null;
+        }
         ScopeSymbolTable mBody = m.getBodyScope();
         return mBody.flatten();
     }
