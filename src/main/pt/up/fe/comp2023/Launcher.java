@@ -51,17 +51,11 @@ public class Launcher {
         Analyser analyser = new Analyser();
         JmmSemanticsResult s  = analyser.semanticAnalysis(parserResult);
         List<Report> l = s.getReports();
+        //System.out.println(rootNode.toTree());
         System.out.println("Reports:");
         for(Report r : l){
-            System.out.println(r.getMessage());
+            System.out.println(r.toString());
         }
-        System.out.println(rootNode.toTree());
-
-
-
-
-
-
         // ... add remaining stages
     }
 
