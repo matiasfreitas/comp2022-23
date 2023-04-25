@@ -47,12 +47,13 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
         map.forEach((k, v) -> {
             this.addVisit(k, this.assignNodeType(v));
         });
+        this.setDefaultVisit((a,b) -> Optional.empty());
     }
 
 
     private BiFunction<JmmNode, List<Report>, Optional<Type>> assignNodeType(BiFunction<JmmNode, List<Report>, Optional<Type>> function) {
         return (JmmNode jmmNode, List<Report> reports) -> {
-            System.out.println("Node " + jmmNode.getKind());
+            //System.out.println("Node " + jmmNode.getKind());
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if (maybeT.isPresent()) {
                 Type t = maybeT.get();
@@ -65,6 +66,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("Im checking identifier "+ jmmNode.get("value"));
         return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
     }
 
@@ -124,7 +126,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
     private Optional<Type> handleSingleOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
-        System.out.println(jmmNode.getAttributes());
+        //System.out.println(jmmNode.getAttributes());
         Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
         if (maybeT.isPresent()) {
             Type t = maybeT.get();
@@ -184,7 +186,7 @@ public class ExpressionAnalyser extends Analyser<Optional<Type>> {
 
         }
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
-        System.out.println(signature);
+        //System.out.println(signature);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
             // The class we are defining does not contain that method

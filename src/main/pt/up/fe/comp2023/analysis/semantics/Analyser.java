@@ -42,35 +42,57 @@ public abstract class Analyser<T> extends PostorderJmmVisitor<List<Report>, T> {
 
     }
 
-    private Optional<Type> checkUpperScopes(String identifier) {
-        Optional<Type> classField = symbolTable.getFieldTry(identifier);
-        if (classField.isEmpty()) {
-            if (symbolTable.isImportedSymbol(identifier)) {
-                return Optional.of(new Type(identifier, false));
-            }
+    private Optional<Type> checkClassScope(String identifier) {
+        return symbolTable.getFieldTry(identifier);
+
+    }
+
+    private Optional<Type> checkImports(String identifier) {
+        if (symbolTable.isImportedSymbol(identifier)) {
+            return Optional.of(new Type(identifier, false));
         }
-        return classField;
+        return Optional.empty();
+    }
+
+    private Optional<Type> checkUpperScopes(String identifier) {
+        Optional<Type> t = checkClassScope(identifier);
+        if (t.isEmpty())
+            t = checkImports(identifier);
+        return t;
+
     }
 
     public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
-        Optional<Type> t = Optional.empty();
+        Optional<Type> t;
         if (context.isClassContext()) {
             t = checkUpperScopes(identifier);
         }
         // Method context
         else {
             String currentMethod = context.getMethodSignature();
-            for (Symbol s : symbolTable.getParameters(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
             for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
                 if (s.getName().equals(identifier)) {
                     return Optional.ofNullable(s.getType());
                 }
             }
-            t = checkUpperScopes(identifier);
+            for (Symbol s : symbolTable.getParameters(currentMethod)) {
+                if (s.getName().equals(identifier)) {
+                    return Optional.ofNullable(s.getType());
+                }
+            }
+            if (symbolTable.isStaticMethod(currentMethod)) {
+                // Check statics?
+                t = checkImports(identifier);
+                if (t.isEmpty()) {
+                    Optional<Type> accessingField = checkClassScope(identifier);
+                    if (accessingField.isPresent()) {
+                        reports.add(this.createReport(jmmNode, "Trying to acess non static field "+ identifier+" in static method"));
+                        return t;
+                    }
+                }
+            } else {
+                t = checkUpperScopes(identifier);
+            }
         }
         if (t.isEmpty()) {
             reports.add(this.createReport(jmmNode, "Undefined Identifier"));
