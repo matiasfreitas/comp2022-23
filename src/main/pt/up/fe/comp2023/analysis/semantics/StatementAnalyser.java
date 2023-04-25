@@ -73,6 +73,11 @@ public class StatementAnalyser extends Analyser<Void> {
                     return null;
                 }
                 if (!assignedType.equals(type)) {
+                    boolean thisClass = this.symbolTable.isThisClassType(assignedType.getName());
+                    String thisClassSuper = this.symbolTable.getSuper();
+                    if (thisClass && thisClassSuper != null && thisClassSuper.equals(type.getName())) {
+                        return null;
+                    }
                     StringBuilder b = new StringBuilder("Trying to assign ");
                     b.append(assignedType);
                     b.append("To a variable of type ");
