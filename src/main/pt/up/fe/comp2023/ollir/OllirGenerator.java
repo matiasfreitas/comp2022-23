@@ -128,6 +128,7 @@ public class OllirGenerator implements JmmOptimization {
         //Assignments for variables
         else if (rootNode.getKind().equals("Assignment")) {
             ollirCode = dealWithAssignments(rootNode, ollirCode, scopeVariables);
+            return ollirCode.toString();
         }
 
         //Return Statement
@@ -294,7 +295,7 @@ public class OllirGenerator implements JmmOptimization {
             else if(rootNode.getJmmParent().getKind().equals("Assignment") && isAttributeVariable)
                 ollirCode.append(attributes.get(assignmentVariable));
             else ollirCode.append("V");
-            ollirCode.append(";");
+            ollirCode.append(";\n");
         }
         else if(isPackage){
 
@@ -312,7 +313,7 @@ public class OllirGenerator implements JmmOptimization {
 
             }
 
-            ollirCode.append(").V;");
+            ollirCode.append(").V;\n");
         }
         return ollirCode;
     }
@@ -495,7 +496,7 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode.append(children.get("varName"));
                 }
                 else if(children.getKind().equals("MethodCalling")){
-
+                    ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
                 }
 
             }
@@ -530,6 +531,10 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".");
                     ollirCode.append(scopeVariables.get(children.get("value")));
+                }
+                else if(children.getKind().equals("MethodCalling")){
+                    ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
+                    return ollirCode;
                 }
 
             }
