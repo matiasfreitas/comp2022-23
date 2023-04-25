@@ -6,16 +6,18 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
+import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 
 import java.util.List;
 import java.util.Optional;
 
-public class ClassSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
+public class ClassSymbolTableGen extends Analyser<Void> {
     ClassSymbolTable classTable;
 
-    public ClassSymbolTableGen() {
+    public ClassSymbolTableGen(JmmNode root) {
+        super(root);
         classTable = new ClassSymbolTable();
     }
 
@@ -24,13 +26,6 @@ public class ClassSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
         addVisit("ClassDeclaration", this::handleClassDeclaration);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("ClassVarDeclaration", this::handleVarClassDeclaration);
-
-    }
-
-    protected Report createReport(JmmNode node, String message) {
-        int line = Integer.parseInt(node.get("lineStart"));
-        int column = Integer.parseInt(node.get("colStart"));
-        return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
     }
 
@@ -70,8 +65,9 @@ public class ClassSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
-        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen();
-        methodTableGen.visit(jmmNode,reports);
+        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen(jmmNode);
+        List<Report> methodReports = methodTableGen.analyse();
+        reports.addAll(methodReports);
         MethodSymbolTable methodSymbolTable = methodTableGen.getMethodTable();
         methodSymbolTable.setParentClass(this.classTable);
         // TODO: method redefinition?

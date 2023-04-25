@@ -15,9 +15,8 @@ public class MethodContextAnalyser extends ContextAnalyser<Void> {
     public MethodContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root, symbolTable, context);
         // All of this will be done in the MethodTable Generator
-        MethodSymbolTableGen m = new MethodSymbolTableGen();
-        List<Report> throwAway = new LinkedList<>();
-        m.visit(root,throwAway);
+        MethodSymbolTableGen m = new MethodSymbolTableGen(root);
+        List<Report> throwAway = m.analyse();
         this.methodTable= m.getMethodTable();
         String methodRepresentaion =this.methodTable.getStringRepresentation();
         //System.out.println("Method Analyser of method with following representation: "+methodRepresentaion);

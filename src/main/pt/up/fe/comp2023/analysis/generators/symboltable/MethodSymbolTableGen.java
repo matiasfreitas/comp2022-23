@@ -5,15 +5,18 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
+import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
+import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
 import java.util.List;
 
-public class MethodSymbolTableGen extends AJmmVisitor<List<Report>,Void> {
+public class MethodSymbolTableGen extends Analyser<Void> {
     MethodSymbolTable thisMethod;
-    public  MethodSymbolTableGen(){
+    public  MethodSymbolTableGen(JmmNode root){
+        super(root);
         this.thisMethod = new MethodSymbolTable();
     }
     @Override
@@ -36,8 +39,9 @@ public class MethodSymbolTableGen extends AJmmVisitor<List<Report>,Void> {
 
     private Void handleMethodBody(JmmNode jmmNode, List<Report>reports) {
         //System.out.println("Handling Method Body");
-        ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(null);
-        scopeTableGen.visit(jmmNode,reports);
+        ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(jmmNode,null);
+        List<Report> scopeReports = scopeTableGen.analyse();
+        reports.addAll(scopeReports);
         ScopeSymbolTable methodScope = scopeTableGen.getScope();
         thisMethod.setMethodScope(methodScope);
         return null;
