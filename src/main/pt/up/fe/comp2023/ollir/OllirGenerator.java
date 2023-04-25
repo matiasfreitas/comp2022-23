@@ -250,9 +250,24 @@ public class OllirGenerator implements JmmOptimization {
             String> scopeVariables) {
 
         ollirCode.append(newLine());
-        String packages = new StringBuilder().append(rootNode.getChildren().get(0).get("value")).toString();
 
-        if(semanticsResult.getSymbolTable().getMethods().stream().anyMatch(s -> s.equals(rootNode.get("methodName")))) {
+
+        //Class Method verification
+        List<String> methods = semanticsResult.getSymbolTable().getMethods();
+        String methodName = rootNode.get("methodName");
+        boolean isClassMethod = methods.stream().anyMatch(s -> s.equals(methodName));
+
+        //Variable verification
+        String variable = rootNode.getChildren().get(0).get("value");
+        boolean isScopedVariable = scopeVariables.containsKey(variable);
+        boolean isAttribute = attributes.containsKey(variable);
+
+        //Package verification
+        String thisPackage = rootNode.getChildren().get(0).get("value");
+        List<String> packages = semanticsResult.getSymbolTable().getImports();
+        boolean isPackage = packages.stream().anyMatch(s -> s.equals(thisPackage));
+
+        if(isClassMethod || isScopedVariable || isAttribute) {
             ollirCode.append("invokevirtual(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(".");
@@ -269,8 +284,7 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(".)");
             ollirCode.append(semanticsResult.getSymbolTable().getReturnTypeTry(rootNode.get("methodName")));
         }
-        else if(rootNode.getChildren().get(0).hasAttribute("value") &&
-                semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
+        else if(isPackage){
 
             ollirCode.append("invokestatic(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
