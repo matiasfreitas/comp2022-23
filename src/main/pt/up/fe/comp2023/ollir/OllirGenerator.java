@@ -82,131 +82,164 @@ public class OllirGenerator implements JmmOptimization {
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
 
+        //Classes
         if (rootNode.getKind().equals("ClassDeclaration")) {
-            nested++;
-            ollirCode.append(rootNode.get("className"));
-            if (rootNode.hasAttribute("extendsName")) {
-                ollirCode.append(" extends ");
-                ollirCode.append(rootNode.get("extendsName"));
-            }
-            ollirCode.append(" { \n\n");
-            ollirCode.append(newLine());
+            dealWithClassDeclaration(rootNode, ollirCode);
         }
 
+        //Import
         else if (rootNode.getKind().equals("ImportDeclaration")) {
-            ollirCode.append("import ");
-            ollirCode.append(String.join( ".", rootNode.get("moduleName")
-                    .replace("[", "").replace("]", "")
-                    .replace(", ", ".")));
-
-            ollirCode.append(";\n");
+            dealWithImportDeclaration(rootNode, ollirCode);
         }
 
         //Attributes
         else if (rootNode.getKind().equals("ClassVarDeclaration")) {
-
-            ollirCode.append(newLine());
-            ollirCode.append(".field ");
-            JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
-            attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
-            ollirCode = dealWithVar(children, ollirCode, attributes);
-            return ollirCode.append(";\n").toString();
+            return dealWithClassVarDeclaration(rootNode, ollirCode, scopeVariables);
         }
 
         //local variables
         else if (rootNode.getKind().equals("VarDeclaration")) {
-            ollirCode.append(newLine());
-            JmmNode children = rootNode.getChildren().get(0);
-            ollirCode = dealWithVar(children, ollirCode, scopeVariables);
-            String type = dealWithType(children.getChildren().get(0), scopeVariables);
-            if (!type.equals("i32") && !type.equals("String") && !type.equals("bool")){
-                ollirCode.append(" = ");
-                ollirCode.append("new(");
-                ollirCode.append(type);
-                ollirCode.append(").");
-                ollirCode.append(type);
-
-            }
+            ollirCode = dealWithVarDeclatarion(rootNode, ollirCode, scopeVariables);
         }
-        else if (rootNode.getKind().equals("MethodDeclaration")) {
 
+        //Class Methods
+        //Improve Constructor part in the next phase
+        else if (rootNode.getKind().equals("MethodDeclaration")) {
             if(dontHasConstructor){
                 dontHasConstructor = false;
                 ollirCode = createConstructors(ollirCode, rootNode);
             }
 
             ollirCode = dealMethodDeclaration(rootNode, ollirCode);
+
             return ollirCode.toString();
         }
+
+        //Binary operations
         else if (rootNode.getKind().equals("BinaryOp")) {
             ollirCode.append(dealWithOperation(rootNode, ollirCode).toString());
         }
+
+        //Methods Calls
         else if (rootNode.getKind().equals("MethodCalling")) {
             ollirCode = dealWithMethodCalling(rootNode, ollirCode, scopeVariables);
         }
+
+        //Assignments for variables
         else if (rootNode.getKind().equals("Assignment")) {
             ollirCode = dealWithAssignments(rootNode, ollirCode, scopeVariables);
         }
 
+        //Return Statement
         else if(rootNode.getKind().equals("ReturnStatement")){
-            if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
-                    !rootNode.getChildren().get(0).hasAttribute("value")){
-                ollirCode.append(newLine());
-                ollirCode.append("returnVariable ");
-                for (JmmNode children:  rootNode.getChildren()) {
-                    ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
-                }
-                ollirCode.append(newLine());
-                ollirCode.append("ret.");
-                ollirCode.append(returnType);
-                ollirCode.append(" returnVariable.");
-                ollirCode.append(returnType);
-                ollirCode.append(";\n");
-                return ollirCode.toString();
-            }
-            else{
-                ollirCode.append(newLine());
-                ollirCode.append("ret.");
-                ollirCode.append(returnType);
-                ollirCode.append(" ");
-                if (rootNode.getChildren().get(0).hasAttribute("value")){
-                    ollirCode.append(rootNode.getChildren().get(0).get("value"));
-                }
-                else if (rootNode.getChildren().get(0).hasAttribute("varName")){
-                    ollirCode.append(rootNode.getChildren().get(0).get("varName"));
-                }
-                ollirCode.append(".");
-                ollirCode.append(returnType);
-                ollirCode.append(";\n");
-                return ollirCode.toString();
-            }
-
-
+            return dealWithReturnStatement(rootNode, ollirCode, scopeVariables, returnType);
         }
 
-
-
+        //Create code for children
         for (JmmNode childrenNode : rootNode.getChildren()) {
-
-
             ollirCode.append(iterateOverCodeScope(childrenNode, new StringBuilder(), scopeVariables, returnType));
         }
 
+        //Finish Class Declaration
         if (rootNode.getKind().equals("ClassDeclaration")) {
-
             nested--;
             ollirCode.append(newLine());
             ollirCode.append(" }\n");
         }
+
+        //Finish Var Declaration
         else if (rootNode.getKind().equals("VarDeclaration")) {
             ollirCode.append(";\n");
         }
+
+        //Finish Return Statement
         else if (rootNode.getKind().equals("ReturnStatement")) {
             ollirCode.append(";\n");
         }
 
 
         return ollirCode.toString();
+    }
+
+    private String dealWithClassVarDeclaration(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
+
+        ollirCode.append(newLine());
+        ollirCode.append(".field ");
+        JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
+        attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
+        ollirCode = dealWithVar(children, ollirCode, attributes);
+
+        return ollirCode.append(";\n").toString();
+    }
+
+    private void dealWithImportDeclaration(JmmNode rootNode, StringBuilder ollirCode) {
+        ollirCode.append("import ");
+        ollirCode.append(String.join( ".", rootNode.get("moduleName")
+                .replace("[", "").replace("]", "")
+                .replace(", ", ".")));
+
+        ollirCode.append(";\n");
+    }
+
+    private StringBuilder dealWithVarDeclatarion(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
+        ollirCode.append(newLine());
+        JmmNode children = rootNode.getChildren().get(0);
+        ollirCode = dealWithVar(children, ollirCode, scopeVariables);
+        String type = dealWithType(children.getChildren().get(0), scopeVariables);
+        if (!type.equals("i32") && !type.equals("String") && !type.equals("bool")){
+            ollirCode.append(" = ");
+            ollirCode.append("new(");
+            ollirCode.append(type);
+            ollirCode.append(").");
+            ollirCode.append(type);
+
+        }
+        return ollirCode;
+    }
+
+    private String dealWithReturnStatement(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
+        if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
+                !rootNode.getChildren().get(0).hasAttribute("value")){
+            ollirCode.append(newLine());
+            ollirCode.append("returnVariable ");
+            for (JmmNode children:  rootNode.getChildren()) {
+                ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
+            }
+            ollirCode.append(newLine());
+            ollirCode.append("ret.");
+            ollirCode.append(returnType);
+            ollirCode.append(" returnVariable.");
+            ollirCode.append(returnType);
+            ollirCode.append(";\n");
+            return ollirCode.toString();
+        }
+        else{
+            ollirCode.append(newLine());
+            ollirCode.append("ret.");
+            ollirCode.append(returnType);
+            ollirCode.append(" ");
+            if (rootNode.getChildren().get(0).hasAttribute("value")){
+                ollirCode.append(rootNode.getChildren().get(0).get("value"));
+            }
+            else if (rootNode.getChildren().get(0).hasAttribute("varName")){
+                ollirCode.append(rootNode.getChildren().get(0).get("varName"));
+            }
+            ollirCode.append(".");
+            ollirCode.append(returnType);
+            ollirCode.append(";\n");
+            return ollirCode.toString();
+        }
+    }
+
+    private void dealWithClassDeclaration(JmmNode rootNode, StringBuilder ollirCode) {
+        nested++;
+        ollirCode.append(rootNode.get("className"));
+        if (rootNode.hasAttribute("extendsName")) {
+            ollirCode.append(" extends ");
+            ollirCode.append(rootNode.get("extendsName"));
+        }
+        ollirCode.append(" { \n\n");
+        ollirCode.append(newLine());
     }
 
     private StringBuilder dealWithMethodCalling(JmmNode rootNode, StringBuilder ollirCode, HashMap<String,
