@@ -1,29 +1,11 @@
-import C;
-import B;
-// use of class field inside
 class A extends B {
-
+    int x;
+    X x;
     public static void main(String[] args){
     }
     public boolean bar(int a){
+        C a;
+        a = new C();
         return false;
-    }
-    public int foo(String a){
-        return 3;
-    }
-    public int bazz(){
-        int[] a;
-        int x;
-        a[1] = "a";
-        if(true){
-            x +1;
-        }
-        else{
-            y +3;
-            y -1 + y;
-        }
-
-        return this.hello();
-
     }
 }
