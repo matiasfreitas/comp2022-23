@@ -1,12 +1,10 @@
 class A extends B {
     int x;
+    bool y;
     public static void main(String[] args){
     }
-    public boolean bar(int a){
-        C a;
-        int x;
-        bool x;
-        a = new C();
-        return false;
+    public boolean bar(int a,String c){
+        int b;
+        List b;
     }
 }

@@ -8,12 +8,15 @@ import java.util.*;
 
 public class JmmSymbolTable implements SymbolTable {
     List<String> imports;
+
+    List<Type> importTypes;
     ClassSymbolTable classSymbolTable;
     Map<String, MethodSymbolTable> methods;
     List<String> methodNames;
 
     public JmmSymbolTable(List<String> imports, ClassSymbolTable classSymbolTable) {
         this.imports = imports;
+        this.importTypes = getImportTypes(imports);
         this.classSymbolTable = classSymbolTable;
         methodNames = new LinkedList<>();
         methods = new HashMap<>();
@@ -23,7 +26,15 @@ public class JmmSymbolTable implements SymbolTable {
             methods.put(mRepr, m);
         }
     }
-
+    private List<Type> getImportTypes(List<String> imports){
+       List<Type> types = new ArrayList<>();
+       for(String i : imports){
+           String[] parts = i.split("[.]");
+           String typeName = parts[parts.length -1];
+           types.add(new Type(typeName,false));
+        }
+        return types;
+    }
 
     public Optional<Type> getFieldTry(String t) {
         for (Symbol s : this.getFields()) {
@@ -53,6 +64,9 @@ public class JmmSymbolTable implements SymbolTable {
         return false;
     }
 
+    public List<Type> getImportTypes(){
+        return  this.importTypes;
+    }
     @Override
     public List<String> getImports() {
         return imports;
