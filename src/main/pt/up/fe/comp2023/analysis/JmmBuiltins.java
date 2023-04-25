@@ -3,6 +3,8 @@ package pt.up.fe.comp2023.analysis;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +18,9 @@ public class JmmBuiltins {
 
     public static Type JmmAssumeType = new Type("JmmBuiltinAssumeType",false);
 
+    public static List<Type> builtinTypes(){
+        return Arrays.asList(JmmInt,JmmChar,JmmString,JmmBoolean);
+    }
 
     public static Optional<Type> fromJmmNode(JmmNode node){
         String kind = node.getKind();

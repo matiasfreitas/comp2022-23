@@ -1,7 +1,9 @@
 package pt.up.fe.comp2023.analysis.semantics;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.symboltable.MethodSymbolTableGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
@@ -17,25 +19,22 @@ public class MethodContextAnalyser extends ContextAnalyser<Void> {
         // All of this will be done in the MethodTable Generator
         MethodSymbolTableGen m = new MethodSymbolTableGen(root);
         List<Report> throwAway = m.analyse();
-        this.methodTable= m.getMethodTable();
-        String methodRepresentaion =this.methodTable.getStringRepresentation();
-        //System.out.println("Method Analyser of method with following representation: "+methodRepresentaion);
+        this.methodTable = m.getMethodTable();
+        String methodRepresentaion = this.methodTable.getStringRepresentation();
+        System.out.println("Method Analyser of method with following representation: " + methodRepresentaion);
         context.setMethodContext(methodRepresentaion);
     }
 
     @Override
     protected void buildVisitor() {
-        this.addVisit("VarDeclaration",this::handleVarDeclaration);
-        this.addVisit("Statement",this::handleStatement);
+        this.addVisit("VarTypeSpecification", this::handleVarDeclaration);
+        this.addVisit("Statement", this::handleStatement);
         this.setDefaultVisit(this::visitAllChildren);
     }
 
-    private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
-        return null;
-    }
 
     private Void handleStatement(JmmNode jmmNode, List<Report> reports) {
-        StatementContextAnalyser st = new StatementContextAnalyser(jmmNode,symbolTable,context);
+        StatementContextAnalyser st = new StatementContextAnalyser(jmmNode, symbolTable, context);
         reports.addAll(st.analyse());
         return null;
     }

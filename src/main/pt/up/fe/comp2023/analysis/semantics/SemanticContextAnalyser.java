@@ -15,6 +15,7 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
     @Override
     protected void buildVisitor() {
         this.addVisit("ImportDeclaration",this::handleImports);
+        this.addVisit("VarTypeSpecification", this::handleVarDeclaration);
         this.addVisit("MethodDeclaration",this::handleMethodDeclaration);
         this.setDefaultVisit(this::visitAllChildren);
     }

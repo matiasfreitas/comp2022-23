@@ -6,8 +6,11 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +20,18 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
 
     protected UsageContext context;
 
+    protected List<Type> availableTypes;
+
     public ContextAnalyser(JmmNode root, JmmSymbolTable symbolTable, UsageContext context) {
         super(root);
         this.symbolTable = symbolTable;
         this.context = context;
+        this.availableTypes = new ArrayList<>();
+        availableTypes.addAll(JmmBuiltins.builtinTypes());
+        availableTypes.addAll(symbolTable.getImportTypes());
+        availableTypes.add(new Type(symbolTable.getClassName(),false));
+
+
     }
 
 
@@ -44,6 +55,28 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
 
     }
 
+    protected boolean validType(Type t){
+        Type compareT = t;
+        if (t.isArray()){
+            compareT = new Type(t.getName(),false);
+        }
+        for(Type available:availableTypes){
+            if(compareT.equals(available)){
+                return  true;
+            }
+        }
+        return false;
+    }
+
+    protected Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
+        SymbolGen sg = new SymbolGen();
+        sg.visit(jmmNode);
+        Symbol s = sg.getSymbol();
+        if (!this.validType(s.getType())) {
+            reports.add(createReport(jmmNode, "Type " + s.getType() + " is not an available type"));
+        }
+        return null;
+    }
     public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
         Optional<Type> t;
         if (context.isClassContext()) {
