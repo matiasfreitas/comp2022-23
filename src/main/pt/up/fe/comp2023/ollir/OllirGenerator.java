@@ -253,7 +253,6 @@ public class OllirGenerator implements JmmOptimization {
     private StringBuilder dealWithMethodCalling(JmmNode rootNode, StringBuilder ollirCode, HashMap<String,
             String> scopeVariables) {
 
-        ollirCode.append(newLine());
 
 
 
