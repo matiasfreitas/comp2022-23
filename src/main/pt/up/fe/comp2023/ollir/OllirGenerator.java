@@ -227,16 +227,19 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
 
             }
-            ollirCode.append(").V;");
+            ollirCode.append(".)");
+            ollirCode.append(semanticsResult.getSymbolTable().getReturnTypeTry(rootNode.get("methodName")));
         }
         else if(rootNode.getChildren().get(0).hasAttribute("value") &&
                 semanticsResult.getSymbolTable().getImports().stream().anyMatch(s -> s.equals(packages))){
             ollirCode.append("invokestatic(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(", \"");
+            ollirCode.append(rootNode.getChildren().get(1).get("value"));
+            ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
             ollirCode.append("\"");
-            for (int i = 1; i < rootNode.getChildren().size(); i++) {
+            for (int i = 2; i < rootNode.getChildren().size(); i++) {
                 ollirCode.append(", ");
 
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
