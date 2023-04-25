@@ -1,10 +1,11 @@
 class A extends B {
     int x;
-    X x;
     public static void main(String[] args){
     }
     public boolean bar(int a){
         C a;
+        int x;
+        bool x;
         a = new C();
         return false;
     }

@@ -37,6 +37,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
     private Void handleVarClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Looking at a Class Var Declaration");
         // TODO: Handle Visibility
+        // TODO: Is the type of the symbol available
         String visibility = "private";
         if (jmmNode.hasAttribute("visibility")) {
             visibility = jmmNode.get("visibility");
@@ -70,7 +71,7 @@ public class ClassSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
         MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen();
-        methodTableGen.visit(jmmNode);
+        methodTableGen.visit(jmmNode,reports);
         MethodSymbolTable methodSymbolTable = methodTableGen.getMethodTable();
         methodSymbolTable.setParentClass(this.classTable);
         // TODO: method redefinition?
