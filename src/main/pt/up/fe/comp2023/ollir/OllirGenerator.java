@@ -307,6 +307,7 @@ public class OllirGenerator implements JmmOptimization {
             for (int i = 1; i < rootNode.getChildren().size(); i++) {
                 ollirCode.append(", ");
 
+
                 ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
 
             }
@@ -353,6 +354,8 @@ public class OllirGenerator implements JmmOptimization {
         else if (typeKind.equals("STRING")) return ollirCode.append("String").toString();
         else if (typeKind.equals("void")) return ollirCode.append("V").toString();
 
+        if (typeKind.equals("Identifier")) return scopeVariables.get(rootNode.get("value"));
+
         JmmNode type = rootNode.getChildren().get(0);
 
         if (type.getKind().equals("ArrayType")) {
@@ -361,16 +364,17 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if(type.hasAttribute("typeName")) typeKind = type.get("typeName");
+        else if (type.getKind().equals("MethodCalling")) typeKind = scopeVariables.get(rootNode.get("varName"));
         else if (rootNode.getKind().equals("ReturnStatement")) typeKind = type.getKind();
         else if (rootNode.getKind().equals("Assignment")) typeKind = type.getKind();
-        else typeKind = scopeVariables.get(type.get("varName"));
+        else if (scopeVariables.containsKey(type.get("varName"))) typeKind = scopeVariables.get(type.get("varName"));
+        else if (attributes.containsKey(type.get("varName"))) typeKind = attributes.get(type.get("varName"));
 
         if (typeKind.equals("int")) ollirCode.append("i32");
         else if (typeKind.equals("Integer")) ollirCode.append("i32");
         else if (typeKind.equals("boolean")) ollirCode.append("bool");
         else if (typeKind.equals("STRING")) ollirCode.append("String");
         else if (typeKind.equals("void")) ollirCode.append("V");
-        else if (typeKind.equals("Identifier")) scopeVariables.get(rootNode.get("varName"));
         else ollirCode.append(typeKind);
 
 
@@ -468,6 +472,7 @@ public class OllirGenerator implements JmmOptimization {
         ollirCode.append(newLine());
 
         StringBuilder newExpression = new StringBuilder();
+
         //Deal with Atributtes:
         if(attributes.containsKey(rootNode.get("varName"))){
             ollirCode.append("pulField(this, ");
@@ -488,6 +493,9 @@ public class OllirGenerator implements JmmOptimization {
                 else if (children.equals("Identifier")) {
                     ollirCode.append(children.getKind());
                     ollirCode.append(children.get("varName"));
+                }
+                else if(children.getKind().equals("MethodCalling")){
+
                 }
 
             }
@@ -510,21 +518,20 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode.append(" :=.");
                 ollirCode.append(type);
                 ollirCode.append(" ");
+                JmmNode children = rootNode.getChildren().get(0);
 
-                for (JmmNode children : rootNode.getChildren()) {
-                    if (children.getKind().equals("Integer")) {
-                        ollirCode.append(children.get("value"));
-                        ollirCode.append(".i32 ");
-                    } else if (children.getKind().equals("boolean")) {
-                        ollirCode.append(children.get("value"));
-                        ollirCode.append(".bool ");
-                    } else if (children.getKind().equals("Identifier")) {
-                        ollirCode.append(children.get("value"));
-                        ollirCode.append(".");
-                        ollirCode.append(scopeVariables.get(children.get("value")));
-                    }
-
+                if (children.getKind().equals("Integer")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".i32 ");
+                } else if (children.getKind().equals("boolean")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".bool ");
+                } else if (children.getKind().equals("Identifier")) {
+                    ollirCode.append(children.get("value"));
+                    ollirCode.append(".");
+                    ollirCode.append(scopeVariables.get(children.get("value")));
                 }
+
             }
         }
 
