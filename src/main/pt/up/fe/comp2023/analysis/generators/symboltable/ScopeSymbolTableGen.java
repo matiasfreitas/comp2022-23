@@ -3,10 +3,15 @@ package pt.up.fe.comp2023.analysis.generators.symboltable;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
-public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
+import java.util.List;
+import java.util.Optional;
+
+public class ScopeSymbolTableGen extends AJmmVisitor<List<Report>, Void> {
     ScopeSymbolTable thisScope;
 
     public ScopeSymbolTableGen(ScopeSymbolTable parentScope) {
@@ -21,23 +26,36 @@ public class ScopeSymbolTableGen extends AJmmVisitor<Void, Void> {
         this.setDefaultVisit(this::visitAllChildren);
     }
 
+    protected Report createReport(JmmNode node, String message) {
+        int line = Integer.parseInt(node.get("lineStart"));
+        int column = Integer.parseInt(node.get("colStart"));
+        return Report.newError(Stage.SEMANTIC, line, column, message, null);
 
-    private Void handleVarDeclaration(JmmNode jmmNode, Void unused) {
+    }
+
+    private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
         // System.out.println("Handling Var Declaration inside a scope");
         SymbolGen symbolGen = new SymbolGen();
         symbolGen.visit(jmmNode);
         Symbol s = symbolGen.getSymbol();
         //System.out.println(s.toString());
-        this.thisScope.addSymbol(s);
+        Optional<Symbol> maybeDefined = this.thisScope.getSymbol(s.getName());
+        if (maybeDefined.isPresent()) {
+            Symbol alreadyDefined = maybeDefined.get();
+            reports.add(this.createReport(jmmNode, "Variable Symbol is already defined as " + alreadyDefined.toString()));
+
+        } else {
+            this.thisScope.addSymbol(s);
+        }
         return null;
 
     }
 
-    private Void handleScopeBlock(JmmNode jmmNode, Void unused) {
+    private Void handleScopeBlock(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Handling new Scope inside scope");
         ScopeSymbolTableGen childGen = new ScopeSymbolTableGen(this.thisScope);
-        for(JmmNode child : jmmNode.getChildren()){
-            childGen.visit(child, unused);
+        for (JmmNode child : jmmNode.getChildren()) {
+            childGen.visit(child, reports);
         }
         ScopeSymbolTable childScope = childGen.getScope();
         this.thisScope.addSubScope(childScope);
