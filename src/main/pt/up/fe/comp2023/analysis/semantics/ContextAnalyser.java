@@ -109,10 +109,13 @@ public abstract class ContextAnalyser<T>  extends Analyser<T> {
                 t = checkUpperScopes(identifier);
             }
         }
-        if (t.isEmpty()) {
+        Type identifierType= new Type(identifier,false);
+        // Could be an import
+        if (t.isEmpty() && !validType(identifierType)) {
             reports.add(this.createReport(jmmNode, "Undefined Identifier"));
+            return t;
         }
-        return t;
+        return Optional.of(identifierType);
     }
 
 }
