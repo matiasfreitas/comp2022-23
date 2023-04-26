@@ -7,6 +7,8 @@ import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,26 +31,30 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
     }
 
     private Void handleVarDeclaration(JmmNode jmmNode, List<Report> reports) {
-        // System.out.println("Handling Var Declaration inside a scope");
         SymbolGen symbolGen = new SymbolGen();
         symbolGen.visit(jmmNode);
         Symbol s = symbolGen.getSymbol();
-        //System.out.println(s.toString());
         Optional<Symbol> maybeDefined = this.thisScope.getSymbol(s.getName());
+        Optional<Symbol> maybeParam = getSymbol(methodParameters, s);
         if (maybeDefined.isPresent()) {
-            Symbol alreadyDefined = maybeDefined.get();
-            reports.add(this.createErrorReport(jmmNode, "Variable Symbol is already defined as " + alreadyDefined.toString()));
-            Optional<Symbol>  maybeParam = getSymbol(methodParameters,alreadyDefined);
-            Optional<Symbol> maybeField  = getSymbol(classFields,alreadyDefined);
-
-        } else {
-            this.thisScope.addSymbol(s);
+            reports.add(this.createErrorReport(jmmNode, "Variable Symbol is already defined as " +maybeDefined.get()));
         }
+        if (maybeParam.isPresent()) {
+            reports.add(this.createErrorReport(jmmNode, "Variable " + s + " is already defined in the parameter as " +maybeParam.get()));
+        }
+        // TODO: talk with bispo about this design decision: if it is wrong should we add it to the symbol table?
+        //else {
+        //    this.thisScope.addSymbol(s);
+        //}
+        this.thisScope.addSymbol(s);
+        String shadowingText = "Variable " + s + "is shadowing ";
+        Optional<Symbol> maybeField = getSymbol(classFields, s);
+        maybeField.ifPresent(symbol -> reports.add(this.createWarningReport(jmmNode, shadowingText + "class field" + symbol)));
         return null;
 
     }
 
-    public Optional<Symbol> getSymbol(List<Symbol>symbols ,Symbol target ) {
+    public Optional<Symbol> getSymbol(List<Symbol> symbols, Symbol target) {
         for (Symbol s : symbols) {
             if (s.getName().equals(target.getName())) {
                 return Optional.of(s);
