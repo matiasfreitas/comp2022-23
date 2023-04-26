@@ -11,6 +11,8 @@ import java.util.Optional;
 public class JmmBuiltins {
 
     // TODO add JmmVoid builtin?
+
+    public static Type JmmVoid = new Type("void",false);
     public static Type JmmInt = new Type("int",false);
     public static Type JmmChar = new Type("char",false);
     public static Type JmmBoolean = new Type("boolean",false);
@@ -20,7 +22,7 @@ public class JmmBuiltins {
     public static Type JmmAssumeType = new Type("JmmBuiltinAssumeType",false);
 
     public static List<Type> builtinTypes(){
-        return Arrays.asList(JmmInt,JmmChar,JmmString,JmmBoolean);
+        return Arrays.asList(JmmInt,JmmChar,JmmString,JmmBoolean,JmmVoid);
     }
 
     public static Optional<Type> fromJmmNode(JmmNode node){
