@@ -91,7 +91,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             return Optional.empty();
         }
         if (!JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
+            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             return Optional.empty();
         }
         return Optional.of(new Type(arrayType.getName(), true));
@@ -121,7 +121,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                     return Optional.of(JmmBuiltins.JmmBoolean);
                 }
             }
-            reports.add(this.createReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
+            reports.add(this.createErrorReport(jmmNode, op + " operator expects int" + op + " int got:" + leftType.toString() + " " + op + " " + rightType.toString()));
         }
         return Optional.empty();
 
@@ -136,7 +136,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             if (op.equals("!") && JmmBuiltins.typeEqualOrAssumed(t, JmmBuiltins.JmmBoolean)) {
                 return Optional.of(t);
             }
-            reports.add(this.createReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
+            reports.add(this.createErrorReport(jmmNode, op + " operator expects " + op + "boolean got:!" + t.toString()));
         }
         return Optional.empty();
     }
@@ -157,7 +157,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 }
             }
             // TODO: check visibility
-            reports.add(this.createReport(jmmNode, "Attribute `" + attributeName + "` is not a valid attribute"));
+            reports.add(this.createErrorReport(jmmNode, "Attribute `" + attributeName + "` is not a valid attribute"));
 
             return Optional.empty();
         } else {
@@ -202,11 +202,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 if (this.symbolTable.isImportedSymbol(superClass)) {
                     return Optional.of(JmmBuiltins.JmmAssumeType);
                 }
-                reports.add(this.createReport(jmmNode, "Is Not an available Method"));
+                reports.add(this.createErrorReport(jmmNode, "Is Not an available Method"));
                 List<MethodSymbolTable> similars = this.symbolTable.getOverloads(method);
                 if (similars.size() > 0) {
                     String message = this.createOverloadReports(method, parameters, similars);
-                    reports.add(this.createReport(jmmNode, message));
+                    reports.add(this.createErrorReport(jmmNode, message));
                 }
             }
             return t;
@@ -265,13 +265,13 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         boolean error = false;
         // Should this work with assumed types?
         if (arrayType.isEmpty() || !arrayType.get().isArray()) {
-            reports.add(this.createReport(jmmNode, "Trying To Index over a type that is not an array"));
+            reports.add(this.createErrorReport(jmmNode, "Trying To Index over a type that is not an array"));
             error = true;
         }
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
-            reports.add(this.createReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
+            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
             error = true;
         }
         if (error) {
@@ -287,11 +287,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
     private Optional<Type> handleThis(JmmNode jmmNode, List<Report> reports) {
         if (this.context.isClassContext()) {
-            reports.add(this.createReport(jmmNode, "Usage Of `this` in class fields is not allowed"));
+            reports.add(this.createErrorReport(jmmNode, "Usage Of `this` in class fields is not allowed"));
             return Optional.empty();
         }
         if (this.symbolTable.isStaticMethod(this.context.getMethodSignature())) {
-            reports.add(this.createReport(jmmNode, "Usage Of `this` in static method is not allowed"));
+            reports.add(this.createErrorReport(jmmNode, "Usage Of `this` in static method is not allowed"));
             return Optional.empty();
         }
         String className = this.symbolTable.getClassName();

@@ -1,6 +1,7 @@
 import foo.C;
 class A {
-    public static void main(String[] args,int args){
+    int a;
+    public static void main(String[] args,int a){
         int[] b;
         A a;
         int errou;

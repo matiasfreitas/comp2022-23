@@ -1,10 +1,8 @@
 package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
@@ -43,7 +41,7 @@ public class ClassSymbolTableGen extends Analyser<Void> {
         Optional<Symbol> isDefined = this.classTable.getSymbol(s.getName());
         if (isDefined.isPresent()) {
             Symbol alreadyDefined = isDefined.get();
-            reports.add(this.createReport(jmmNode, "Class Symbol is already defined as " + alreadyDefined));
+            reports.add(this.createErrorReport(jmmNode, "Class Symbol is already defined as " + alreadyDefined));
         } else {
             classTable.addField(s);
         }
