@@ -1,9 +1,13 @@
 import foo.C;
-class A extends D{
+import D;
+import D;
+class A extends C{
     public static void main(String[] args,int a){
         int x;
     }
-    public C c(){
-
+    public int C(){
+        int x;
+        x = 3 + C.foo();
+        return x;
     }
 }

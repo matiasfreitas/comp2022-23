@@ -3,6 +3,8 @@ package pt.up.fe.comp2023.analysis.semantics;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
+import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.generators.symboltable.JmmSymbolTableGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
@@ -41,6 +43,14 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Method Declaration");
         MethodContextAnalyser ma = new MethodContextAnalyser(jmmNode, symbolTable, context);
+        // TODO: refacto type gen
+        TypeGen tg = new TypeGen();
+        System.out.println(jmmNode.getJmmChild(0).toTree());
+        tg.visit(jmmNode.getJmmChild(0));
+        Type returnType = tg.getType();
+        if(!validType(returnType)){
+            reports.add(createErrorReport(jmmNode.getJmmChild(0),"Type " + returnType + " is not an available type"));
+        }
         List<Report> methodReports = ma.analyse();
         reports.addAll(methodReports);
         context.setClassContext();

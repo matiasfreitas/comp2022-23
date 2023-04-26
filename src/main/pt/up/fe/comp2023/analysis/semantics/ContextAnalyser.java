@@ -43,14 +43,6 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         return Optional.empty();
     }
 
-    private Optional<Type> checkUpperScopes(String identifier) {
-        Optional<Type> t = checkClassScope(identifier);
-        if (t.isEmpty())
-            t = checkImports(identifier);
-        return t;
-
-    }
-
     protected boolean validType(Type t) {
         Type compareT = t;
         if (t.isArray()) {
@@ -84,7 +76,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
     public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
         Optional<Type> t;
         if (context.isClassContext()) {
-            t = checkUpperScopes(identifier);
+            t =checkClassScope(identifier);
         }
         // Method context
         else {
@@ -110,14 +102,15 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
                     }
                 }
             } else {
-                t = checkUpperScopes(identifier);
+                t =checkClassScope(identifier);
             }
         }
         // Could be an import
         if (t.isEmpty()) {
             Type identifierType = new Type(identifier, false);
+            // TODO: validType also increments usage :: bad Design
             if (!validType(identifierType)) {
-                reports.add(this.createErrorReport(jmmNode, "Undefined Identifier"));
+                reports.add(this.createErrorReport(jmmNode, "Undefined Identifier " + identifier));
                 return Optional.empty();
             } else {
                 return Optional.of(identifierType);
