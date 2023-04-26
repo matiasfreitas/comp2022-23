@@ -63,8 +63,10 @@ public class OllirGenerator implements JmmOptimization {
         Map<String, String> config = new HashMap<>();
 
         JmmParserResult result = new JmmParserResult(semanticsResult.getRootNode(), reports, config);
-
+        System.out.println(ollirCode);
         return new OllirResult(semanticsResult, ollirCode.toString(), semanticsResult.getReports());
+
+
     }
 
     @Override
@@ -270,7 +272,7 @@ public class OllirGenerator implements JmmOptimization {
 
             if(isScopedVariable) ollirCode.append(scopeVariables.get(variable));
             else if(isAttribute) ollirCode.append(attributes.get(variable));
-
+            else if(isThis) ollirCode.deleteCharAt(ollirCode.length()-1);
 
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
@@ -592,7 +594,7 @@ public class OllirGenerator implements JmmOptimization {
             type = ".V";
         expression.append(newLine());
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
-            firstTerm = "temp" + String.valueOf(tempCount);
+            firstTerm = rootNode.getJmmParent().get("varName");
             scopeVariables.put(firstTerm, type);
 
             expression = (dealWithMethodCalling(rootNode.getJmmChild(0), expression, scopeVariables));
@@ -605,13 +607,13 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
-            secondTerm = "temp" + String.valueOf(tempCount);
+            secondTerm = rootNode.getJmmParent().get("varName");
             scopeVariables.put(secondTerm, type);
 
             expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
             tempCount++;
             expression.append(newLine());
-            expression = expression.append(firstTerm).append(type).append(" :=").append(type);
+            expression = expression.append(secondTerm).append(type).append(" :=").append(type);
         }
         else{
             secondTerm = rootNode.getJmmChild(1).get("value");
