@@ -507,30 +507,53 @@ public class OllirGenerator implements JmmOptimization {
 
         //Deal with Atributtes:
         if(attributes.containsKey(rootNode.get("varName"))){
-            ollirCode.append("pulField(this, ");
-            ollirCode.append(rootNode.get("varName"));
-            ollirCode.append(".");
-            ollirCode.append(attributes.get(rootNode.get("varName")));
-            ollirCode.append(",");
 
-            for (JmmNode children : rootNode.getChildren()) {
-                if (children.getKind().equals("Integer")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".i32 ");
-                }
-                else if (children.getKind().equals("boolean")) {
-                    ollirCode.append(children.get("value"));
-                    ollirCode.append(".bool ");
-                }
-                else if (children.equals("Identifier")) {
-                    ollirCode.append(children.getKind());
-                    ollirCode.append(children.get("varName"));
-                }
-                else if(children.getKind().equals("MethodCalling")){
-                    ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
-                }
+            newExpression.append("putfield(this, ");
+            newExpression.append(rootNode.get("varName"));
+            newExpression.append(".");
+            newExpression.append(attributes.get(rootNode.get("varName")));
+            newExpression.append(", ");
+
+            JmmNode children = rootNode.getJmmChild(0);
+            if (children.hasAttribute("value") && attributes.containsKey(children.get("value"))) {
+                String type = "V";
+                tempCount++;
+
+                if (children.get("type").equals("int")) type = (".i32");
+                else if (children.getKind().equals("boolean")) type = (".bool");
+                ollirCode.append("temp_" + tempCount + type);
+                ollirCode.append(":=" + type);
+                ollirCode.append(" getfield(this, " + children.get("value") + type);
+
+                ollirCode.append(")" + type + ";\n");
+                ollirCode.append(newExpression);
+                ollirCode.append("temp_" + tempCount + type + ").V");
+                ollirCode.append(";\n");
+                return ollirCode;
 
             }
+
+            else if (children.getKind().equals("Int")) {
+                ollirCode.append(newExpression);
+                ollirCode.append(children.get("value"));
+                ollirCode.append(".i32");
+            }
+            else if (children.getKind().equals("boolean")) {
+                ollirCode.append(newExpression);
+                ollirCode.append(children.get("value"));
+                ollirCode.append(".bool ");
+            }
+            else if (children.equals("Identifier")) {
+                ollirCode.append(newExpression);
+                ollirCode.append(children.getKind());
+                ollirCode.append(children.get("varName"));
+            }
+            else if(children.getKind().equals("MethodCalling")){
+                ollirCode.append(newExpression);
+                ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
+            }
+
+            ollirCode.append(").V");
         }
         else{
 
@@ -609,7 +632,9 @@ public class OllirGenerator implements JmmOptimization {
             expression.append(newLine());
             expression.append(firstTerm).append(".").append(type).append(" :=.").append(type);
         }
+
         else{
+
             firstTerm = rootNode.getJmmChild(0).get("value");
         }
 
