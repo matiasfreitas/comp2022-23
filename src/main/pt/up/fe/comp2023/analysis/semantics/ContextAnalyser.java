@@ -25,7 +25,6 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         this.context = context;
         this.availableTypes = new ArrayList<>();
         availableTypes.addAll(JmmBuiltins.builtinTypes());
-        availableTypes.addAll(symbolTable.getImportTypes());
         availableTypes.add(new Type(symbolTable.getClassName(), false));
 
 
@@ -59,6 +58,13 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         }
         for (Type available : availableTypes) {
             if (compareT.equals(available)) {
+                return true;
+            }
+        }
+        // Should this function increment?
+        for(Type importedType : symbolTable.getImportTypes()){
+            if (compareT.equals(importedType)) {
+                symbolTable.incrementImport(importedType);
                 return true;
             }
         }

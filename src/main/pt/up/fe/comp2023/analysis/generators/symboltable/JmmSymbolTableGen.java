@@ -38,13 +38,16 @@ public class JmmSymbolTableGen extends Analyser<Void> {
     }
 
     private Void handleImportDeclaration(JmmNode jmmNode, List<Report> reports) {
-        String module = jmmNode.get("moduleName");
-        String formattedModules = stringToList(module);
-        this.imports.add(formattedModules);
+        this.imports.add(getImportString(jmmNode));
         return null;
     }
 
-    private String stringToList(String moduleString) {
+    public static String getImportString(JmmNode jmmNode) {
+        String module = jmmNode.get("moduleName");
+        return stringToList(module);
+    }
+
+    private static String stringToList(String moduleString) {
         StringBuilder current = new StringBuilder();
         for (int i = 0; i < moduleString.length(); i++) {
             var c = moduleString.charAt(i);

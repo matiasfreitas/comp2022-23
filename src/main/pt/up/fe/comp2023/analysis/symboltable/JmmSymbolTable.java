@@ -12,6 +12,8 @@ public class JmmSymbolTable implements SymbolTable {
     List<Type> importTypes;
     ClassSymbolTable classSymbolTable;
     Map<String, MethodSymbolTable> methods;
+
+    Map<String, Integer> importsUsage;
     List<String> methodNames;
 
     public JmmSymbolTable(List<String> imports, ClassSymbolTable classSymbolTable) {
@@ -25,15 +27,24 @@ public class JmmSymbolTable implements SymbolTable {
             methodNames.add(mRepr);
             methods.put(mRepr, m);
         }
+        importsUsage = new HashMap<>();
+        for (Type imported : this.importTypes) {
+            importsUsage.put(imported.getName(), 0);
+        }
     }
-    private List<Type> getImportTypes(List<String> imports){
-       List<Type> types = new ArrayList<>();
-       for(String i : imports){
-           String[] parts = i.split("[.]");
-           String typeName = parts[parts.length -1];
-           types.add(new Type(typeName,false));
+
+    public static List<Type> getImportTypes(List<String> imports) {
+        List<Type> types = new ArrayList<>();
+        for (String i : imports) {
+            types.add(getImportTypeFromString(i));
         }
         return types;
+    }
+
+    public static Type getImportTypeFromString(String typeString) {
+        String[] parts = typeString.split("[.]");
+        String typeName = parts[parts.length - 1];
+        return new Type(typeName, false);
     }
 
     public Optional<Type> getFieldTry(String t) {
@@ -64,9 +75,22 @@ public class JmmSymbolTable implements SymbolTable {
         return false;
     }
 
-    public List<Type> getImportTypes(){
-        return  this.importTypes;
+    public void incrementImport(Type importedType) {
+        if (importsUsage.containsKey(importedType.getName())) {
+            int current = importsUsage.get(importedType.getName());
+            current += 1;
+            importsUsage.put(importedType.getName(), current);
+        }
     }
+
+    public Map<String, Integer> getImportsUsage() {
+        return importsUsage;
+    }
+
+    public List<Type> getImportTypes() {
+        return this.importTypes;
+    }
+
     @Override
     public List<String> getImports() {
         return imports;
@@ -96,7 +120,7 @@ public class JmmSymbolTable implements SymbolTable {
     public Type getReturnType(String s) {
         MethodSymbolTable m = methods.get(s);
         if (m == null) {
-            return  null;
+            return null;
         }
         return m.getReturnType();
 
@@ -105,8 +129,8 @@ public class JmmSymbolTable implements SymbolTable {
     @Override
     public List<Symbol> getParameters(String s) {
         MethodSymbolTable m = methods.get(s);
-        if(m == null){
-            return  null;
+        if (m == null) {
+            return null;
         }
         return m.getParameters();
     }
@@ -114,8 +138,8 @@ public class JmmSymbolTable implements SymbolTable {
     @Override
     public List<Symbol> getLocalVariables(String s) {
         MethodSymbolTable m = methods.get(s);
-        if(m == null){
-            return  null;
+        if (m == null) {
+            return null;
         }
         ScopeSymbolTable mBody = m.getBodyScope();
         return mBody.flatten();
@@ -129,4 +153,5 @@ public class JmmSymbolTable implements SymbolTable {
         return s;
 
     }
+
 }
