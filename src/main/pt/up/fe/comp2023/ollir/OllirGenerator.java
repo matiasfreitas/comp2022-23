@@ -58,7 +58,6 @@ public class OllirGenerator implements JmmOptimization {
         // Convert the AST to a String containing the equivalent OLLIR code
         StringBuilder ollirCode = new StringBuilder(); // Convert node ...
         iterateOverCodeScope(semanticsResult.getRootNode(), ollirCode, new HashMap<>(), "");
-        System.out.println(ollirCode.toString());
         // More reports from this stage
         reports.addAll(semanticsResult.getReports());
         Map<String, String> config = new HashMap<>();
@@ -80,7 +79,6 @@ public class OllirGenerator implements JmmOptimization {
     boolean hasReturn = false;
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
-        System.out.println(rootNode.getKind());
         //Classes
         if (rootNode.getKind().equals("ClassDeclaration")) {
             dealWithClassDeclaration(rootNode, ollirCode);
@@ -527,8 +525,9 @@ public class OllirGenerator implements JmmOptimization {
             String type = dealWithType(rootNode, scopeVariables);
 
             if(rootNode.getChildren().get(0).getKind().equals("NewObject")){
+                ollirCode.append(rootNode.get("varName") + "." + type + " :=." + type + " new(" + type + ")." + type + ";\n");
                 ollirCode.append("invokespecial(");
-                ollirCode.append(type);
+                ollirCode.append(rootNode.get("varName"));
                 ollirCode.append(".");
                 ollirCode.append(type);
                 ollirCode.append(",\"<init>\").V");
