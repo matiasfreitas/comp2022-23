@@ -528,7 +528,7 @@ public class OllirGenerator implements JmmOptimization {
 
             String type = dealWithType(rootNode, scopeVariables);
             JmmNode children = rootNode.getChildren().get(0);
-            if(children.equals("NewObject")){
+            if(children.getKind().equals("NewObject")){
 
                 newExpression.append(rootNode.get("varName") + "." + type + " :=." + type + " new(" + type + ")." + type + ";\n");
                 newExpression.append(newLine());
