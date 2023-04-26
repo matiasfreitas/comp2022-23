@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class MethodSymbolTable {
     private Type returnType;
@@ -88,5 +89,14 @@ public class MethodSymbolTable {
 
     public ScopeSymbolTable getBodyScope() {
         return methodScope;
+    }
+
+    public Optional<Symbol> getParameter(String name) {
+        for (Symbol s : parameters){
+            if(s.getName().equals(name)){
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
     }
 }

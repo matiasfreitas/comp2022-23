@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.analysis.generators.symboltable;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -12,6 +13,7 @@ import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
 import java.util.List;
+import java.util.Optional;
 
 public class MethodSymbolTableGen extends Analyser<Void> {
     MethodSymbolTable thisMethod;
@@ -32,7 +34,15 @@ public class MethodSymbolTableGen extends Analyser<Void> {
         for(JmmNode child : jmmNode.getChildren()) {
             SymbolGen sGen = new SymbolGen();
             sGen.visit(child);
-            this.thisMethod.addParameter(sGen.getSymbol());
+            Symbol thisParameter = sGen.getSymbol();
+
+            Optional<Symbol> alreadyDefined = this.thisMethod.getParameter(thisParameter.getName());
+            if(alreadyDefined.isPresent()){
+                reports.add(this.createReport(jmmNode, "Redefinition of parameter " + alreadyDefined.get()));
+            }
+            else {
+                this.thisMethod.addParameter(thisParameter);
+            }
         }
         return null;
     }
