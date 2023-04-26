@@ -17,7 +17,7 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
     List<Symbol> classFields;
     List<Symbol> methodParameters;
 
-    public ScopeSymbolTableGen(JmmNode root,List<Symbol>classFields,List<Symbol>methodParameters) {
+    public ScopeSymbolTableGen(JmmNode root, List<Symbol> classFields, List<Symbol> methodParameters) {
         super(root);
         this.thisScope = new ScopeSymbolTable();
         this.classFields = classFields;
@@ -40,12 +40,23 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
         if (maybeDefined.isPresent()) {
             Symbol alreadyDefined = maybeDefined.get();
             reports.add(this.createReport(jmmNode, "Variable Symbol is already defined as " + alreadyDefined.toString()));
+            Optional<Symbol>  maybeParam = getSymbol(methodParameters,alreadyDefined);
+            Optional<Symbol> maybeField  = getSymbol(classFields,alreadyDefined);
 
         } else {
             this.thisScope.addSymbol(s);
         }
         return null;
 
+    }
+
+    public Optional<Symbol> getSymbol(List<Symbol>symbols ,Symbol target ) {
+        for (Symbol s : symbols) {
+            if (s.getName().equals(target.getName())) {
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
     }
 
     public ScopeSymbolTable getScope() {
