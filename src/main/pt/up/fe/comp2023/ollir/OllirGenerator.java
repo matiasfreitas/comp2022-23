@@ -96,7 +96,7 @@ public class OllirGenerator implements JmmOptimization {
 
         //local variables
         else if (rootNode.getKind().equals("VarDeclaration")) {
-            //ollirCode = dealWithVarDeclatarion(rootNode, ollirCode, scopeVariables);
+            ollirCode = dealWithVarDeclatarion(rootNode, ollirCode, scopeVariables);
         }
 
         //Class Methods
@@ -145,11 +145,6 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(" }\n");
         }
 
-        //Finish Var Declaration
-        else if (rootNode.getKind().equals("VarDeclaration")) {
-            //ollirCode.append("\n");
-        }
-
         //Finish Return Statement
         else if (rootNode.getKind().equals("ReturnStatement")) {
             ollirCode.append(";\n");
@@ -181,18 +176,16 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private StringBuilder dealWithVarDeclatarion(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
-        ollirCode.append(newLine());
         JmmNode children = rootNode.getChildren().get(0);
-        ollirCode = dealWithVar(children, ollirCode, scopeVariables);
-        String type = dealWithType(children.getChildren().get(0), scopeVariables);
-        if (!type.equals("i32") && !type.equals("String") && !type.equals("bool")){
-            ollirCode.append(" :=.");
-            ollirCode.append(type);
-            ollirCode.append(" new(");
-            ollirCode.append(type);
-            ollirCode.append(").");
-            ollirCode.append(type);
-
+        if(children.hasAttribute("varName")){
+            String name = children.get("varName");
+            String kind = dealWithType(children.getChildren().get(0), scopeVariables);
+            scopeVariables.put(name, kind);
+        }
+        else{
+            String name = children.get("type");
+            String kind = dealWithType(children, scopeVariables);
+            scopeVariables.put(name, kind);
         }
         return ollirCode;
     }
@@ -392,7 +385,6 @@ public class OllirGenerator implements JmmOptimization {
     }
 
     private StringBuilder dealWithVar(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
-
         if(rootNode.hasAttribute("varName")){
             String name = rootNode.get("varName");
             ollirCode.append(name).append(".");
@@ -402,9 +394,18 @@ public class OllirGenerator implements JmmOptimization {
 
             scopeVariables.put(name, kind);
         }
-        else{
+        else if(rootNode.hasAttribute("value")){
             String name = rootNode.get("type");
             ollirCode.append(rootNode.get("value")).append(".");
+
+            String kind = dealWithType(rootNode, scopeVariables);
+            ollirCode.append(kind);
+
+            scopeVariables.put(name, kind);
+        }
+        else if(rootNode.hasAttribute("methodName")){
+            String name = rootNode.get("type");
+            ollirCode.append(rootNode.get("methodName")).append(".");
 
             String kind = dealWithType(rootNode, scopeVariables);
             ollirCode.append(kind);
