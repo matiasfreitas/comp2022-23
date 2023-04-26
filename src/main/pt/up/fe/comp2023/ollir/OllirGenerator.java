@@ -579,7 +579,6 @@ public class OllirGenerator implements JmmOptimization {
         else{
 
             String type = dealWithType(rootNode, scopeVariables);
-
             if(rootNode.getChildren().get(0).getKind().equals("NewObject")){
 
                 ollirCode.append(rootNode.get("varName") + "." + type + " :=." + type + " new(" + type + ")." + type + ";\n");
@@ -591,6 +590,31 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode.append(",\"<init>\").V");
             }
             else {
+
+
+                //TODO Martim vê isto
+                JmmNode child = rootNode.getJmmChild(0);
+                if (child.hasAttribute("value") && attributes.containsKey(child.get("value"))) {
+                    String ctype = "V";
+                    tempCount++;
+
+                    if (child.get("type").equals("int")) ctype = (".i32");
+                    else if (child.getKind().equals("boolean")) ctype = (".bool");
+                    ollirCode.append("temp_" + tempCount + ctype);
+                    ollirCode.append(":=" + ctype);
+                    ollirCode.append(" getfield(this, " + child.get("value") + ctype);
+
+                    ollirCode.append(")" + ctype + ";\n");
+                    ollirCode.append(rootNode.get("varName"));
+                    ollirCode.append(".");
+                    ollirCode.append(type);
+                    ollirCode.append(" :=.");
+                    ollirCode.append(type);
+                    ollirCode.append(" temp_" + tempCount + ctype + ";\n");
+                    return ollirCode;
+
+                }
+
                 ollirCode.append(rootNode.get("varName"));
                 ollirCode.append(".");
                 ollirCode.append(type);
@@ -598,10 +622,10 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode.append(type);
                 ollirCode.append(" ");
                 JmmNode children = rootNode.getChildren().get(0);
-                //TODO Martim vê isto
                 if (children.getKind().equals("Int")) {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".i32 ");
+
                 } else if (children.getKind().equals("Boolean")) {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".bool ");
