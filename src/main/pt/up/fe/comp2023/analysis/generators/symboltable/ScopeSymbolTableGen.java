@@ -14,11 +14,14 @@ import java.util.Optional;
 
 public class ScopeSymbolTableGen extends Analyser<Void> {
     ScopeSymbolTable thisScope;
+    List<Symbol> classFields;
+    List<Symbol> methodParameters;
 
-    public ScopeSymbolTableGen(JmmNode root,ScopeSymbolTable parentScope) {
+    public ScopeSymbolTableGen(JmmNode root,List<Symbol>classFields,List<Symbol>methodParameters) {
         super(root);
         this.thisScope = new ScopeSymbolTable();
-        this.thisScope.setParentScope(parentScope);
+        this.classFields = classFields;
+        this.methodParameters = methodParameters;
     }
 
     @Override

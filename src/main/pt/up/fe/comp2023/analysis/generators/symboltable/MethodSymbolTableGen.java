@@ -1,14 +1,11 @@
 package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.semantics.Analyser;
-import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
-import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
 
@@ -16,10 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class MethodSymbolTableGen extends Analyser<Void> {
-    MethodSymbolTable thisMethod;
-    public  MethodSymbolTableGen(JmmNode root){
+    MethodSymbolTable methodTable;
+
+    List<Symbol> classFields;
+    public MethodSymbolTableGen(JmmNode root ,List<Symbol> classFields){
         super(root);
-        this.thisMethod = new MethodSymbolTable();
+        this.methodTable = new MethodSymbolTable();
+        this.classFields = classFields;
     }
     @Override
     protected void buildVisitor() {
@@ -30,18 +30,17 @@ public class MethodSymbolTableGen extends Analyser<Void> {
     }
 
     private Void handleMethodArguments(JmmNode jmmNode, List<Report> reports) {
-        // TODO: Symbolos com o mesmo nome?
         for(JmmNode child : jmmNode.getChildren()) {
             SymbolGen sGen = new SymbolGen();
             sGen.visit(child);
             Symbol thisParameter = sGen.getSymbol();
 
-            Optional<Symbol> alreadyDefined = this.thisMethod.getParameter(thisParameter.getName());
+            Optional<Symbol> alreadyDefined = this.methodTable.getParameter(thisParameter.getName());
             if(alreadyDefined.isPresent()){
                 reports.add(this.createReport(jmmNode, "Redefinition of parameter " + alreadyDefined.get()));
             }
             else {
-                this.thisMethod.addParameter(thisParameter);
+                this.methodTable.addParameter(thisParameter);
             }
         }
         return null;
@@ -49,11 +48,11 @@ public class MethodSymbolTableGen extends Analyser<Void> {
 
     private Void handleMethodBody(JmmNode jmmNode, List<Report>reports) {
         //System.out.println("Handling Method Body");
-        ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(jmmNode,null);
+        ScopeSymbolTableGen scopeTableGen = new ScopeSymbolTableGen(jmmNode,classFields, methodTable.getParameters());
         List<Report> scopeReports = scopeTableGen.analyse();
         reports.addAll(scopeReports);
         ScopeSymbolTable methodScope = scopeTableGen.getScope();
-        thisMethod.setMethodScope(methodScope);
+        methodTable.setMethodScope(methodScope);
         return null;
     }
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -67,14 +66,14 @@ public class MethodSymbolTableGen extends Analyser<Void> {
 
         String methodName = jmmNode.get("methodName");
         //System.out.println("Method " + methodName + " isStatic " + isStatic +" visibility " + visibility);
-        this.thisMethod.setMethodName(methodName);
-        this.thisMethod.setIsStatic(isStatic);
-        this.thisMethod.setVisibility(visibility);
+        this.methodTable.setMethodName(methodName);
+        this.methodTable.setIsStatic(isStatic);
+        this.methodTable.setVisibility(visibility);
         for (JmmNode child : jmmNode.getChildren()){
             if(child.getKind().equals("Type")) {
                 TypeGen typeGen = new TypeGen();
                 typeGen.visit(child);
-                this.thisMethod.setReturnType(typeGen.getType());
+                this.methodTable.setReturnType(typeGen.getType());
             }
             else{
                 visit(child,reports);
@@ -85,6 +84,6 @@ public class MethodSymbolTableGen extends Analyser<Void> {
 
 
     public MethodSymbolTable getMethodTable() {
-        return  this.thisMethod;
+        return  this.methodTable;
     }
 }

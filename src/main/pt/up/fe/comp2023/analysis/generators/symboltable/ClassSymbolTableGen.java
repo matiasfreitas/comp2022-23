@@ -43,11 +43,10 @@ public class ClassSymbolTableGen extends Analyser<Void> {
         Optional<Symbol> isDefined = this.classTable.getSymbol(s.getName());
         if (isDefined.isPresent()) {
             Symbol alreadyDefined = isDefined.get();
-            reports.add(this.createReport(jmmNode, "Class Symbol is already defined as " + alreadyDefined.toString()));
+            reports.add(this.createReport(jmmNode, "Class Symbol is already defined as " + alreadyDefined));
         } else {
             classTable.addField(s);
         }
-        // System.out.println("Handled class variable " + s.toString());
         return null;
     }
 
@@ -65,7 +64,7 @@ public class ClassSymbolTableGen extends Analyser<Void> {
     }
 
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
-        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen(jmmNode);
+        MethodSymbolTableGen methodTableGen = new MethodSymbolTableGen(jmmNode,classTable.getClassFields());
         List<Report> methodReports = methodTableGen.analyse();
         reports.addAll(methodReports);
         MethodSymbolTable methodSymbolTable = methodTableGen.getMethodTable();

@@ -30,6 +30,10 @@ public class ClassSymbolTable {
         classFields.add(s);
     }
 
+    public List<Symbol> getClassFields() {
+        return this.classFields;
+    }
+
     public Optional<Symbol> getSymbol(String name) {
         for (Symbol s : classFields) {
             if (s.getName().equals(name)) {
