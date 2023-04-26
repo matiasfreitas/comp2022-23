@@ -1,13 +1,28 @@
-import foo.C;
-import D;
-import D;
-class A extends C{
-    public static void main(String[] args,int a){
-        int x;
-    }
-    public int C(){
-        int x;
-        x = 3 + C.foo();
-        return x;
-    }
-}
+import io;
+ class Simple{
+
+     public int add(int a, int b){
+         int c;
+         c = a + this.constInstr();
+         return c;
+     }
+
+     public static void main(String[] args){
+         int a;
+         int b;
+         int c;
+         Simple s;
+         a = 20;
+         b = 10;
+         s = new Simple();
+         c = s.add(a,b);
+         io.println(c);
+     }
+
+     public int constInstr(){
+         int c;
+         c = 0;
+         return c;
+     }
+
+ }
