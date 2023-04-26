@@ -42,6 +42,9 @@ public class MethodSymbolTableGen extends Analyser<Void> {
             else {
                 this.methodTable.addParameter(thisParameter);
             }
+            Optional<Symbol> shadowsClassField = getSymbol(classFields,thisParameter);
+            String shadowingText = "Parameter " +thisParameter + "is shadowing ";
+            shadowsClassField.ifPresent(symbol -> reports.add(this.createWarningReport(jmmNode, shadowingText + "class field" + symbol)));
         }
         return null;
     }
@@ -82,6 +85,14 @@ public class MethodSymbolTableGen extends Analyser<Void> {
         return null;
     }
 
+    public Optional<Symbol> getSymbol(List<Symbol> symbols, Symbol target) {
+        for (Symbol s : symbols) {
+            if (s.getName().equals(target.getName())) {
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
+    }
 
     public MethodSymbolTable getMethodTable() {
         return  this.methodTable;

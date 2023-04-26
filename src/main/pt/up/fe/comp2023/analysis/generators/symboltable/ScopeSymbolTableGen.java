@@ -47,8 +47,8 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
         //    this.thisScope.addSymbol(s);
         //}
         this.thisScope.addSymbol(s);
-        String shadowingText = "Variable " + s + "is shadowing ";
         Optional<Symbol> maybeField = getSymbol(classFields, s);
+        String shadowingText = "Variable " + s + "is shadowing ";
         maybeField.ifPresent(symbol -> reports.add(this.createWarningReport(jmmNode, shadowingText + "class field" + symbol)));
         return null;
 
