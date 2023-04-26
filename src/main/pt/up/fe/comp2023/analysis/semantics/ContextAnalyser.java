@@ -26,14 +26,26 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         this.availableTypes = new ArrayList<>();
         availableTypes.addAll(JmmBuiltins.builtinTypes());
         availableTypes.add(new Type(symbolTable.getClassName(), false));
-
-
     }
 
 
     private Optional<Type> checkClassScope(String identifier) {
         return symbolTable.getFieldTry(identifier);
 
+    }
+
+    private Optional<Type> checkMethodScope(String identifier, String currentMethod) {
+        for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
+            if (s.getName().equals(identifier)) {
+                return Optional.ofNullable(s.getType());
+            }
+        }
+        for (Symbol s : symbolTable.getParameters(currentMethod)) {
+            if (s.getName().equals(identifier)) {
+                return Optional.ofNullable(s.getType());
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<Type> checkImports(String identifier) {
@@ -44,6 +56,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
     }
 
     protected boolean validType(Type t) {
+        // TODO: validType also increments usage :: bad Design ->> side effects
         Type compareT = t;
         if (t.isArray()) {
             compareT = new Type(t.getName(), false);
@@ -54,7 +67,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
             }
         }
         // Should this function increment?
-        for(Type importedType : symbolTable.getImportTypes()){
+        for (Type importedType : symbolTable.getImportTypes()) {
             if (compareT.equals(importedType)) {
                 symbolTable.incrementImport(importedType);
                 return true;
@@ -73,50 +86,42 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         return null;
     }
 
-    public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
-        Optional<Type> t;
-        if (context.isClassContext()) {
-            t =checkClassScope(identifier);
+    private Optional<Type> handleIdentifierInMethod(String identifier, String currentMethod, JmmNode jmmNode, List<Report> reports) {
+        Optional<Type> inMethod = checkMethodScope(identifier, currentMethod);
+        if (inMethod.isPresent()) {
+            return inMethod;
         }
-        // Method context
-        else {
-            String currentMethod = context.getMethodSignature();
-            for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
-            for (Symbol s : symbolTable.getParameters(currentMethod)) {
-                if (s.getName().equals(identifier)) {
-                    return Optional.ofNullable(s.getType());
-                }
-            }
+        Optional<Type> inClass = checkClassScope(identifier);
+        if (inClass.isPresent()) {
             if (symbolTable.isStaticMethod(currentMethod)) {
-                // Check statics?
-                t = checkImports(identifier);
-                if (t.isEmpty()) {
-                    Optional<Type> accessingField = checkClassScope(identifier);
-                    if (accessingField.isPresent()) {
-                        reports.add(this.createErrorReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
-                        return t;
-                    }
-                }
-            } else {
-                t =checkClassScope(identifier);
+                // For now we assume that this is an error but we could try to check for imports to see if something is available
+                reports.add(this.createErrorReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
+                return Optional.empty();
             }
+            return inClass;
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
+        if (!context.isClassContext()) {
+            Optional<Type> inMethod = handleIdentifierInMethod(identifier, context.getMethodSignature(), jmmNode, reports);
+            if (inMethod.isPresent())
+                return inMethod;
+        }
+        // Class Context
+        else {
+            Optional<Type> inClass = checkClassScope(identifier);
+            if (inClass.isPresent())
+                return inClass;
         }
         // Could be an import
-        if (t.isEmpty()) {
-            Type identifierType = new Type(identifier, false);
-            // TODO: validType also increments usage :: bad Design
-            if (!validType(identifierType)) {
-                reports.add(this.createErrorReport(jmmNode, "Undefined Identifier " + identifier));
-                return Optional.empty();
-            } else {
-                return Optional.of(identifierType);
-            }
+        Type identifierType = new Type(identifier, false);
+        if (!validType(identifierType)) {
+            reports.add(this.createErrorReport(jmmNode, "Undefined Identifier " + identifier));
+            return Optional.empty();
         }
-        return t;
+        return Optional.of(identifierType);
     }
 
 }
