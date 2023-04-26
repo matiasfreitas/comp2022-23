@@ -57,9 +57,7 @@ public class OllirGenerator implements JmmOptimization {
 
         // Convert the AST to a String containing the equivalent OLLIR code
         StringBuilder ollirCode = new StringBuilder(); // Convert node ...
-
         iterateOverCodeScope(semanticsResult.getRootNode(), ollirCode, new HashMap<>(), "");
-
         System.out.println(ollirCode.toString());
         // More reports from this stage
         reports.addAll(semanticsResult.getReports());
@@ -82,7 +80,7 @@ public class OllirGenerator implements JmmOptimization {
     boolean hasReturn = false;
 
     public String iterateOverCodeScope(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables, String returnType) {
-
+        System.out.println(rootNode.getKind());
         //Classes
         if (rootNode.getKind().equals("ClassDeclaration")) {
             dealWithClassDeclaration(rootNode, ollirCode);
@@ -116,9 +114,9 @@ public class OllirGenerator implements JmmOptimization {
             return ollirCode.toString();
         }
 
-        //Binary operations
+
         else if (rootNode.getKind().equals("BinaryOp")) {
-            ollirCode.append(dealWithOperation(rootNode, ollirCode).toString());
+            ollirCode = dealWithBinaryOp(rootNode, ollirCode);
         }
 
         //Methods Calls
@@ -208,10 +206,12 @@ public class OllirGenerator implements JmmOptimization {
             ollirCode.append(newLine());
             ollirCode.append("returnVariable.");
             ollirCode.append(returnType);
-            ollirCode.append(" ");
+            ollirCode.append(":=.");
+            ollirCode.append(returnType + " ");
             for (JmmNode children:  rootNode.getChildren()) {
                 ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
             }
+            ollirCode.append(";");
             ollirCode.append(newLine());
             ollirCode.append("ret.");
             ollirCode.append(returnType);
@@ -373,7 +373,7 @@ public class OllirGenerator implements JmmOptimization {
         else if (type.getKind().equals("Identifier")) typeKind = type.get("type");
         else if (type.getKind().equals("MethodCalling")) typeKind = scopeVariables.get(rootNode.get("varName"));
         else if (rootNode.getKind().equals("ReturnStatement")) typeKind = type.getKind();
-        else if (rootNode.getKind().equals("Assignment")) typeKind = type.getKind();
+        else if (rootNode.getKind().equals("Assignment")) typeKind = rootNode.getJmmChild(0).get("type");
         else if (scopeVariables.containsKey(type.get("varName"))) typeKind = scopeVariables.get(type.get("varName"));
         else if (attributes.containsKey(type.get("varName"))) typeKind = attributes.get(type.get("varName"));
 
@@ -386,7 +386,8 @@ public class OllirGenerator implements JmmOptimization {
         else if (typeKind.equals("STRING")) ollirCode.append("String");
         else if (typeKind.equals("void")) ollirCode.append("V");
 
-        else ollirCode.append(typeKind);
+        else
+            ollirCode.append(typeKind);
 
 
         return ollirCode.toString();
@@ -405,7 +406,7 @@ public class OllirGenerator implements JmmOptimization {
         }
         else{
             String name = rootNode.get("type");
-            ollirCode.append(name).append(".");
+            ollirCode.append(rootNode.get("value")).append(".");
 
             String kind = dealWithType(rootNode, scopeVariables);
             ollirCode.append(kind);
@@ -557,6 +558,9 @@ public class OllirGenerator implements JmmOptimization {
                     ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
                     return ollirCode;
                 }
+                else if(children.getKind().equals("BinaryOp")){
+                    ollirCode = dealWithBinaryOp(children, ollirCode);
+                }
 
             }
         }
@@ -566,39 +570,64 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
-
-    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
+    private StringBuilder dealWithBinaryOp(JmmNode rootNode, StringBuilder ollirCode) {
         StringBuilder expression = new StringBuilder();
-        String op = rootNode.get("op");
+
         String firstTerm;
         String secondTerm;
         String aux;
+        String op = rootNode.get("op");
 
+        String type;
+        if (rootNode.get("type").equals("boolean")) {
+            type = (".bool");
+        }
+        else if (rootNode.get("type").equals("int")) {
+            type = (".i32");
+        }
+        else
+            type = ".V";
+        firstTerm = rootNode.getJmmChild(0).get("value");
+        secondTerm = rootNode.getJmmChild(1).get("value");
+        expression.append( firstTerm + type);
+        expression.append(rootNode.get("op") + " ");
+        expression.append(type + " " + secondTerm + type);
+        expression.append("\n");
+        ollirCode.append(expression);
+        return ollirCode;
 
-        if(rootNode.getJmmChild(0).getKind().equals("Integer") || rootNode.getJmmChild(0).getKind().equals("Identifier")) {
+    }
+    private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
+        StringBuilder expression = new StringBuilder();
+
+        String firstTerm;
+        String secondTerm;
+        String aux;
+        String op = rootNode.get("op");
+
+        if (rootNode.getJmmChild(0).getKind().equals("Integer") || rootNode.getJmmChild(0).getKind().equals("Identifier")) {
             firstTerm = rootNode.getJmmChild(0).get("value");
 
             expression.append(":=.i32 ");
             expression.append(firstTerm);
             expression.append(".i32");
-        } else{
+        } else {
             aux = "";
-            for(JmmNode children: rootNode.getJmmChild(0).getChildren()){
-                aux.concat(dealWithOperation(children,ollirCode).toString());
+            for (JmmNode children : rootNode.getJmmChild(0).getChildren()) {
+                aux.concat(dealWithOperation(children, ollirCode).toString());
             }
             expression.append(aux);
         }
-        if(rootNode.getJmmChild(1).getKind().equals("Integer") || rootNode.getJmmChild(1).getKind().equals("Identifier")){
+        if (rootNode.getJmmChild(1).getKind().equals("Integer") || rootNode.getJmmChild(1).getKind().equals("Identifier")) {
             secondTerm = rootNode.getJmmChild(1).get("value");
             expression.append(op);
             expression.append(".i32 ");
             expression.append(secondTerm);
             expression.append(".i32");
-        }
-        else{
+        } else {
             aux = "";
-            for(JmmNode child: rootNode.getJmmChild(1).getChildren()){
-                aux.concat(dealWithOperation(child,ollirCode).toString());
+            for (JmmNode child : rootNode.getJmmChild(1).getChildren()) {
+                aux.concat(dealWithOperation(child, ollirCode).toString());
             }
             expression.append(aux);
         }
