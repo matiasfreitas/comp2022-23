@@ -54,7 +54,7 @@ public class Launcher {
         //System.out.println(rootNode.toTree());
         System.out.println("Reports:");
         for(Report r : l){
-            System.out.println(r.toString());
+            System.err.println(r.toString());
         }
         // ... add remaining stages
     }

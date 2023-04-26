@@ -1,12 +1,12 @@
 import foo.C;
 class A {
-    public static void main(String[] args){
+    public static void main(String[] args,int args){
         int[] b;
         A a;
         int errou;
         errou = 3;
         a = new A();
-        a.test(errou);
+        a.test(b);
     }
     public void test(int[] a){
     }

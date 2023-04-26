@@ -24,7 +24,7 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
     }
 
     private Void handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        System.out.println(jmmNode.getAttributes());
+        //System.out.println(jmmNode.getAttributes());
         Optional<String> hasSuper = jmmNode.getOptional("extendsName");
         if(hasSuper.isPresent()){
             Type superType = new Type(hasSuper.get(),false);

@@ -62,9 +62,9 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Im checking identifier " + jmmNode.get("value"));
+        //System.out.println("Im checking identifier " + jmmNode.get("value"));
         Optional<Type> t = this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
-        System.out.println(t);
+        //System.out.println(t);
         return  t;
     }
 
@@ -171,7 +171,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
-        System.out.println("Tring to call method of object" + maybeObjectType);
+        //System.out.println("Tring to call method of object" + maybeObjectType);
         if (maybeObjectType.isEmpty()) {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
@@ -191,8 +191,8 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
         }
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
-        System.out.println(signature);
-        System.out.println(parameters);
+        //System.out.println(signature);
+        //System.out.println(parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
             // The class we are defining does not contain that method
