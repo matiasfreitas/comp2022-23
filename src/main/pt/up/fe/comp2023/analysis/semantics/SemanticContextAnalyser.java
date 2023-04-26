@@ -29,7 +29,7 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
         if(hasSuper.isPresent()){
             Type superType = new Type(hasSuper.get(),false);
             if(!this.validType(superType)){
-                reports.add(this.createReport(jmmNode,"This class extends undefined type "+ superType+ " maybe try importing it!"));
+                reports.add(this.createErrorReport(jmmNode,"This class extends undefined type "+ superType+ " maybe try importing it!"));
             }
         }
         return this.visitAllChildren(jmmNode,reports);

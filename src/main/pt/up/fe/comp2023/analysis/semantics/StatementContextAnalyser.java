@@ -33,7 +33,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         Optional<Type> conditionType = ex.getType();
         if (conditionType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(conditionType.get(), JmmBuiltins.JmmBoolean)) {
             String message = "Condition expression evaluates to " + conditionType.get() + " but should evaluate to boolean";
-            reports.add(this.createReport(jmmNode, message));
+            reports.add(this.createErrorReport(jmmNode, message));
         }
         return null;
     }
@@ -90,7 +90,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
                     b.append(assignedType);
                     b.append("To a variable of type ");
                     b.append(type);
-                    reports.add(this.createReport(jmmNode, b.toString()));
+                    reports.add(this.createErrorReport(jmmNode, b.toString()));
                 }
             }
         }
@@ -105,14 +105,14 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         if (maybeArrayType.isPresent()) {
             Type arrayType = maybeArrayType.get();
             if (!arrayType.isArray()) {
-                reports.add(this.createReport(jmmNode, "Trying to index type that is not an array"));
+                reports.add(this.createErrorReport(jmmNode, "Trying to index type that is not an array"));
             }
             JmmNode indexNode = jmmNode.getJmmChild(0);
             ExpressionContextAnalyser ex = new ExpressionContextAnalyser(indexNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeIndexType = ex.getType();
             if (maybeIndexType.isPresent() && !maybeIndexType.get().getName().equals("int")) {
-                reports.add(this.createReport(jmmNode, "Array Index Must Be of Type integer"));
+                reports.add(this.createErrorReport(jmmNode, "Array Index Must Be of Type integer"));
             }
             JmmNode expressionNode = jmmNode.getJmmChild(1);
             ex = new ExpressionContextAnalyser(expressionNode, symbolTable, context);
@@ -124,7 +124,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
                 b.append(maybeAssignType.get());
                 b.append("To an array of ");
                 b.append(acceptsType);
-                reports.add(this.createReport(jmmNode, b.toString()));
+                reports.add(this.createErrorReport(jmmNode, b.toString()));
             }
         }
         return null;
@@ -145,7 +145,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
                     .append(" But ")
                     .append(exType.get())
                     .append(" is being returned");
-            reports.add(this.createReport(jmmNode, error.toString()));
+            reports.add(this.createErrorReport(jmmNode, error.toString()));
         }
         return null;
     }

@@ -1,10 +1,8 @@
 package pt.up.fe.comp2023.analysis.generators.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ScopeSymbolTable;
@@ -39,7 +37,7 @@ public class ScopeSymbolTableGen extends Analyser<Void> {
         Optional<Symbol> maybeDefined = this.thisScope.getSymbol(s.getName());
         if (maybeDefined.isPresent()) {
             Symbol alreadyDefined = maybeDefined.get();
-            reports.add(this.createReport(jmmNode, "Variable Symbol is already defined as " + alreadyDefined.toString()));
+            reports.add(this.createErrorReport(jmmNode, "Variable Symbol is already defined as " + alreadyDefined.toString()));
             Optional<Symbol>  maybeParam = getSymbol(methodParameters,alreadyDefined);
             Optional<Symbol> maybeField  = getSymbol(classFields,alreadyDefined);
 

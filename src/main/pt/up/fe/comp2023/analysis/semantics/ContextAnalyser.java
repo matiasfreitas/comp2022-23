@@ -2,16 +2,13 @@ package pt.up.fe.comp2023.analysis.semantics;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +70,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         sg.visit(jmmNode);
         Symbol s = sg.getSymbol();
         if (!this.validType(s.getType())) {
-            reports.add(createReport(jmmNode, "Type " + s.getType() + " is not an available type"));
+            reports.add(createErrorReport(jmmNode, "Type " + s.getType() + " is not an available type"));
         }
         return null;
     }
@@ -102,7 +99,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
                 if (t.isEmpty()) {
                     Optional<Type> accessingField = checkClassScope(identifier);
                     if (accessingField.isPresent()) {
-                        reports.add(this.createReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
+                        reports.add(this.createErrorReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
                         return t;
                     }
                 }
@@ -114,7 +111,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         if (t.isEmpty()) {
             Type identifierType = new Type(identifier, false);
             if (!validType(identifierType)) {
-                reports.add(this.createReport(jmmNode, "Undefined Identifier"));
+                reports.add(this.createErrorReport(jmmNode, "Undefined Identifier"));
                 return Optional.empty();
             } else {
                 return Optional.of(identifierType);

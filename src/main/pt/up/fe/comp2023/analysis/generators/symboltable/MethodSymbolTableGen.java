@@ -37,7 +37,7 @@ public class MethodSymbolTableGen extends Analyser<Void> {
 
             Optional<Symbol> alreadyDefined = this.methodTable.getParameter(thisParameter.getName());
             if(alreadyDefined.isPresent()){
-                reports.add(this.createReport(jmmNode, "Redefinition of parameter " + alreadyDefined.get()));
+                reports.add(this.createErrorReport(jmmNode, "Redefinition of parameter " + alreadyDefined.get()));
             }
             else {
                 this.methodTable.addParameter(thisParameter);
