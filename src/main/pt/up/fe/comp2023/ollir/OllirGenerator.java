@@ -429,7 +429,6 @@ public class OllirGenerator implements JmmOptimization {
         if (i < rootNode.getNumChildren())
             ollirCode = dealWithVar(rootNode.getJmmChild(i), ollirCode, scopeVariables);
 
-        ollirCode.deleteCharAt(ollirCode.length() - 1);
         return ollirCode;
     }
 
@@ -542,7 +541,7 @@ public class OllirGenerator implements JmmOptimization {
 
                 ollirCode.append(" ");
                 JmmNode children = rootNode.getChildren().get(0);
-
+                //TODO Martim vê isto
                 if (children.getKind().equals("Int")) {
                     ollirCode.append(children.get("value"));
                     ollirCode.append(".i32 ");
