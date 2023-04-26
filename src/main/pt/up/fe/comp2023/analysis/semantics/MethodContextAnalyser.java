@@ -20,7 +20,7 @@ public class MethodContextAnalyser extends ContextAnalyser<Void> {
         // TODO: method overloading proper implementation
         // TODO: method overloading error logging
         MethodSymbolTableGen m = new MethodSymbolTableGen(root,new LinkedList<>());
-        List<Report> throwAway = m.analyse();
+        m.analyse();
         this.methodTable = m.getMethodTable();
         String methodRepresentaion = this.methodTable.getStringRepresentation();
         // System.out.println("Method Analyser of method with following representation: " + methodRepresentaion);

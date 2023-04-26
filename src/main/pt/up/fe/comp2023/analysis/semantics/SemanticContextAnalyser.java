@@ -3,7 +3,6 @@ package pt.up.fe.comp2023.analysis.semantics;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.generators.symboltable.JmmSymbolTableGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
@@ -43,9 +42,8 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
     private Void handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Method Declaration");
         MethodContextAnalyser ma = new MethodContextAnalyser(jmmNode, symbolTable, context);
-        // TODO: refacto type gen
+        // TODO: refactor type gen
         TypeGen tg = new TypeGen();
-        System.out.println(jmmNode.getJmmChild(0).toTree());
         tg.visit(jmmNode.getJmmChild(0));
         Type returnType = tg.getType();
         if(!validType(returnType)){
@@ -84,7 +82,6 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
         List<Report> reports = new LinkedList<>();
         this.visit(this.root, reports);
         this.symbolTable.getImportsUsage().forEach((importV, usage) -> {
-            System.out.println(importV);
             if (usage.equals(0)) {
                 reports.add(createUnusedImportReport(importV));
             }

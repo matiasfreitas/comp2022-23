@@ -63,7 +63,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
         Optional<Type> t = this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
-        return  t;
+        return t;
     }
 
 
@@ -127,7 +127,6 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
     private Optional<Type> handleSingleOp(JmmNode jmmNode, List<Report> reports) {
         String op = jmmNode.get("op");
-        //System.out.println(jmmNode.getAttributes());
         Optional<Type> maybeT = this.visit(jmmNode.getJmmChild(0), reports);
         if (maybeT.isPresent()) {
             Type t = maybeT.get();
@@ -156,7 +155,6 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             }
             // TODO: check visibility
             reports.add(this.createErrorReport(jmmNode, "Attribute `" + attributeName + "` is not a valid attribute"));
-
             return Optional.empty();
         } else {
             // TODO:  Verificar que object é um import
@@ -169,13 +167,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     private Optional<Type> handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
         JmmNode object = jmmNode.getJmmChild(0);
         Optional<Type> maybeObjectType = this.visit(object, reports);
-        System.out.println("Tring to call method of object" + maybeObjectType);
         if (maybeObjectType.isEmpty()) {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
         }
         Type objectType = maybeObjectType.get();
-        boolean error = false;
         String method = jmmNode.get("methodName");
         List<Type> parameters = new LinkedList<>();
         for (int i = 1; i < jmmNode.getNumChildren(); i++) {
@@ -189,8 +185,6 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
         }
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
-        //System.out.println(signature);
-        //System.out.println(parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
             // The class we are defining does not contain that method
@@ -297,8 +291,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     }
 
     private Optional<Type> handleLiteral(JmmNode jmmNode, List<Report> reports) {
-        Optional<Type> builtin = JmmBuiltins.fromJmmNode(jmmNode);
-        return builtin;
+        return JmmBuiltins.fromJmmNode(jmmNode);
     }
 
     @Override

@@ -1,14 +1,11 @@
 package pt.up.fe.comp2023.analysis.generators.symboltable;
 
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.semantics.Analyser;
 import pt.up.fe.comp2023.analysis.symboltable.ClassSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
-import pt.up.fe.comp2023.analysis.symboltable.MyJmmSymbolTable;
 
-import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -69,7 +66,4 @@ public class JmmSymbolTableGen extends Analyser<Void> {
         return new JmmSymbolTable(imports, classes.get(0));
     }
 
-    public MyJmmSymbolTable getMyJmmSymbolTable() {
-        return new MyJmmSymbolTable(imports, classes);
-    }
 }

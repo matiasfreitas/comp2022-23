@@ -9,7 +9,6 @@ public class UsageContext {
 
     public UsageContext() {
         this.classContext = false;
-
     }
 
     public void setClassContext() {
