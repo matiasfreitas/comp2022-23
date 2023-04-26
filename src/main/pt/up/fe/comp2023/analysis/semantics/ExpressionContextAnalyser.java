@@ -63,7 +63,9 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
     private Optional<Type> handleIdentifier(JmmNode jmmNode, List<Report> reports) {
         System.out.println("Im checking identifier " + jmmNode.get("value"));
-        return this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
+        Optional<Type> t = this.checkIdentifier(jmmNode.get("value"), jmmNode, reports);
+        System.out.println(t);
+        return  t;
     }
 
 
@@ -189,7 +191,8 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
         }
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
-        //System.out.println(signature);
+        System.out.println(signature);
+        System.out.println(parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
             // The class we are defining does not contain that method
