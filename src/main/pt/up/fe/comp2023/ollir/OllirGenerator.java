@@ -656,7 +656,37 @@ public class OllirGenerator implements JmmOptimization {
 
         else{
 
-            firstTerm = rootNode.getJmmChild(0).get("value");
+            if (rootNode.getJmmChild(0).getKind().equals("BinaryOp")) {
+                ollirCode = dealWithBinaryOp(rootNode.getJmmChild(0), ollirCode, scopeVariables);
+                firstTerm = rootNode.getJmmParent().get("varName");
+                expression.append(";\n");
+                expression.append(firstTerm + type + " :=" + type);
+                if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
+                    secondTerm = rootNode.getJmmParent().get("varName");
+                    scopeVariables.put(secondTerm, type);
+
+                    expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
+                    tempCount++;
+                    expression.append(newLine());
+                    expression = expression.append(secondTerm).append(type).append(" :=").append(type);
+                }
+                else{
+                    secondTerm = rootNode.getJmmChild(1).get("value");
+                }
+
+
+                expression.append(" ").append( firstTerm + type + " ");
+                expression.append(rootNode.get("op"));
+                expression.append(type + " " + secondTerm + type);
+
+                ollirCode.append(expression);
+                return ollirCode;
+
+
+            }
+            else {
+                firstTerm = rootNode.getJmmChild(0).get("value");
+            }
         }
 
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
