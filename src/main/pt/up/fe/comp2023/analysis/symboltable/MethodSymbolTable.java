@@ -24,6 +24,9 @@ public class MethodSymbolTable {
         StringBuilder repr = new StringBuilder(methodName);
         for(Type t : parameters){
             repr.append("_").append(t.getName());
+            if(t.isArray()){
+                repr.append("[]");
+            }
         }
         return repr.toString();
     }
