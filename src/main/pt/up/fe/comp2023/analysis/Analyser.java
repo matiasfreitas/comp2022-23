@@ -20,12 +20,16 @@ public class Analyser implements JmmAnalysis {
         JmmSymbolTableGen symbolTableGen =  new JmmSymbolTableGen(jmmParserResult.getRootNode());
         List<Report> symbolTableReports = symbolTableGen.analyse();
         JmmSymbolTable symbolTable = symbolTableGen.getJmmSymbolTable();
-        System.out.println(symbolTable.print());
 
+        // TODO: Add warnings
+        // TODO:      - Shadowing variables: shadowing class variables?
+        // TODO:      - Unused parameters
+        // TODO:      - Unused variables
+        // TODO:      - Unused imports
+        // TODO:      - always true conditions
+        // TODO:      - missing return statement when not returning void
         SemanticContextAnalyser semanticAnalyser = new SemanticContextAnalyser(jmmParserResult.getRootNode(),symbolTable,new UsageContext());
-        System.out.println("Performing Analysis");
         List<Report> reports = semanticAnalyser.analyse();
-        System.out.println("Endend Analysis");
         reports.addAll(symbolTableReports);
         return new JmmSemanticsResult(jmmParserResult,symbolTable,reports);
     }

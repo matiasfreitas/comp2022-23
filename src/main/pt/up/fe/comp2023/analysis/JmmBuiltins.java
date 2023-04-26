@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public class JmmBuiltins {
 
+    // TODO add JmmVoid builtin?
     public static Type JmmInt = new Type("int",false);
     public static Type JmmChar = new Type("char",false);
     public static Type JmmBoolean = new Type("boolean",false);
