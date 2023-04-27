@@ -687,7 +687,7 @@ public class OllirGenerator implements JmmOptimization {
         String secondTerm;
         String aux;
         String op = rootNode.get("op");
-
+        expression.append(newLine());
         String type;
         if (rootNode.get("type").equals("boolean")) {
             type = (".bool");
@@ -701,21 +701,17 @@ public class OllirGenerator implements JmmOptimization {
 
         //First Term
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
-            expression.append(newLine());
-            expression.append(assigned + type + " :=" + type);
+
 
             firstTerm = assigned;
-
-            expression.delete(0, expression.length());
+            expression.append(assigned + type + " :=" + type);
             String tempVar = "temp" + String.valueOf(tempCount);
             tempCount++;
             assigned = tempVar;
-            expression.append(tempVar).append(type).append(" :=").append(type);
 
             expression = (dealWithMethodCalling(rootNode.getJmmChild(0), expression, scopeVariables));
             expression.append(newLine());
 
-            expression = expression.append(assigned).append(type).append(" :=").append(type);
 
         }
 
@@ -759,11 +755,10 @@ public class OllirGenerator implements JmmOptimization {
         //Second Term
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
 
-            expression.delete(0, expression.length());
             String tempVar = "temp" + String.valueOf(tempCount);
             tempCount++;
-            expression.append(tempVar).append(type).append(" :=").append(type);
 
+            expression.append(assigned + type + " :=" + type);
             expression = dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables);
             expression.append(newLine());
 
@@ -795,12 +790,7 @@ public class OllirGenerator implements JmmOptimization {
         else if (attributes.containsKey(rootNode.getJmmChild(1).get("value"))) {
             String tempVar = "temp_" + tempCount + type;
 
-
-
             ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1), tempVar);
-
-            expression = new StringBuilder("");
-            expression.append(tempVar).append(" :=" + type + " ");
 
             secondTerm = tempVar;
         }
