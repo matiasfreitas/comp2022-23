@@ -200,10 +200,11 @@ public class OllirGenerator implements JmmOptimization {
         if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
                 !rootNode.getChildren().get(0).hasAttribute("value")){
             ollirCode.append(newLine());
-            ollirCode.append("returnVariable");
             for (JmmNode children:  rootNode.getChildren()) {
-                ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
+                if (children.getKind().equals("BinaryOp"))
+                    ollirCode = (dealWithBinaryOp(children, ollirCode, scopeVariables, "returnVariable"));
             }
+
             ollirCode.append(";\n");
             ollirCode.append(newLine());
             ollirCode.append("ret.");
@@ -721,7 +722,7 @@ public class OllirGenerator implements JmmOptimization {
             expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, tempVar);
             tempCount++;
             expression.append(";\n" + newLine());
-            firstTerm = assigned;
+            firstTerm = tempVar;
 
             StringBuilder newExpression = new StringBuilder();
 
