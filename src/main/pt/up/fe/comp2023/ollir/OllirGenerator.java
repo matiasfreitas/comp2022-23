@@ -680,17 +680,19 @@ public class OllirGenerator implements JmmOptimization {
         expression.append(newLine());
         expression.append(assigned + type + " :=" + type);
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
-            firstTerm = rootNode.getJmmParent().get("varName");
+            firstTerm = assigned;
 
-            scopeVariables.put(firstTerm, type);
-            assigned = firstTerm;
-
-
+            expression.delete(0, expression.length());
+            String tempVar = "temp" + String.valueOf(tempCount);
+            tempCount++;
+            assigned = tempVar;
+            expression.append(tempVar).append(type).append(" :=").append(type);
 
             expression = (dealWithMethodCalling(rootNode.getJmmChild(0), expression, scopeVariables));
-            tempCount++;
             expression.append(newLine());
-            expression.append("temp" + String.valueOf(tempCount)).append(".").append(type).append(" :=.").append(type);
+
+            expression = expression.append(assigned).append(type).append(" :=").append(type);
+
         }
 
         else{
@@ -705,6 +707,8 @@ public class OllirGenerator implements JmmOptimization {
 
                 expression.append(assigned + type + " :=" + type);
 
+
+
             }
             else {
                 firstTerm = rootNode.getJmmChild(0).get("value");
@@ -712,19 +716,18 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
-            secondTerm = assigned;
-
-
-            scopeVariables.put(firstTerm, type);
-            assigned = firstTerm;
 
             expression.delete(0, expression.length());
-            expression.append("temp" + String.valueOf(tempCount)).append(type).append(" :=").append(type);
+            String tempVar = "temp" + String.valueOf(tempCount);
             tempCount++;
+            expression.append(tempVar).append(type).append(" :=").append(type);
+
             expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
             expression.append(newLine());
 
-            expression = expression.append("temp" + String.valueOf(tempCount)).append(type).append(" :=").append(type);
+            expression = expression.append(assigned).append(type).append(" :=").append(type);
+            secondTerm = tempVar;
+
         }
         else if (rootNode.getJmmChild(1).getKind().equals("BinarOp")){
             expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, assigned);
