@@ -139,9 +139,10 @@ public class OllirGenerator implements JmmOptimization {
         }
 
         //Create code for children
-        for (JmmNode childrenNode : rootNode.getChildren()) {
-            ollirCode.append(iterateOverCodeScope(childrenNode, new StringBuilder(), scopeVariables, returnType));
-        }
+        if (!rootNode.getKind().equals("MethodCalling"))
+            for (JmmNode childrenNode : rootNode.getChildren()) {
+                ollirCode.append(iterateOverCodeScope(childrenNode, new StringBuilder(), scopeVariables, returnType));
+            }
 
         //Finish Class Declaration
         if (rootNode.getKind().equals("ClassDeclaration")) {
@@ -324,19 +325,48 @@ public class OllirGenerator implements JmmOptimization {
         }
         else if(isPackage){
 
+            String parameter = "";
+
+            for (int i = 1; i < rootNode.getChildren().size(); i++) {
+                if (rootNode.getJmmChild(i).getKind().equals("BinaryOp")) {
+                    tempCount++;
+                    ollirCode = dealWithBinaryOp(rootNode.getChildren().get(i), ollirCode, scopeVariables, "temp" + tempCount);
+                    ollirCode.append(";\n");
+                    String[] ollirWords = ollirCode.toString().split(" ");
+                    for(String word : ollirWords)
+                        if (word.startsWith("temp" + (tempCount - 1))) {
+                            parameter = word;
+                            break;
+                        }
+
+                }
+                else {
+                    if (rootNode.getJmmChild(i).getKind().equals("Identifier")){
+                        parameter = rootNode.getJmmChild(i).get("value");
+                        String type =  rootNode.getJmmChild(i).get("type");
+                        switch (type) {
+                            case "int": parameter += ".i32"; break;
+                            case "bool": parameter += ".bool"; break;
+                        }
+                    }
+                    else if (rootNode.getJmmChild(i).getKind().equals("Int")) parameter = rootNode.getJmmChild(i).get("value") + ".i32";
+                    else if (rootNode.getJmmChild(i).getKind().equals("boolean")) parameter = rootNode.getJmmChild(i).get("value" + ".bool");
+                }
+
+            }
+
+
             ollirCode.append("invokestatic(");
             ollirCode.append(rootNode.getChildren().get(0).get("value"));
             ollirCode.append(", \"");
             ollirCode.append(rootNode.get("methodName"));
             ollirCode.append("\"");
 
-            for (int i = 1; i < rootNode.getChildren().size(); i++) {
-                ollirCode.append(", ");
-
-
-                ollirCode.append(dealWithVar(rootNode.getChildren().get(i), scopeVariables));
-
+            if (rootNode.getChildren().size() > 1) {
+                ollirCode.append(", " + parameter);
             }
+
+
 
             ollirCode.append(").V;\n");
         }
