@@ -737,9 +737,11 @@ public class OllirGenerator implements JmmOptimization {
 
 
             }
-            else if (rootNode.getJmmParent().getKind().equals("Assignment"))  firstTerm = tempVar;
+            else if (rootNode.getJmmParent().getKind().equals("Assignment")){
+                firstTerm = tempVar;
+            }
 
-            expression.append(assigned + type + " :=" + type);
+
 
 
         }
@@ -749,8 +751,7 @@ public class OllirGenerator implements JmmOptimization {
             firstTerm = tempVar;
         }
         else {
-            expression.append(newLine());
-            expression.append(assigned + type + " :=" + type);
+
             firstTerm = rootNode.getJmmChild(0).get("value");
         }
 
@@ -766,13 +767,30 @@ public class OllirGenerator implements JmmOptimization {
             expression = dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables);
             expression.append(newLine());
 
-            expression = expression.append(assigned).append(type).append(" :=").append(type);
             secondTerm = tempVar;
 
         }
-        else if (rootNode.getJmmChild(1).getKind().equals("BinarOp")){
-            expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, assigned);
+        else if (rootNode.getJmmChild(1).getKind().equals("BinaryOp")){
+            String tempVar = "temp" + String.valueOf(tempCount);
+            expression = dealWithBinaryOp(rootNode.getJmmChild(1), expression, scopeVariables, tempVar);
+            tempCount++;
+            expression.append(";\n" + newLine());
             secondTerm = assigned;
+
+            StringBuilder newExpression = new StringBuilder();
+
+            if(rootNode.getJmmParent().getKind().equals("Assignment") &&
+                    attributes.containsKey(rootNode.getJmmParent().getKind().equals("Assignment"))){
+                tempVar = "temp_" + tempCount;
+                newExpression = dealWithPutField(rootNode.getJmmParent(), ollirCode, scopeVariables, newExpression, tempVar);
+                ollirCode.append(newExpression);
+
+
+            }
+            else if (rootNode.getJmmParent().getKind().equals("Assignment")){
+                secondTerm = tempVar;
+            }
+
         }
         else if (attributes.containsKey(rootNode.getJmmChild(1).get("value"))) {
             String tempVar = "temp_" + tempCount + type;
@@ -792,7 +810,7 @@ public class OllirGenerator implements JmmOptimization {
         }
 
 
-
+        expression.append(assigned + type + " :=" + type);
         expression.append(" ").append( firstTerm + type + " ");
         expression.append(rootNode.get("op"));
         expression.append(type + " " + secondTerm + type);
