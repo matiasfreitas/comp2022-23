@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 
+import java.io.StringReader;
 import java.util.*;
 
 /*
@@ -572,8 +573,14 @@ public class OllirGenerator implements JmmOptimization {
             else if(children.getKind().equals("MethodCalling")){
                 ollirCode.append(newExpression);
                 ollirCode = dealWithMethodCalling(rootNode.getJmmChild(0), ollirCode, scopeVariables);
-            }
+            } else if (children.getKind().equals("BinaryOp")) {
+                tempCount++;
+                ollirCode = dealWithBinaryOp(children, ollirCode, scopeVariables);
+                ollirCode.append(";\n" + newLine());
+                newExpression = dealWithVar(children.getJmmChild(0), newExpression, scopeVariables);
+                ollirCode.append(newExpression);
 
+            }
             ollirCode.append(").V");
         }
         else{
@@ -639,6 +646,7 @@ public class OllirGenerator implements JmmOptimization {
                     return ollirCode;
                 }
                 else if(children.getKind().equals("BinaryOp")){
+                    String tempVar = "temp" + String.valueOf(tempCount);
                     ollirCode = dealWithBinaryOp(children, ollirCode, scopeVariables);
                 }
 
@@ -650,7 +658,8 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
-    private StringBuilder dealWithBinaryOp(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
+    private StringBuilder dealWithBinaryOp(JmmNode rootNode, StringBuilder ollirCode, HashMap<String,
+            String> scopeVariables) {
         StringBuilder expression = new StringBuilder();
 
         String firstTerm;
@@ -670,12 +679,17 @@ public class OllirGenerator implements JmmOptimization {
         expression.append(newLine());
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
             firstTerm = rootNode.getJmmParent().get("varName");
+            String assigned = "";
+
             scopeVariables.put(firstTerm, type);
+            assigned = firstTerm;
+
+
 
             expression = (dealWithMethodCalling(rootNode.getJmmChild(0), expression, scopeVariables));
             tempCount++;
             expression.append(newLine());
-            expression.append(firstTerm).append(".").append(type).append(" :=.").append(type);
+            expression.append(assigned).append(".").append(type).append(" :=.").append(type);
         }
 
         else{
@@ -684,7 +698,12 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode = dealWithBinaryOp(rootNode.getJmmChild(0), ollirCode, scopeVariables);
                 firstTerm = rootNode.getJmmParent().get("varName");
                 expression.append(";\n");
-                expression.append(firstTerm + type + " :=" + type);
+                String assigned = "";
+
+                scopeVariables.put(firstTerm, type);
+                assigned = firstTerm;
+
+                expression.append(assigned + type + " :=" + type);
                 if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
                     secondTerm = rootNode.getJmmParent().get("varName");
                     scopeVariables.put(secondTerm, type);
@@ -715,12 +734,19 @@ public class OllirGenerator implements JmmOptimization {
 
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
             secondTerm = rootNode.getJmmParent().get("varName");
-            scopeVariables.put(secondTerm, type);
+            String assigned = "";
 
+
+            scopeVariables.put(firstTerm, type);
+            assigned = firstTerm;
+
+            expression.append(assigned).append(type).append(" :=").append(type);
             expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
-            tempCount++;
             expression.append(newLine());
-            expression = expression.append(secondTerm).append(type).append(" :=").append(type);
+
+
+
+            expression = expression.append(assigned).append(type).append(" :=").append(type);
         }
         else{
             secondTerm = rootNode.getJmmChild(1).get("value");
