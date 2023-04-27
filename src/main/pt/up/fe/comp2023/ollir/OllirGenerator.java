@@ -718,13 +718,13 @@ public class OllirGenerator implements JmmOptimization {
             scopeVariables.put(firstTerm, type);
             assigned = firstTerm;
 
-
+            expression.delete(0, expression.length());
             expression.append("temp" + String.valueOf(tempCount)).append(type).append(" :=").append(type);
             tempCount++;
             expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
             expression.append(newLine());
 
-            expression = expression.append(assigned).append(type).append(" :=").append(type);
+            expression = expression.append("temp" + String.valueOf(tempCount)).append(type).append(" :=").append(type);
         }
         else if (rootNode.getJmmChild(1).getKind().equals("BinarOp")){
             expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, assigned);
