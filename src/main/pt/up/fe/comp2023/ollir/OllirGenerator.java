@@ -537,19 +537,7 @@ public class OllirGenerator implements JmmOptimization {
 
             JmmNode children = rootNode.getJmmChild(0);
             if (children.hasAttribute("value") && attributes.containsKey(children.get("value"))) {
-                String type = "V";
-                tempCount++;
-
-                if (children.get("type").equals("int")) type = (".i32");
-                else if (children.getKind().equals("boolean")) type = (".bool");
-                ollirCode.append("temp_" + tempCount + type);
-                ollirCode.append(":=" + type);
-                ollirCode.append(" getfield(this, " + children.get("value") + type);
-
-                ollirCode.append(")" + type + ";\n");
-                ollirCode.append(newExpression);
-                ollirCode.append("temp_" + tempCount + type + ").V");
-                ollirCode.append(";\n");
+                ollirCode = dealWithExtractedField(ollirCode, newExpression, children);
                 return ollirCode;
 
             }
@@ -658,6 +646,24 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
+    private StringBuilder dealWithExtractedField(StringBuilder ollirCode, StringBuilder newExpression, JmmNode children) {
+        String type = "V";
+        tempCount++;
+
+        if (children.get("type").equals("int")) type = (".i32");
+        else if (children.getKind().equals("boolean")) type = (".bool");
+        ollirCode.append("temp_" + tempCount + type);
+        ollirCode.append(":=" + type);
+        ollirCode.append(" getfield(this, " + children.get("value") + type);
+
+        ollirCode.append(")" + type + ";\n");
+        ollirCode.append(newExpression);
+        ollirCode.append("temp_" + tempCount + type + ").V");
+        ollirCode.append(";\n");
+
+        return ollirCode;
+    }
+
     private StringBuilder dealWithBinaryOp(JmmNode rootNode, StringBuilder ollirCode, HashMap<String,
             String> scopeVariables, String assigned) {
         StringBuilder expression = new StringBuilder();
@@ -677,6 +683,8 @@ public class OllirGenerator implements JmmOptimization {
         else
             type = ".V";
 
+
+        //First Term
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
             expression.append(newLine());
             expression.append(assigned + type + " :=" + type);
@@ -696,27 +704,29 @@ public class OllirGenerator implements JmmOptimization {
 
         }
 
-        else{
+        else if (rootNode.getJmmChild(0).getKind().equals("BinaryOp")) {
 
-            if (rootNode.getJmmChild(0).getKind().equals("BinaryOp")) {
-
-                String tempVar = "temp" + String.valueOf(tempCount);
-                expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, tempVar);
-                tempCount++;
-                expression.append(";\n" + newLine());
-                firstTerm = assigned;
-                if (rootNode.getJmmParent().getKind().equals("Assignment"))  firstTerm = tempVar;
-                expression.append(assigned + type + " :=" + type);
+            String tempVar = "temp" + String.valueOf(tempCount);
+            expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, tempVar);
+            tempCount++;
+            expression.append(";\n" + newLine());
+            firstTerm = assigned;
+            if (rootNode.getJmmParent().getKind().equals("Assignment"))  firstTerm = tempVar;
+            expression.append(assigned + type + " :=" + type);
 
 
-            }
-            else {
-                expression.append(newLine());
-                expression.append(assigned + type + " :=" + type);
-                firstTerm = rootNode.getJmmChild(0).get("value");
-            }
+        } else if (attributes.containsKey(rootNode.getJmmChild(0).get("value"))) {
+            expression.append(newLine());
+            expression.append(assigned + type + " :=" + type);
+            firstTerm = rootNode.getJmmChild(0).get("value");
+        } else {
+            expression.append(newLine());
+            expression.append(assigned + type + " :=" + type);
+            firstTerm = rootNode.getJmmChild(0).get("value");
         }
 
+
+        //Second Term
         if (rootNode.getJmmChild(1).getKind().equals("MethodCalling")){
 
             expression.delete(0, expression.length());
@@ -735,6 +745,10 @@ public class OllirGenerator implements JmmOptimization {
             expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, assigned);
             secondTerm = assigned;
         }
+        else if (attributes.containsKey(rootNode.getJmmChild(1).get("value"))) {
+            secondTerm = rootNode.getJmmChild(1).get("value");
+        }
+
         else{
             secondTerm = rootNode.getJmmChild(1).get("value");
         }
@@ -749,6 +763,8 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
 
     }
+
+    //Not used right now. Maybe in a future refactor
     private StringBuilder dealWithOperation(JmmNode rootNode, StringBuilder ollirCode) {
         StringBuilder expression = new StringBuilder();
 
