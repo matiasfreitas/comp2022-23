@@ -167,7 +167,7 @@ public class OllirGenerator implements JmmOptimization {
         ollirCode.append(".field ");
         JmmNode children = rootNode.getChildren().get(0).getChildren().get(0);
         attributes.put(children.get("varName"), dealWithType(children.getChildren().get(0), scopeVariables));
-        ollirCode = dealWithVar(children, ollirCode, attributes);
+        ollirCode.append(dealWithVar(children,  attributes));
 
         return ollirCode.append(";\n").toString();
     }
@@ -300,7 +300,7 @@ public class OllirGenerator implements JmmOptimization {
 
             for (int i = 1; i < rootNode.getChildren().size(); i++) {
                 ollirCode.append(", ");
-                ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
+                ollirCode.append(dealWithVar(rootNode.getChildren().get(i), scopeVariables));
             }
             ollirCode.append(").");
             String assignmentVariable = "";
@@ -334,7 +334,7 @@ public class OllirGenerator implements JmmOptimization {
                 ollirCode.append(", ");
 
 
-                ollirCode = dealWithVar(rootNode.getChildren().get(i), ollirCode, scopeVariables);
+                ollirCode.append(dealWithVar(rootNode.getChildren().get(i), scopeVariables));
 
             }
 
@@ -414,7 +414,9 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode.toString();
     }
 
-    private StringBuilder dealWithVar(JmmNode rootNode, StringBuilder ollirCode, HashMap<String, String> scopeVariables) {
+    private StringBuilder dealWithVar(JmmNode rootNode, HashMap<String, String> scopeVariables) {
+        StringBuilder ollirCode = new StringBuilder();
+
         if(rootNode.hasAttribute("varName")){
             String name = rootNode.get("varName");
             ollirCode.append(name).append(".");
@@ -452,12 +454,12 @@ public class OllirGenerator implements JmmOptimization {
         int i;
         for (i = 0; i < rootNode.getNumChildren() - 1; i++ ) {
 
-            ollirCode = dealWithVar(rootNode.getJmmChild(i), ollirCode, scopeVariables);
+            ollirCode.append(dealWithVar(rootNode.getJmmChild(i), scopeVariables));
             ollirCode.append(", ");
         }
 
         if (i < rootNode.getNumChildren())
-            ollirCode = dealWithVar(rootNode.getJmmChild(i), ollirCode, scopeVariables);
+            ollirCode.append(dealWithVar(rootNode.getJmmChild(i), scopeVariables));
 
         return ollirCode;
     }
@@ -573,7 +575,7 @@ public class OllirGenerator implements JmmOptimization {
             } else if (children.getKind().equals("BinaryOp")) {
                 ollirCode = dealWithBinaryOp(children, ollirCode, scopeVariables, rootNode.get("varName"));
                 ollirCode.append(";\n" + newLine());
-                newExpression = dealWithVar(children.getJmmChild(0), newExpression, scopeVariables);
+                ollirCode.append(dealWithVar(children.getJmmChild(0), scopeVariables));
                 ollirCode.append(newExpression);
 
             }
@@ -674,9 +676,11 @@ public class OllirGenerator implements JmmOptimization {
         }
         else
             type = ".V";
-        expression.append(newLine());
-        expression.append(assigned + type + " :=" + type);
+
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
+            expression.append(newLine());
+            expression.append(assigned + type + " :=" + type);
+
             firstTerm = assigned;
 
             expression.delete(0, expression.length());
@@ -696,18 +700,19 @@ public class OllirGenerator implements JmmOptimization {
 
             if (rootNode.getJmmChild(0).getKind().equals("BinaryOp")) {
 
-                expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables,
-                        "temp" + String.valueOf(tempCount));
+                String tempVar = "temp" + String.valueOf(tempCount);
+                expression = dealWithBinaryOp(rootNode.getJmmChild(0), expression, scopeVariables, tempVar);
                 tempCount++;
                 expression.append(";\n" + newLine());
-                firstTerm = rootNode.getJmmParent().get("varName");
-
+                firstTerm = assigned;
+                if (rootNode.getJmmParent().getKind().equals("Assignment"))  firstTerm = tempVar;
                 expression.append(assigned + type + " :=" + type);
-
 
 
             }
             else {
+                expression.append(newLine());
+                expression.append(assigned + type + " :=" + type);
                 firstTerm = rootNode.getJmmChild(0).get("value");
             }
         }
