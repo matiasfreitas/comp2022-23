@@ -201,14 +201,11 @@ public class OllirGenerator implements JmmOptimization {
         if (!rootNode.getChildren().get(0).hasAttribute("varName") &&
                 !rootNode.getChildren().get(0).hasAttribute("value")){
             ollirCode.append(newLine());
-            ollirCode.append("returnVariable.");
-            ollirCode.append(returnType);
-            ollirCode.append(":=.");
-            ollirCode.append(returnType + " ");
+            ollirCode.append("returnVariable");
             for (JmmNode children:  rootNode.getChildren()) {
                 ollirCode.append(iterateOverCodeScope(children, new StringBuilder(), scopeVariables, returnType));
             }
-            ollirCode.append(";");
+            ollirCode.append(";\n");
             ollirCode.append(newLine());
             ollirCode.append("ret.");
             ollirCode.append(returnType);
@@ -528,7 +525,7 @@ public class OllirGenerator implements JmmOptimization {
         StringBuilder newExpression = new StringBuilder();
 
         //Deal with Atributtes:
-        if(attributes.containsKey(rootNode.get("varName"))){
+        if(attributes.containsKey(rootNode.get("varName")) && !scopeVariables.containsKey(rootNode.get("varName"))){
 
             newExpression.append("putfield(this, ");
             newExpression.append(rootNode.get("varName"));
