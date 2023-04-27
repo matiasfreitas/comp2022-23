@@ -737,7 +737,7 @@ public class OllirGenerator implements JmmOptimization {
 
 
             }
-            else if (attributes.containsKey(rootNode.getJmmParent().getKind().equals("Assignment")))  firstTerm = tempVar;
+            else if (rootNode.getJmmParent().getKind().equals("Assignment"))  firstTerm = tempVar;
 
             expression.append(assigned + type + " :=" + type);
 
@@ -763,7 +763,7 @@ public class OllirGenerator implements JmmOptimization {
             tempCount++;
             expression.append(tempVar).append(type).append(" :=").append(type);
 
-            expression = (dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables));
+            expression = dealWithMethodCalling(rootNode.getJmmChild(1), expression, scopeVariables);
             expression.append(newLine());
 
             expression = expression.append(assigned).append(type).append(" :=").append(type);
