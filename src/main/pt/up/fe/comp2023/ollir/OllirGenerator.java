@@ -541,8 +541,8 @@ public class OllirGenerator implements JmmOptimization {
 
                 if (children.get("type").equals("int")) type = (".i32");
                 else if (children.getKind().equals("boolean")) type = (".bool");
-
-                ollirCode = dealWithExtractedField(ollirCode, children);
+                String tempVar = "temp_" + tempCount + type;
+                ollirCode = dealWithExtractedField(ollirCode, children, tempVar);
 
                 ollirCode.append(newExpression);
                 ollirCode.append("temp_" + tempCount + type + ").V");
@@ -656,18 +656,16 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
-    private StringBuilder dealWithExtractedField(StringBuilder ollirCode, JmmNode children) {
+    private StringBuilder dealWithExtractedField(StringBuilder ollirCode, JmmNode children, String tempVar) {
         String type = "V";
-        tempCount++;
-
         if (children.get("type").equals("int")) type = (".i32");
         else if (children.getKind().equals("boolean")) type = (".bool");
-        ollirCode.append("temp_" + tempCount + type);
+        ollirCode.append(tempVar);
         ollirCode.append(":=" + type);
         ollirCode.append(" getfield(this, " + children.get("value") + type);
 
         ollirCode.append(")" + type + ";\n");
-
+        tempCount++;
 
         return ollirCode;
     }
@@ -725,8 +723,9 @@ public class OllirGenerator implements JmmOptimization {
 
         }
         else if (attributes.containsKey(rootNode.getJmmChild(0).get("value"))) {
-            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1));
-            firstTerm = "temp_" + tempCount;
+            String tempVar = "temp_" + tempCount + type;
+            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1), tempVar);
+            firstTerm = tempVar;
         }
         else {
             expression.append(newLine());
@@ -755,9 +754,9 @@ public class OllirGenerator implements JmmOptimization {
             secondTerm = assigned;
         }
         else if (attributes.containsKey(rootNode.getJmmChild(1).get("value"))) {
-
-            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1));
-            secondTerm = "temp_" + tempCount;
+            String tempVar = "temp_" + tempCount + type;
+            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1), tempVar);
+            secondTerm = tempVar;
         }
 
         else{
