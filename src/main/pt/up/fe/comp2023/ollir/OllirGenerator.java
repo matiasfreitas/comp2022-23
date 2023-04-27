@@ -537,7 +537,17 @@ public class OllirGenerator implements JmmOptimization {
 
             JmmNode children = rootNode.getJmmChild(0);
             if (children.hasAttribute("value") && attributes.containsKey(children.get("value"))) {
-                ollirCode = dealWithExtractedField(ollirCode, newExpression, children);
+                String type = "V";
+
+                if (children.get("type").equals("int")) type = (".i32");
+                else if (children.getKind().equals("boolean")) type = (".bool");
+
+                ollirCode = dealWithExtractedField(ollirCode, children);
+
+                ollirCode.append(newExpression);
+                ollirCode.append("temp_" + tempCount + type + ").V");
+                ollirCode.append(";\n");
+
                 return ollirCode;
 
             }
@@ -646,7 +656,7 @@ public class OllirGenerator implements JmmOptimization {
         return ollirCode;
     }
 
-    private StringBuilder dealWithExtractedField(StringBuilder ollirCode, StringBuilder newExpression, JmmNode children) {
+    private StringBuilder dealWithExtractedField(StringBuilder ollirCode, JmmNode children) {
         String type = "V";
         tempCount++;
 
@@ -657,9 +667,7 @@ public class OllirGenerator implements JmmOptimization {
         ollirCode.append(" getfield(this, " + children.get("value") + type);
 
         ollirCode.append(")" + type + ";\n");
-        ollirCode.append(newExpression);
-        ollirCode.append("temp_" + tempCount + type + ").V");
-        ollirCode.append(";\n");
+
 
         return ollirCode;
     }
@@ -715,11 +723,12 @@ public class OllirGenerator implements JmmOptimization {
             expression.append(assigned + type + " :=" + type);
 
 
-        } else if (attributes.containsKey(rootNode.getJmmChild(0).get("value"))) {
-            expression.append(newLine());
-            expression.append(assigned + type + " :=" + type);
-            firstTerm = rootNode.getJmmChild(0).get("value");
-        } else {
+        }
+        else if (attributes.containsKey(rootNode.getJmmChild(0).get("value"))) {
+            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1));
+            firstTerm = "temp_" + tempCount;
+        }
+        else {
             expression.append(newLine());
             expression.append(assigned + type + " :=" + type);
             firstTerm = rootNode.getJmmChild(0).get("value");
@@ -746,7 +755,9 @@ public class OllirGenerator implements JmmOptimization {
             secondTerm = assigned;
         }
         else if (attributes.containsKey(rootNode.getJmmChild(1).get("value"))) {
-            secondTerm = rootNode.getJmmChild(1).get("value");
+
+            ollirCode = dealWithExtractedField(ollirCode, rootNode.getJmmChild(1));
+            secondTerm = "temp_" + tempCount;
         }
 
         else{
