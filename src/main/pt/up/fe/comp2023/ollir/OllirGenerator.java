@@ -770,7 +770,7 @@ public class OllirGenerator implements JmmOptimization {
             expression = dealWithBinaryOp(rootNode.getJmmChild(1), expression, scopeVariables, tempVar);
             tempCount++;
             expression.append(";\n" + newLine());
-            secondTerm = assigned;
+            secondTerm = tempVar;
 
             StringBuilder newExpression = new StringBuilder();
 
