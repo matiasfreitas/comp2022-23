@@ -678,6 +678,7 @@ public class OllirGenerator implements JmmOptimization {
         else
             type = ".V";
         expression.append(newLine());
+        expression.append(assigned + type + " :=" + type);
         if (rootNode.getJmmChild(0).getKind().equals("MethodCalling")){
             firstTerm = rootNode.getJmmParent().get("varName");
 
