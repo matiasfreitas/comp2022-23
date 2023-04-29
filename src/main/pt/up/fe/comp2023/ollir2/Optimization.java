@@ -16,7 +16,7 @@ public class Optimization implements JmmOptimization {
         var ollirGenerator = new OllirGenerator();
         var rootNode =optimizedSemanticResult.getRootNode();
         var ollirReports = new LinkedList<Report>();
-        var ollirCode  = ollirGenerator.generate(rootNode,ollirReports);
+        var ollirCode  = ollirGenerator.visit(rootNode,ollirReports);
         return new OllirResult(optimizedSemanticResult,ollirCode,ollirReports);
     }
 }

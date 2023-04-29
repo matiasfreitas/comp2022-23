@@ -6,10 +6,13 @@ import org.specs.comp.ollir.ClassType;
 import org.specs.comp.ollir.ElementType;
 import org.specs.comp.ollir.Type;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.ollir2.OllirGenerator;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsStrings;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -40,6 +43,11 @@ public class MyOllirTest {
         var output = TestUtils.parse(jmmCode);
         var rootNode = output.getRootNode();
         System.out.println(rootNode.toTree());
+
+        var ollirGenerator = new OllirGenerator();
+        var reports = new LinkedList<Report>();
+        var ollirCode = ollirGenerator.visit(rootNode,reports);
+        System.out.println("Ollir Code:'"+ollirCode+"'");
 
     }
 
