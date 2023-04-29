@@ -1,6 +1,8 @@
 import io;
 class A{
     public static void main(String[] args){
+        int x;
+        x = 1 + 2 * 3;
         io.println("Hello world from Jmm");
     }
 }
