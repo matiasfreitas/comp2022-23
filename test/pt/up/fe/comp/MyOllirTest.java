@@ -47,7 +47,7 @@ public class MyOllirTest {
         var ollirGenerator = new OllirGenerator();
         var reports = new LinkedList<Report>();
         var ollirCode = ollirGenerator.visit(rootNode,reports);
-        System.out.println("Ollir Code:'"+ollirCode+"'");
+        System.out.println("Ollir Code:\n"+ ollirCode);
 
     }
 

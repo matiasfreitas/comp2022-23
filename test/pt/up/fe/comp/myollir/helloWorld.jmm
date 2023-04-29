@@ -2,7 +2,11 @@ import io;
 class A{
     public static void main(String[] args){
         int x;
+        boolean a;
+        boolean c;
         x = 1 + 2 * 3;
+        a = true && false && c;
+
         io.println("Hello world from Jmm");
     }
 }

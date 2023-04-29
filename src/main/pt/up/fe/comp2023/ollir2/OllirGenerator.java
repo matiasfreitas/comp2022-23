@@ -48,12 +48,18 @@ public class OllirGenerator extends AJmmVisitor<List<Report>, String> {
 
     private String handleAssignment(JmmNode jmmNode, List<Report> reports) {
         System.out.println(jmmNode.toTree());
+        // This assumes typechecking was already done
         var rhs = exprGen.visit(jmmNode.getJmmChild(0));
         var code = new StringBuilder(rhs.code());
         code.append(jmmNode.get("varName"))
-                .append(":=")
-                .append(rhs.value())
-                .append("\n");
+                .append(".")
+                .append(rhs.symbol().type())
+                .append(" :=")
+                .append(".")
+                .append(rhs.symbol().type())
+                .append(" ")
+                .append(rhs.symbol().toCode())
+                .append(";\n");
 
         return code.toString();
     }

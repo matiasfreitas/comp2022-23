@@ -11,12 +11,19 @@ public record OllirSymbol(String value, String type) {
             case "Int" -> "i32";
             // TODO: what should i do with chars?
             case "Char" -> "String";
-            case "Boolean" ->"boolean";
+            case "Boolean" ->"bool";
             case "String" ->"String";
             default -> null;
         };
         String value = literal.get("value");
         System.out.println("New Ollir Symbol " + value + " " + type);
         return  new OllirSymbol(value,type);
+    }
+    public String toCode(){
+        return value + "." + type;
+    }
+
+    public static OllirSymbol noSymbol(){
+        return new OllirSymbol(null,null);
     }
 }
