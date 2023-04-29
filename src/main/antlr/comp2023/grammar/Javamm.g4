@@ -80,6 +80,8 @@ expression
     | expression op='&&' expression #BinaryOp
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
+    // TODO: what should i do with chars?
+    // Should have a subtype called literal instead of int,boolean char,string....
     | value=INT  #Int
     | value=BOOLEAN #Boolean
     | value=CHAR #Char
