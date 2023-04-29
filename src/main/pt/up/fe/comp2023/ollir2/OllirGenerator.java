@@ -8,15 +8,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class OllirGenerator extends AJmmVisitor<List<Report>, String> {
+    private OllirExpressionGenerator exprGen;
+
+    public OllirGenerator() {
+        this.exprGen = new OllirExpressionGenerator();
+    }
+
     @Override
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
         addVisit("ImportDeclaration", this::handleImportDeclaration);
         addVisit("ClassDeclaration", this::handleClassDeclaration);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
-        addVisit("Assignment",this::handleAssignment);
+        addVisit("Assignment", this::handleAssignment);
     }
-
 
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
@@ -30,19 +35,26 @@ public class OllirGenerator extends AJmmVisitor<List<Report>, String> {
 
     private String handleImportDeclaration(JmmNode jmmNode, List<Report> reports) {
 
-        return defaultVisit(jmmNode,reports);
+        return defaultVisit(jmmNode, reports);
     }
 
     private String handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
-        return defaultVisit(jmmNode,reports);
+        return defaultVisit(jmmNode, reports);
     }
 
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        return defaultVisit(jmmNode,reports);
+        return defaultVisit(jmmNode, reports);
     }
-    private String handleAssignment(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("Assignemtn");
 
-        return "";
+    private String handleAssignment(JmmNode jmmNode, List<Report> reports) {
+        System.out.println(jmmNode.toTree());
+        var rhs = exprGen.visit(jmmNode.getJmmChild(0));
+        var code = new StringBuilder(rhs.code());
+        code.append(jmmNode.get("varName"))
+                .append(":=")
+                .append(rhs.value())
+                .append("\n");
+
+        return code.toString();
     }
 }

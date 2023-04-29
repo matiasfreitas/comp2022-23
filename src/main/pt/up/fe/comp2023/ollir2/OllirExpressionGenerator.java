@@ -9,5 +9,10 @@ import java.util.List;
 public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpressionResult> {
     @Override
     protected void buildVisitor() {
+        setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExpressionResult defaultVisit(JmmNode jmmNode, List<Report> reports) {
+        return new OllirExpressionResult("","");
     }
 }
