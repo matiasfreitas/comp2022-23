@@ -3,16 +3,23 @@ package pt.up.fe.comp2023.ollir2;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.semantics.UsageContext;
+import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class OllirGenerator extends AJmmVisitor<List<Report>, String> {
+public class OllirGenerator extends AJmmVisitor<List<Report>,String> {
     private OllirExpressionGenerator exprGen;
+    private JmmSymbolTable symbolTable;
 
-    public OllirGenerator() {
-        this.exprGen = new OllirExpressionGenerator();
+    public OllirGenerator(JmmSymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+        this.exprGen = new OllirExpressionGenerator(symbolTable);
+
     }
+
+
 
     @Override
     protected void buildVisitor() {
@@ -39,6 +46,7 @@ public class OllirGenerator extends AJmmVisitor<List<Report>, String> {
     }
 
     private String handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
+        symbolTable.setCurrentMethod(jmmNode.get("signature"));
         return defaultVisit(jmmNode, reports);
     }
 

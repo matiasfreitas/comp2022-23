@@ -7,6 +7,7 @@ import org.specs.comp.ollir.ElementType;
 import org.specs.comp.ollir.Type;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.ollir2.OllirGenerator;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsStrings;
@@ -40,11 +41,11 @@ public class MyOllirTest {
     @Test
     public void testHelloWorld(){
         String jmmCode= SpecsIo.getResource("pt/up/fe/comp/myollir/helloWorld.jmm");
-        var output = TestUtils.parse(jmmCode);
+        var output = TestUtils.analyse(jmmCode);
         var rootNode = output.getRootNode();
         System.out.println(rootNode.toTree());
 
-        var ollirGenerator = new OllirGenerator();
+        var ollirGenerator = new OllirGenerator((JmmSymbolTable) output.getSymbolTable());
         var reports = new LinkedList<Report>();
         var ollirCode = ollirGenerator.visit(rootNode,reports);
         System.out.println("Ollir Code:\n"+ ollirCode);

@@ -3,13 +3,19 @@ package pt.up.fe.comp2023.ollir2;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.semantics.UsageContext;
+import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.List;
 
 // Thanks Prof. Jõao Bispo
-public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExpressionResult> {
+public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpressionResult>{
 
     private int tempCounter = 0;
+    private String methodSignature;
+
+    public OllirExpressionGenerator(JmmSymbolTable symbolTable) {
+    }
 
     @Override
     protected void buildVisitor() {
@@ -19,7 +25,9 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
         addVisit("Char", this::handleLiteral);
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
+        addVisit("Identifier",this::handleIdentifier);
     }
+
 
     public String nextTemp() {
         String nextTemp = "temp_" + tempCounter;
@@ -49,5 +57,8 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
 
         var symbol = OllirSymbol.fromLiteral(jmmNode);
         return new OllirExpressionResult("", symbol);
+    }
+    private OllirExpressionResult handleIdentifier(JmmNode jmmNode, List<Report> reports) {
+        return  new  OllirExpressionResult("",OllirSymbol.noSymbol());
     }
 }

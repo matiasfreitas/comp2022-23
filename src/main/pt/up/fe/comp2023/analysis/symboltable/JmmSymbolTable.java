@@ -16,6 +16,8 @@ public class JmmSymbolTable implements SymbolTable {
     Map<String, Integer> importsUsage;
     List<String> methodNames;
 
+    private String currentMethod;
+
     public JmmSymbolTable(List<String> imports, ClassSymbolTable classSymbolTable) {
         this.imports = imports;
         this.importTypes = getImportTypes(imports);
@@ -154,4 +156,11 @@ public class JmmSymbolTable implements SymbolTable {
 
     }
 
+    public String getCurrentMethod() {
+        return currentMethod;
+    }
+
+    public void setCurrentMethod(String currentMethod) {
+        this.currentMethod = currentMethod;
+    }
 }
