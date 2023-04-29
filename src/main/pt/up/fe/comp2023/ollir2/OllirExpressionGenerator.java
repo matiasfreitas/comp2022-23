@@ -8,6 +8,8 @@ import java.util.List;
 
 // Thanks Prof. Jõao Bispo
 public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExpressionResult> {
+
+    private int tempCounter = 0;
     @Override
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
@@ -18,6 +20,11 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
         addVisit("Boolean",this::handleLiteral);
     }
 
+    public String nextTemp(){
+        String nextTemp= "temp_" + tempCounter;
+        tempCounter++;
+        return nextTemp;
+    }
 
 
     private OllirExpressionResult defaultVisit(JmmNode jmmNode, List<Report> reports) {
@@ -28,7 +35,7 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
         var op = jmmNode.get("op");
         var lhs = visit(jmmNode.getJmmChild(0));
         var rhs = visit(jmmNode.getJmmChild(1));
-        var newTemp= "temp";
+        var newTemp= nextTemp();
         var operation = newTemp + ":=" + lhs.value() + op + rhs.value() + ";\n";
         var code = new StringBuilder(lhs.code());
         code.append(rhs.code())
