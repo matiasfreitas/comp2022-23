@@ -74,7 +74,6 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
         }
         return new OllirSymbol("$" + i + "." + parameter.getName(), ollirType);
     }
-
     public String ollirAssignment(OllirSymbol lhs, OllirSymbol rhs) {
         var code = new StringBuilder(lhs.toCode());
         code.append(" :=.")
@@ -100,5 +99,26 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     public OllirSymbol ollirGetField(OllirSymbol lhs) {
         String getter = "getfield(this, " + lhs.toCode() + ")";
         return new OllirSymbol(getter, lhs.type());
+    }
+    public String spaceBetween(List<String> tokens){
+        return interSperse(tokens, " ");
+    }
+
+    public String formatArguments(List<String> arguments){
+        return interSperse(arguments, ", ");
+    }
+    public String interSperse(List<String> tokens,String between){
+        var res = new StringBuilder();
+        int i = 0;
+        for(;i < tokens.size() - 1; i++){
+            String atI = tokens.get(i);
+            if(atI != null && !atI.equals("")){
+                res.append(atI).append(between);
+            }
+        }
+        if( i < tokens.size()){
+            res.append(tokens.get(i));
+        }
+        return res.toString();
     }
 }
