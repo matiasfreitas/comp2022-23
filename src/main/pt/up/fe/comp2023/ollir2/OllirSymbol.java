@@ -58,10 +58,5 @@ public record OllirSymbol(String value, String type) {
         return value + "." + type;
     }
 
-    public OllirSymbol getField() {
-        String getter = "getfield(this, " + toCode() + ")";
-        return new OllirSymbol(getter, type);
-
-    }
 
 }

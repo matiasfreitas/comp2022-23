@@ -36,9 +36,9 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     }
 
     protected OllirSymbol fromFieldIdentifier(JmmNode node) {
+        // Isto é porque na gramática tenho varnmae e value :(
         String attribute = node.hasAttribute("value")? "value" : "varName";
         var field = symbolTable.getFieldTry(node.get(attribute));
-       // Isto é porque na gramática tenho varnmae e value :(
         if (field.isEmpty()) {
                 return OllirSymbol.noSymbol();
         }

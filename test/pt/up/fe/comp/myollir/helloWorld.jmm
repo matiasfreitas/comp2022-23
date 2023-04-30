@@ -3,7 +3,7 @@ class A{
     int z;
     public int foo(int x){
         int y;
-        //z = 0;
-        y = x + z;
+        z = 0;
+        z = x + z;
     }
 }

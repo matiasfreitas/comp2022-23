@@ -9,17 +9,14 @@ import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class OllirGenerator extends AJmmVisitor<List<Report>,String> {
+public class OllirGenerator extends AOllirGenerator<String> {
     private OllirExpressionGenerator exprGen;
-    private JmmSymbolTable symbolTable;
 
     public OllirGenerator(JmmSymbolTable symbolTable) {
-        this.symbolTable = symbolTable;
+        super(symbolTable);
         this.exprGen = new OllirExpressionGenerator(symbolTable);
 
     }
-
-
 
     @Override
     protected void buildVisitor() {
@@ -53,23 +50,33 @@ public class OllirGenerator extends AJmmVisitor<List<Report>,String> {
     }
 
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
-        return defaultVisit(jmmNode, reports);
+        var className = symbolTable.getClassName();
+        var parentClass = symbolTable.getSuper();
+        var innerCode = defaultVisit(jmmNode, reports);
+        String code = className +
+                " {\n" +
+                innerCode +
+                "}";
+        return code;
     }
 
-    private String handleAssignment(JmmNode jmmNode, List<Report> reports) {
-        System.out.println(jmmNode.toTree());
-        // This assumes typechecking was already done
-        var rhs = exprGen.visit(jmmNode.getJmmChild(0));
+
+    private String handleAssignment(JmmNode node, List<Report> reports) {
+        var idType = IdentifierType.fromJmmNode(node);
+        if (idType == null || idType.equals(IdentifierType.ClassType)) {
+            System.err.println("This node has no  idType it is not being handled in semantics!!");
+            System.out.println(node.toTree());
+            return "";
+        }
+        OllirSymbol lhs = fromIdentifier(node);
+        OllirExpressionResult rhs = exprGen.visit(node.getJmmChild(0), reports);
         var code = new StringBuilder(rhs.code());
-        code.append(jmmNode.get("varName"))
-                .append(".")
-                .append(rhs.symbol().type())
-                .append(" :=")
-                .append(".")
-                .append(rhs.symbol().type())
-                .append(" ")
-                .append(rhs.symbol().toCode())
-                .append(";\n");
+        if (idType.equals(IdentifierType.ClassField)) {
+            code.append(ollirPutField(lhs, rhs.symbol()));
+
+        } else {
+            code.append(ollirAssignment(lhs, rhs.symbol()));
+        }
 
         return code.toString();
     }
