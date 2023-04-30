@@ -65,6 +65,7 @@ statement
     | expression ';' #SingleStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
+    // TODO: return type and assumed type interaction!
     | 'return' expression ';' #ReturnStatement
     ;
 // instance of

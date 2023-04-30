@@ -28,8 +28,8 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassDeclaration", this::handleClassDeclaration);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
+        addVisit("ReturnStatement", this::handleReturn);
     }
-
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
         System.out.println("Visiting node " + node.getKind());
@@ -38,6 +38,11 @@ public class OllirGenerator extends AOllirGenerator<String> {
             code.append(visit(child, reports));
         }
         return code.toString();
+    }
+    private String handleReturn(JmmNode jmmNode, List<Report> reports) {
+        var toReturn = exprGen.visit(jmmNode.getJmmChild(0));
+        return  toReturn.code() + "ret." + toReturn.symbol().type() + " " + toReturn.symbol().toCode() + ";\n";
+
     }
 
     private String handleImportDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -52,7 +57,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
         String innerCode = defaultVisit(jmmNode, reports);
         symbolTable.setCurrentMethod(null);
         var visibility = symbolTable.getMethodVisibility(signature);
-        var modifier = symbolTable.isStaticMethod(signature)? "static": "";
+        var modifier = symbolTable.isStaticMethod(signature) ? "static" : "";
         var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
         String ollirType = OllirSymbol.fromType(t);
@@ -66,9 +71,12 @@ public class OllirGenerator extends AOllirGenerator<String> {
         return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}";
     }
 
-    private String ollirConstructor(){
-        return ".construct " + symbolTable.getClassName() + "().V {\n" + ollirInvokeConstructor("this",null) + "}\n";
+    private String ollirConstructor() {
+        return ".construct " + symbolTable.getClassName() + "().V {\n" +
+                ollirInvokeConstructor("this", null) +
+                "}\n";
     }
+
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         var className = symbolTable.getClassName();
         var parentClass = symbolTable.getSuper();
