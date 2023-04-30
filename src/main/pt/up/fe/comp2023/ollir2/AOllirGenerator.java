@@ -6,6 +6,8 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,6 +101,15 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     public OllirSymbol ollirGetField(OllirSymbol lhs) {
         String getter = "getfield(this, " + lhs.toCode() + ")";
         return new OllirSymbol(getter, lhs.type());
+    }
+    public String methodName(String methodName){
+        return '"' + methodName + '"';
+    }
+    public String ollirInvokeConstructor(String object,List<String> arguments){
+        List<String> args = Arrays.asList(object,methodName("<init>"));
+        if (arguments != null)
+            args.addAll(arguments);
+        return "invokespecial(" + formatArguments(args) + ").V;\n";
     }
     public String spaceBetween(List<String> tokens){
         return interSperse(tokens, " ");

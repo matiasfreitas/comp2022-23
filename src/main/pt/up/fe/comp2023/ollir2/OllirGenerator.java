@@ -66,15 +66,18 @@ public class OllirGenerator extends AOllirGenerator<String> {
         return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}";
     }
 
+    private String ollirConstructor(){
+        return ".construct " + symbolTable.getClassName() + "().V {\n" + ollirInvokeConstructor("this",null) + "}\n";
+    }
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         var className = symbolTable.getClassName();
         var parentClass = symbolTable.getSuper();
         var innerCode = defaultVisit(jmmNode, reports);
-        String code = className +
+        return className +
                 " {\n" +
+                ollirConstructor() +
                 innerCode +
                 "}";
-        return code;
     }
 
 
