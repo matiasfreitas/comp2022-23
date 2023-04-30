@@ -49,17 +49,27 @@ public class JmmSymbolTable implements SymbolTable {
         return new Type(typeName, false);
     }
 
-    public Optional<Type> getFieldTry(String t) {
+    public Optional<Type> getFieldTypeTry(String t) {
         for (Symbol s : this.getFields()) {
             if (s.getName().equals(t)) {
-                return Optional.ofNullable(s.getType());
+                return Optional.of(s.getType());
             }
         }
         return Optional.empty();
     }
-    public Optional<Symbol> getLocalVariableTry(String signature,String identifier){
+
+    public Optional<Symbol> getFieldTry(String t) {
+        for (Symbol s : this.getFields()) {
+            if (s.getName().equals(t)) {
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Symbol> getLocalVariableTry(String signature, String identifier) {
         var locals = getLocalVariablesTry(signature);
-        if(locals.isPresent()){
+        if (locals.isPresent()) {
             for (Symbol s : locals.get()) {
                 if (s.getName().equals(identifier)) {
                     return Optional.of(s);
@@ -68,6 +78,7 @@ public class JmmSymbolTable implements SymbolTable {
         }
         return Optional.empty();
     }
+
     public Boolean isStaticMethod(String s) {
         MethodSymbolTable m = methods.get(s);
         return m.isStatic();

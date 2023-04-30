@@ -1,7 +1,9 @@
 import io;
 class A{
+    int z;
     public int foo(int x){
         int y;
-        y = x;
+        //z = 0;
+        y = x + z;
     }
 }

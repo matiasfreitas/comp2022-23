@@ -31,7 +31,7 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
 
 
     private Optional<Type> checkClassFields(String identifier, JmmNode node) {
-        var res = symbolTable.getFieldTry(identifier);
+        var res = symbolTable.getFieldTypeTry(identifier);
         if (res.isPresent()) {
             IdentifierType.ClassField.putIdentiferType(node);
         }

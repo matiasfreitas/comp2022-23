@@ -64,8 +64,14 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
     }
 
     private OllirExpressionResult handleFieldIdentifier(JmmNode node, List<Report> reports) {
-        // get field
-        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+        // getfield(this, a.i32).i32; -> this is also a ollir symbol
+        var field = symbolTable.getFieldTry(node.get("value"));
+        if(field.isEmpty()){
+            // this can't happen
+            return new OllirExpressionResult("", OllirSymbol.noSymbol());
+        }
+        var ollirField = OllirSymbol.fromSymbol(field.get());
+        return new OllirExpressionResult("",ollirField.getField());
     }
 
     private OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports) {
@@ -81,7 +87,7 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExp
 
     private OllirExpressionResult handleParameterIdentifier(JmmNode node, List<Report> reports) {
         String currentMethod = symbolTable.getCurrentMethod();
-        String identifier = node.get(("value"));
+        String identifier = node.get("value");
         var arguments = symbolTable.getParameters(currentMethod);
         int i = 0;
         for (; i < arguments.size(); i++) {
