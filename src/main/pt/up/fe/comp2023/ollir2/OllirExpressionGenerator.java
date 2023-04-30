@@ -4,18 +4,21 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.semantics.UsageContext;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.List;
+import java.util.Optional;
 
 // Thanks Prof. Jõao Bispo
 public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpressionResult>{
 
     private int tempCounter = 0;
-    private String methodSignature;
 
+    private JmmSymbolTable symbolTable;
     public OllirExpressionGenerator(JmmSymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
     }
 
     @Override
@@ -64,13 +67,21 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpr
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
     private  OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports){
-        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+        String currentMethod = symbolTable.getCurrentMethod();
+        Optional<Symbol> local = symbolTable.getLocalVariableTry(currentMethod,node.get("value"));
+        // Isto quase de certeza que não vai acontecer o que devo fazer?
+        if(local.isEmpty())
+            return new OllirExpressionResult("",OllirSymbol.noSymbol());
+
+        return new OllirExpressionResult("",OllirSymbol.fromSymbol(local.get()));
+
     }
 
     private OllirExpressionResult handleParameterIdentifier(JmmNode node, List<Report> reports){
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
     private OllirExpressionResult handleIdentifier(JmmNode node, List<Report> reports) {
+        System.out.println(node.getAttributes());
         IdentifierType idType = IdentifierType.fromJmmNode(node);
         if(idType == null){
             System.err.println("This node has no  idType it is not being handled in semantics!!");

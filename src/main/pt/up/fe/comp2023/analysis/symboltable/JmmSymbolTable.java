@@ -57,7 +57,17 @@ public class JmmSymbolTable implements SymbolTable {
         }
         return Optional.empty();
     }
-
+    public Optional<Symbol> getLocalVariableTry(String signature,String identifier){
+        var locals = getLocalVariablesTry(signature);
+        if(locals.isPresent()){
+            for (Symbol s : locals.get()) {
+                if (s.getName().equals(identifier)) {
+                    return Optional.of(s);
+                }
+            }
+        }
+        return Optional.empty();
+    }
     public Boolean isStaticMethod(String s) {
         MethodSymbolTable m = methods.get(s);
         return m.isStatic();
