@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.ollir2;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -58,7 +59,21 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpr
         var symbol = OllirSymbol.fromLiteral(jmmNode);
         return new OllirExpressionResult("", symbol);
     }
+    private OllirExpressionResult handleFieldIdentifier(Symbol s){
+        // get field
+        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+    }
+    private  OllirExpressionResult handleLocalVariable(Symbol s){
+        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+    }
+
+    private OllirExpressionResult handleParameterIdentifier(Symbol s){
+        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+    }
     private OllirExpressionResult handleIdentifier(JmmNode jmmNode, List<Report> reports) {
+        // If it is a parameter we will do one thing getField to parameter
+        // If it is a local varialble we will do another thing name.type
+        // If it is a parameter we will do another thing $number.name.type
         return  new  OllirExpressionResult("",OllirSymbol.noSymbol());
     }
 }

@@ -47,7 +47,9 @@ public class OllirGenerator extends AJmmVisitor<List<Report>,String> {
 
     private String handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
         symbolTable.setCurrentMethod(jmmNode.get("signature"));
-        return defaultVisit(jmmNode, reports);
+        String methodCode = defaultVisit(jmmNode, reports);
+        symbolTable.setCurrentMethod(null);
+        return methodCode;
     }
 
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
