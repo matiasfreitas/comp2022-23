@@ -51,9 +51,9 @@ public class OllirGenerator extends AOllirGenerator<String> {
         symbolTable.setCurrentMethod(signature);
         String innerCode = defaultVisit(jmmNode, reports);
         symbolTable.setCurrentMethod(null);
-        var visibility = "public";
-        var modifier = "static";
-        var methodName = "ugaBuga";
+        var visibility = symbolTable.getMethodVisibility(signature);
+        var modifier = symbolTable.isStaticMethod(signature)? "static": "";
+        var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
         String ollirType = OllirSymbol.fromType(t);
         var tokens = Arrays.asList(".method", visibility, modifier, methodName);

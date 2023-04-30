@@ -184,4 +184,8 @@ public class JmmSymbolTable implements SymbolTable {
     public void setCurrentMethod(String currentMethod) {
         this.currentMethod = currentMethod;
     }
+
+    public String getMethodVisibility(String signature) {
+        return methods.get(signature).getVisibility();
+    }
 }
