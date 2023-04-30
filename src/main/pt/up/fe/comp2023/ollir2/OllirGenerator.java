@@ -1,13 +1,16 @@
 package pt.up.fe.comp2023.ollir2;
 
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.semantics.UsageContext;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OllirGenerator extends AOllirGenerator<String> {
     private OllirExpressionGenerator exprGen;
@@ -43,10 +46,24 @@ public class OllirGenerator extends AOllirGenerator<String> {
     }
 
     private String handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
-        symbolTable.setCurrentMethod(jmmNode.get("signature"));
-        String methodCode = defaultVisit(jmmNode, reports);
+        //.method public sum(A.array.i32, B.array.i32).array.i32 {
+        var signature = jmmNode.get("signature");
+        symbolTable.setCurrentMethod(signature);
+        String innerCode = defaultVisit(jmmNode, reports);
         symbolTable.setCurrentMethod(null);
-        return methodCode;
+        var visibility = "public";
+        var modifier = "static";
+        var methodName = "ugaBuga";
+        Type t = symbolTable.getReturnType(signature);
+        String ollirType = OllirSymbol.fromType(t);
+        var tokens = Arrays.asList(".method", visibility, modifier, methodName);
+        var methodDecl = spaceBetween(tokens);
+        List<String> ollirParams = symbolTable.getParameters(signature)
+                .stream().map(s -> OllirSymbol.fromSymbol(s).toCode())
+                .toList();
+        var codeParams = formatArguments(ollirParams);
+
+        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}";
     }
 
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
