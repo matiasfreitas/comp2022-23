@@ -65,9 +65,8 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
 
     private Void handleAssignment(JmmNode jmmNode, List<Report> reports) {
         //System.out.println("Visiting assignment statement");
-        System.out.println(jmmNode.toTree());
         String varName = jmmNode.get("varName");
-        Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode.getJmmChild(0), reports);
+        Optional<Type> maybeType = this.checkIdentifier(varName, jmmNode, reports);
         // TODO: what about inheritance
         if (maybeType.isPresent()) {
             Type type = maybeType.get();

@@ -5,7 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 public enum IdentifierType {
     ClassField("classField"),
     LocalVariable("localVariable"),
-    MethodParameter("mehtodParameter"),
+    MethodParameter("methodParameter"),
 
     ClassType("classType");
 

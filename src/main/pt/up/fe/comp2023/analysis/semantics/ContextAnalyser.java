@@ -99,11 +99,16 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
     }
 
     private Optional<Type> handleIdentifierInMethod(String identifier, String currentMethod, JmmNode node, List<Report> reports) {
-        Optional<Type> inMethod = checkMethodScope(identifier, currentMethod,node);
+        Optional<Type> inMethod = checkMethodScope(identifier, currentMethod, node);
         if (inMethod.isPresent()) {
             return inMethod;
         }
-        Optional<Type> inClass = checkClassFields(identifier,node);
+
+        Optional<Type> inParameter = checkMethodParameters(identifier, currentMethod, node);
+        if (inParameter.isPresent()) {
+            return inParameter;
+        }
+        Optional<Type> inClass = checkClassFields(identifier, node);
         if (inClass.isPresent()) {
             if (symbolTable.isStaticMethod(currentMethod)) {
                 // For now we assume that this is an error but we could try to check for imports to see if something is available
@@ -117,13 +122,13 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
 
     public Optional<Type> checkIdentifier(String identifier, JmmNode node, List<Report> reports) {
         if (!context.isClassContext()) {
-            Optional<Type> inMethod = handleIdentifierInMethod(identifier, context.getMethodSignature(),node, reports);
+            Optional<Type> inMethod = handleIdentifierInMethod(identifier, context.getMethodSignature(), node, reports);
             if (inMethod.isPresent())
                 return inMethod;
         }
         // Class Context
         else {
-            Optional<Type> inClass =checkClassFields(identifier,node);
+            Optional<Type> inClass = checkClassFields(identifier, node);
             if (inClass.isPresent())
                 return inClass;
         }

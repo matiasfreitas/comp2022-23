@@ -27,7 +27,7 @@ public record OllirSymbol(String value, String type) {
         return  new OllirSymbol(s.getName(),type);
     }
 
-    private static String fromType(Type type) {
+    public static String fromType(Type type) {
         String arrayPrefix= "";
         String ollirType = "";
         if(type.isArray()){

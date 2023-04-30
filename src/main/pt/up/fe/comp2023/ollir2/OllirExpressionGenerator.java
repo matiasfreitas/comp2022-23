@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.Optional;
 
 // Thanks Prof. Jõao Bispo
-public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpressionResult>{
+public class OllirExpressionGenerator extends AJmmVisitor<List<Report>, OllirExpressionResult> {
 
     private int tempCounter = 0;
 
     private JmmSymbolTable symbolTable;
+
     public OllirExpressionGenerator(JmmSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
@@ -29,7 +30,7 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpr
         addVisit("Char", this::handleLiteral);
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
-        addVisit("Identifier",this::handleIdentifier);
+        addVisit("Identifier", this::handleIdentifier);
     }
 
 
@@ -58,45 +59,63 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpr
     }
 
     private OllirExpressionResult handleLiteral(JmmNode jmmNode, List<Report> reports) {
-
         var symbol = OllirSymbol.fromLiteral(jmmNode);
         return new OllirExpressionResult("", symbol);
     }
-    private OllirExpressionResult handleFieldIdentifier(JmmNode node, List<Report> reports){
+
+    private OllirExpressionResult handleFieldIdentifier(JmmNode node, List<Report> reports) {
         // get field
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
-    private  OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports){
+
+    private OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports) {
         String currentMethod = symbolTable.getCurrentMethod();
-        Optional<Symbol> local = symbolTable.getLocalVariableTry(currentMethod,node.get("value"));
+        Optional<Symbol> local = symbolTable.getLocalVariableTry(currentMethod, node.get("value"));
         // Isto quase de certeza que não vai acontecer o que devo fazer?
-        if(local.isEmpty())
-            return new OllirExpressionResult("",OllirSymbol.noSymbol());
+        if (local.isEmpty())
+            return new OllirExpressionResult("", OllirSymbol.noSymbol());
 
-        return new OllirExpressionResult("",OllirSymbol.fromSymbol(local.get()));
+        return new OllirExpressionResult("", OllirSymbol.fromSymbol(local.get()));
 
     }
 
-    private OllirExpressionResult handleParameterIdentifier(JmmNode node, List<Report> reports){
-        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+    private OllirExpressionResult handleParameterIdentifier(JmmNode node, List<Report> reports) {
+        String currentMethod = symbolTable.getCurrentMethod();
+        String identifier = node.get(("value"));
+        var arguments = symbolTable.getParameters(currentMethod);
+        int i = 0;
+        for (; i < arguments.size(); i++) {
+            if (arguments.get(i).getName().equals(identifier)) {
+                break;
+            }
+        }
+        Symbol parameter = arguments.get(i);
+        String ollirType = OllirSymbol.fromType(parameter.getType());
+        if(!symbolTable.isStaticMethod(currentMethod)){
+            // The first argument is this so we increment i
+           i++;
+        }
+        OllirSymbol ollirSymbol = new OllirSymbol("$" + i + "." + parameter.getName(), ollirType);
+        return new OllirExpressionResult("", ollirSymbol);
     }
+
     private OllirExpressionResult handleIdentifier(JmmNode node, List<Report> reports) {
         System.out.println(node.getAttributes());
         IdentifierType idType = IdentifierType.fromJmmNode(node);
-        if(idType == null){
+        if (idType == null) {
             System.err.println("This node has no  idType it is not being handled in semantics!!");
             System.out.println(node.toTree());
-            return new OllirExpressionResult("",OllirSymbol.noSymbol());
+            return new OllirExpressionResult("", OllirSymbol.noSymbol());
         }
-        return  switch (idType){
-            case ClassField ->  handleFieldIdentifier(node,reports);
-            case MethodParameter -> handleParameterIdentifier(node,reports);
-            case LocalVariable ->  handleLocalVariable(node,reports);
-            case ClassType -> handleClassType(node,reports);
+        return switch (idType) {
+            case ClassField -> handleFieldIdentifier(node, reports);
+            case MethodParameter -> handleParameterIdentifier(node, reports);
+            case LocalVariable -> handleLocalVariable(node, reports);
+            case ClassType -> handleClassType(node, reports);
         };
     }
 
     private OllirExpressionResult handleClassType(JmmNode node, List<Report> reports) {
-        return new OllirExpressionResult("",OllirSymbol.noSymbol());
+        return new OllirExpressionResult("", OllirSymbol.noSymbol());
     }
 }
