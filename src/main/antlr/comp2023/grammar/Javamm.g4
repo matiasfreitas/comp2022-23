@@ -50,11 +50,12 @@ type: simpleType | arrayType;
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 
 varTypeSpecification : type varName=ID ;
-
+// Isto também é redundante
 varDeclaration :  varTypeSpecification ;
 
 methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 
+// TODO: se é opcional não preciso desta regra redundante
 classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
 // TODO: Need to correct this  scopedBlock should disapear

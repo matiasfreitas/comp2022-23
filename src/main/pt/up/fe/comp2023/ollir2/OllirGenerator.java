@@ -1,12 +1,15 @@
 package pt.up.fe.comp2023.ollir2;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.semantics.UsageContext;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,10 +29,12 @@ public class OllirGenerator extends AOllirGenerator<String> {
         setDefaultVisit(this::defaultVisit);
         addVisit("ImportDeclaration", this::handleImportDeclaration);
         addVisit("ClassDeclaration", this::handleClassDeclaration);
+        addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
         addVisit("ReturnStatement", this::handleReturn);
     }
+
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
         System.out.println("Visiting node " + node.getKind());
@@ -39,9 +44,10 @@ public class OllirGenerator extends AOllirGenerator<String> {
         }
         return code.toString();
     }
+
     private String handleReturn(JmmNode jmmNode, List<Report> reports) {
         var toReturn = exprGen.visit(jmmNode.getJmmChild(0));
-        return  toReturn.code() + "ret." + toReturn.symbol().type() + " " + toReturn.symbol().toCode() + ";\n";
+        return toReturn.code() + "ret." + toReturn.symbol().type() + " " + toReturn.symbol().toCode() + ";\n";
 
     }
 
@@ -68,7 +74,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 .toList();
         var codeParams = formatArguments(ollirParams);
 
-        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}";
+        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}\n";
     }
 
     private String ollirConstructor() {
@@ -80,11 +86,21 @@ public class OllirGenerator extends AOllirGenerator<String> {
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         var className = symbolTable.getClassName();
         var parentClass = symbolTable.getSuper();
-        var innerCode = defaultVisit(jmmNode, reports);
+        var fields = new ArrayList<String>();
+        var methods = new ArrayList<String>();
+        for (var child : jmmNode.getChildren()) {
+            var childCode = visit(child, reports);
+            if (child.getKind().equals("ClassVarDeclaration")) {
+                fields.add(childCode);
+            } else {
+                methods.add(childCode);
+            }
+        }
         return className +
                 " {\n" +
+                String.join("", fields) +
                 ollirConstructor() +
-                innerCode +
+                String.join("", methods) +
                 "}";
     }
 
@@ -107,5 +123,14 @@ public class OllirGenerator extends AOllirGenerator<String> {
         }
 
         return code.toString();
+    }
+
+    private String handleClassField(JmmNode jmmNode, List<Report> reports) {
+        var visibility = jmmNode.hasAttribute("visibility") ? jmmNode.get("visibility") : "private";
+        var symbolGen = new SymbolGen();
+        symbolGen.visit(jmmNode.getJmmChild(0));
+        var symbol = symbolGen.getSymbol();
+        var ollirSymbol = OllirSymbol.fromSymbol(symbol);
+        return ".field " + visibility + " " + ollirSymbol.toCode() + ";\n";
     }
 }
