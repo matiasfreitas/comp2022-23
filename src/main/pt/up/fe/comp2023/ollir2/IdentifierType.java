@@ -16,7 +16,12 @@ public enum IdentifierType {
 
     }
 
-    public IdentifierType fromJmmNode(JmmNode node) {
+
+    public void putIdentiferType(JmmNode node) {
+        node.put("idType", type);
+
+    }
+    public static IdentifierType fromJmmNode(JmmNode node) {
         // Im sure this could be simplified
         String type = node.get("idType");
         return switch (type) {
@@ -26,11 +31,6 @@ public enum IdentifierType {
             case "classType" -> ClassType;
             default -> null;
         };
-
-    }
-
-    public void putIdentiferType(JmmNode node) {
-        node.put("idType", type);
 
     }
 }

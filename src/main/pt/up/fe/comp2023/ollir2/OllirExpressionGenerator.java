@@ -59,21 +59,33 @@ public class OllirExpressionGenerator extends AJmmVisitor<List<Report>,OllirExpr
         var symbol = OllirSymbol.fromLiteral(jmmNode);
         return new OllirExpressionResult("", symbol);
     }
-    private OllirExpressionResult handleFieldIdentifier(Symbol s){
+    private OllirExpressionResult handleFieldIdentifier(JmmNode node, List<Report> reports){
         // get field
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
-    private  OllirExpressionResult handleLocalVariable(Symbol s){
+    private  OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports){
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
 
-    private OllirExpressionResult handleParameterIdentifier(Symbol s){
+    private OllirExpressionResult handleParameterIdentifier(JmmNode node, List<Report> reports){
         return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
-    private OllirExpressionResult handleIdentifier(JmmNode jmmNode, List<Report> reports) {
-        // If it is a parameter we will do one thing getField to parameter
-        // If it is a local varialble we will do another thing name.type
-        // If it is a parameter we will do another thing $number.name.type
-        return  new  OllirExpressionResult("",OllirSymbol.noSymbol());
+    private OllirExpressionResult handleIdentifier(JmmNode node, List<Report> reports) {
+        IdentifierType idType = IdentifierType.fromJmmNode(node);
+        if(idType == null){
+            System.err.println("This node has no  idType it is not being handled in semantics!!");
+            System.out.println(node.toTree());
+            return new OllirExpressionResult("",OllirSymbol.noSymbol());
+        }
+        return  switch (idType){
+            case ClassField ->  handleFieldIdentifier(node,reports);
+            case MethodParameter -> handleParameterIdentifier(node,reports);
+            case LocalVariable ->  handleLocalVariable(node,reports);
+            case ClassType -> handleClassType(node,reports);
+        };
+    }
+
+    private OllirExpressionResult handleClassType(JmmNode node, List<Report> reports) {
+        return new OllirExpressionResult("",OllirSymbol.noSymbol());
     }
 }
