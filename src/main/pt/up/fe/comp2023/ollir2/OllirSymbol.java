@@ -5,8 +5,6 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 
-import java.util.Optional;
-
 
 public record OllirSymbol(String value, String type) {
 
@@ -29,11 +27,11 @@ public record OllirSymbol(String value, String type) {
     }
 
     public static OllirSymbol fromSymbol(Symbol s) {
-        String type = fromType(s.getType());
+        String type = typeFrom(s.getType());
         return new OllirSymbol(s.getName(), type);
     }
 
-    public static String fromType(Type type) {
+    public static String typeFrom(Type type) {
         String arrayPrefix = "";
         String ollirType = "";
         if (type.isArray()) {
@@ -52,6 +50,12 @@ public record OllirSymbol(String value, String type) {
             ollirType = compare.getName();
         }
         return arrayPrefix + ollirType;
+    }
+
+    public static String typeFrom(JmmNode node) {
+        var isArray = node.get("isArray").equals("true");
+        var type = node.get("type");
+        return typeFrom(new Type(type, isArray));
     }
 
     public String toCode() {

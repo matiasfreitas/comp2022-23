@@ -1,19 +1,14 @@
 package pt.up.fe.comp2023.ollir2;
 
-import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
-import pt.up.fe.comp2023.analysis.semantics.UsageContext;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OllirGenerator extends AOllirGenerator<String> {
     private OllirExpressionGenerator exprGen;
@@ -66,7 +61,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var modifier = symbolTable.isStaticMethod(signature) ? "static" : "";
         var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
-        String ollirType = OllirSymbol.fromType(t);
+        String ollirType = OllirSymbol.typeFrom(t);
         var tokens = Arrays.asList(".method", visibility, modifier, methodName);
         var methodDecl = spaceBetween(tokens);
         List<String> ollirParams = symbolTable.getParameters(signature)

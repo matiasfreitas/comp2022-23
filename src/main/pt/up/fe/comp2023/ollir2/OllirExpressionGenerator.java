@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.ollir2;
 
+import org.specs.comp.ollir.Ollir;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -8,6 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.semantics.UsageContext;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,11 +28,18 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
         addVisit("BinaryOp", this::handleBinaryOp);
+        addVisit("MethodCalling", this::handleMethodCalling);
+        addVisit("This", this::handleThis);
         addVisit("Int", this::handleLiteral);
         addVisit("Char", this::handleLiteral);
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
+    }
+
+    public OllirExpressionResult handleThis(JmmNode jmmNode, List<Report> reports) {
+        var type = OllirSymbol.typeFrom(jmmNode);
+        return new OllirExpressionResult("", new OllirSymbol("this", type));
     }
 
     protected OllirExpressionResult handleLiteral(JmmNode jmmNode, List<Report> reports) {
@@ -99,6 +108,27 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
             case LocalVariable -> handleLocalVariable(node, reports);
             case ClassType -> handleClassType(node, reports);
         };
+    }
+
+    private OllirExpressionResult handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
+        System.out.println("generating ollir for method calling");
+        var method = jmmNode.get("methodName");
+        var type = OllirSymbol.typeFrom(jmmNode);
+        var lhs = visit(jmmNode.getJmmChild(0), reports);
+        var code = new StringBuilder(lhs.code());
+        var parameters = new ArrayList<OllirSymbol>();
+        for (int i = 1; i < jmmNode.getNumChildren(); i++) {
+            var parameter = visit(jmmNode.getJmmChild(i), reports);
+            code.append(parameter.code());
+            parameters.add(parameter.symbol());
+        }
+        OllirSymbol call;
+        if (jmmNode.get("isStatic").equals("true")) {
+            call = ollirInvokeStatic(lhs.symbol(), method, parameters, type);
+        } else {
+            call = ollirInvokeVirtual(lhs.symbol(), method, parameters, type);
+        }
+        return new OllirExpressionResult(code.toString(), call);
     }
 
 }

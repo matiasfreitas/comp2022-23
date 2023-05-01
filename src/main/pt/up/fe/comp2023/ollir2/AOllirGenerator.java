@@ -6,11 +6,10 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
+
     private enum Call {
         InvokeSpecial("invokespecial"),
         InvokeVirtual("invokevirtual"),
@@ -87,7 +86,7 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
             }
         }
         Symbol parameter = arguments.get(i);
-        String ollirType = OllirSymbol.fromType(parameter.getType());
+        String ollirType = OllirSymbol.typeFrom(parameter.getType());
         if (!symbolTable.isStaticMethod(currentMethod)) {
             // The first argument is this so we increment i
             i++;
@@ -116,6 +115,25 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
         return ollirCall(Call.GetField, params, lhs.type());
     }
 
+    public OllirSymbol ollirInvokeStatic(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
+        return ollirInvoke(Call.InvokeStatic, object, method, params, type);
+    }
+
+    public OllirSymbol ollirInvokeVirtual(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
+        return ollirInvoke(Call.InvokeVirtual, object, method, params, type);
+    }
+
+    private OllirSymbol ollirInvoke(Call t, OllirSymbol object, String method, List<OllirSymbol> params, String type) {
+        // Becuase asList returns a fixed size list
+        var ollirParams = new ArrayList<>(Arrays.asList(object.toCode(), methodName(method)));
+        if (params != null) {
+            for (var s : params) {
+                ollirParams.add(s.toCode());
+            }
+        }
+        return ollirCall(t, ollirParams, type);
+    }
+
     private OllirSymbol ollirCall(Call t, List<String> params, String type) {
         var ollir = t.getName() + "(" + formatArguments(params) + ")";
         return new OllirSymbol(ollir, type);
@@ -126,7 +144,7 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     }
 
     public String ollirInvokeConstructor(String object, List<String> arguments) {
-        List<String> args = Arrays.asList(object, methodName("<init>"));
+        var args = new LinkedList<>(Arrays.asList(object, methodName("<init>")));
         if (arguments != null)
             args.addAll(arguments);
         return ollirCall(Call.InvokeSpecial, args, "V").toCode() + ";\n";

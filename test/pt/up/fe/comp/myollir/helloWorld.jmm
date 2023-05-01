@@ -3,7 +3,7 @@ class A{
         int z;
         z = this.double(3);
     }
-    public int double(int x){
+    public static int double(int x){
         return x * 2;
     }
 

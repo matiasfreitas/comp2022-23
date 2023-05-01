@@ -201,6 +201,8 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                     reports.add(this.createErrorReport(jmmNode, message));
                 }
             }
+            // anotate the method calling with static information to help ollir
+            jmmNode.put("isStatic", String.valueOf(symbolTable.isStaticMethod(signature)));
             return t;
         } else {
             // TODO:  Verificar que object é um import
