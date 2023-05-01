@@ -15,6 +15,7 @@ public class Optimization implements JmmOptimization {
         // TODO: Need to understand the pros and cons of var in java and auto in c++
         var optimizedSemanticResult = optimize(jmmSemanticsResult);
         // Is this cast dangerous?
+        System.err.println("Im being called");
         var ollirGenerator = new OllirGenerator((JmmSymbolTable) jmmSemanticsResult.getSymbolTable());
         var rootNode =optimizedSemanticResult.getRootNode();
         var ollirReports = new LinkedList<Report>();

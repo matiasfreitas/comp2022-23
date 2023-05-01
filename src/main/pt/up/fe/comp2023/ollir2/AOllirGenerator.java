@@ -116,16 +116,16 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     }
 
     public OllirSymbol ollirInvokeStatic(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
-        return ollirInvoke(Call.InvokeStatic, object, method, params, type);
+        return ollirInvoke(Call.InvokeStatic, object.type(), method, params, type);
     }
 
     public OllirSymbol ollirInvokeVirtual(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
-        return ollirInvoke(Call.InvokeVirtual, object, method, params, type);
+        return ollirInvoke(Call.InvokeVirtual, object.toCode(), method, params, type);
     }
 
-    private OllirSymbol ollirInvoke(Call t, OllirSymbol object, String method, List<OllirSymbol> params, String type) {
+    private OllirSymbol ollirInvoke(Call t, String object, String method, List<OllirSymbol> params, String type) {
         // Becuase asList returns a fixed size list
-        var ollirParams = new ArrayList<>(Arrays.asList(object.toCode(), methodName(method)));
+        var ollirParams = new ArrayList<>(Arrays.asList(object, methodName(method)));
         if (params != null) {
             for (var s : params) {
                 ollirParams.add(s.toCode());
