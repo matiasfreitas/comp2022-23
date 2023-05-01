@@ -300,6 +300,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             return Optional.empty();
         }
         String className = this.symbolTable.getClassName();
+        IdentifierType.LocalVariable.putIdentiferType(jmmNode);
         return Optional.of(new Type(className, false));
     }
 
