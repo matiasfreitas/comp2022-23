@@ -18,7 +18,7 @@ STRING: '"' ~["\\]* '"';
 
 VISIBILITY : 'public' | 'private' | 'protected' ;
 
-TYPE: 'int' | 'boolean' | 'String' | 'char' | 'double';
+TYPE: 'int' | 'boolean' | 'String' | 'char';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 

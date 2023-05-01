@@ -1,8 +1,10 @@
-import io;
 class A{
-    int z;
-    public static void main(String[] args){
+    public int foo(){
         int z;
-        z = z;
+        z = this.double(3);
     }
+    public int double(int x){
+        return x * 2;
+    }
+
 }

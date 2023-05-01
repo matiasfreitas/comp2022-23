@@ -55,6 +55,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     }
 
     private OllirExpressionResult handleClassType(JmmNode node, List<Report> reports) {
+        // TODO:
         return new OllirExpressionResult("", OllirSymbol.noSymbol());
     }
 
