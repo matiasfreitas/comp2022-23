@@ -1,10 +1,12 @@
-class A{
+import B;
+class A extends B{
     public int foo(){
         int z;
-        z = this.double(3);
+        //z = this.double(3);
+        z = A.double(3);
     }
-    public static int double(int x){
-        return x * 2;
-    }
+    //public static int double(int x){
+    //    return x * 2;
+    //}
 
 }

@@ -9,6 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
+import pt.up.fe.comp2023.ollir2.IdentifierType;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -171,6 +172,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
         }
+        IdentifierType varType = IdentifierType.fromJmmNode(object);
         Type objectType = maybeObjectType.get();
         String method = jmmNode.get("methodName");
         List<Type> parameters = new LinkedList<>();
@@ -184,6 +186,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             }
 
         }
+        // TODO : WHEN assume type is seen  give type of father (type inference)
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
@@ -192,6 +195,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 // Check if it extends an imported class if so assume it is correct
                 String superClass = this.symbolTable.getSuper();
                 if (this.symbolTable.isImportedSymbol(superClass)) {
+                    jmmNode.put("isStatic", String.valueOf(true));
                     return Optional.of(JmmBuiltins.JmmAssumeType);
                 }
                 reports.add(this.createErrorReport(jmmNode, "Is Not an available Method"));
@@ -200,14 +204,21 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                     String message = this.createOverloadReports(method, parameters, similars);
                     reports.add(this.createErrorReport(jmmNode, message));
                 }
+                return t;
+            }
+            boolean isStatic = symbolTable.isStaticMethod(signature);
+            jmmNode.put("isStatic", String.valueOf(isStatic));
+            if (!isStatic && varType.equals(IdentifierType.ClassType)) {
+                String message = "Trying to access non static method of class " + objectType.getName();
+                reports.add(this.createErrorReport(jmmNode, message));
+                return Optional.empty();
             }
             // anotate the method calling with static information to help ollir
-            jmmNode.put("isStatic", String.valueOf(symbolTable.isStaticMethod(signature)));
             return t;
         } else {
-            // TODO:  Verificar que object é um import
-            // Se não for  retornar erro
-            return Optional.empty();
+            // Assume it is static
+            jmmNode.put("isStatic", String.valueOf(true));
+            return Optional.of(JmmBuiltins.JmmAssumeType);
         }
 
     }

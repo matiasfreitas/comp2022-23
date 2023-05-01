@@ -111,7 +111,6 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     }
 
     private OllirExpressionResult handleMethodCalling(JmmNode jmmNode, List<Report> reports) {
-        System.out.println("generating ollir for method calling");
         var method = jmmNode.get("methodName");
         var type = OllirSymbol.typeFrom(jmmNode);
         var lhs = visit(jmmNode.getJmmChild(0), reports);
