@@ -27,8 +27,10 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
+        addVisit("SingleStatement",this::handleSingleStatement);
         addVisit("ReturnStatement", this::handleReturn);
     }
+
 
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
@@ -38,6 +40,10 @@ public class OllirGenerator extends AOllirGenerator<String> {
             code.append(visit(child, reports));
         }
         return code.toString();
+    }
+    private String handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
+        var expr = exprGen.visit(jmmNode.getJmmChild(0));
+        return  expr.code() + expr.symbol().toCode() + ";\n";
     }
 
     private String handleReturn(JmmNode jmmNode, List<Report> reports) {
