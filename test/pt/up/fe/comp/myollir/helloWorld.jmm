@@ -1,4 +1,4 @@
-import B;
+import cao.gato.cobra.B;
 class A extends B{
     public int foo(){
         int z;

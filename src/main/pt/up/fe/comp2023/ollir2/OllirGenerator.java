@@ -47,8 +47,8 @@ public class OllirGenerator extends AOllirGenerator<String> {
     }
 
     private String handleImportDeclaration(JmmNode jmmNode, List<Report> reports) {
+        return  "import " + jmmNode.get("fullModule") + ";\n";
 
-        return defaultVisit(jmmNode, reports);
     }
 
     private String handleMethodDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -91,7 +91,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 methods.add(childCode);
             }
         }
-        return className +
+        return "class " + className +
                 " {\n" +
                 String.join("", fields) +
                 ollirConstructor() +
