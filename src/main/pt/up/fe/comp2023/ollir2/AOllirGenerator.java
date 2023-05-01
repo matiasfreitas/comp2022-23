@@ -65,7 +65,9 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
 
     protected OllirSymbol fromLocalVariable(JmmNode node) {
         String currentMethod = symbolTable.getCurrentMethod();
-        Optional<Symbol> local = symbolTable.getLocalVariableTry(currentMethod, node.get("value"));
+        // Isto é porque na gramática tenho varnmae e value :(
+        String attribute = node.hasAttribute("value") ? "value" : "varName";
+        Optional<Symbol> local = symbolTable.getLocalVariableTry(currentMethod, node.get(attribute));
         // Isto quase de certeza que não vai acontecer o que devo fazer?
         if (local.isEmpty()) {
             // this can't happen
