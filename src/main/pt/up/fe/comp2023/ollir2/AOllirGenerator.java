@@ -7,11 +7,27 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
+    private enum Call {
+        InvokeSpecial("invokespecial"),
+        InvokeVirtual("invokevirtual"),
+        InvokeStatic("invokestatic"),
+        PutField("putfield"),
+        GetField("getfield");
+
+        private final String name;
+
+        Call(String o) {
+            name = o;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 
     protected JmmSymbolTable symbolTable;
 
@@ -39,10 +55,10 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
 
     protected OllirSymbol fromFieldIdentifier(JmmNode node) {
         // Isto é porque na gramática tenho varnmae e value :(
-        String attribute = node.hasAttribute("value")? "value" : "varName";
+        String attribute = node.hasAttribute("value") ? "value" : "varName";
         var field = symbolTable.getFieldTry(node.get(attribute));
         if (field.isEmpty()) {
-                return OllirSymbol.noSymbol();
+            return OllirSymbol.noSymbol();
         }
         return OllirSymbol.fromSymbol(field.get());
     }
@@ -76,6 +92,7 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
         }
         return new OllirSymbol("$" + i + "." + parameter.getName(), ollirType);
     }
+
     public String ollirAssignment(OllirSymbol lhs, OllirSymbol rhs) {
         var code = new StringBuilder(lhs.toCode());
         code.append(" :=.")
@@ -87,47 +104,50 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
     }
 
     public String ollirPutField(OllirSymbol field, OllirSymbol value) {
-        var code = new StringBuilder("putfield(this, ");
-        code.append(field.toCode())
-                .append(", ")
-                .append(value.toCode())
-                .append(").")
-                .append(field.type())
-                .append(";\n");
-        return code.toString();
+        var params = Arrays.asList("this", field.toCode(), value.toCode());
+        return ollirCall(Call.PutField, params, "V").toCode() + ";\n";
 
     }
 
     public OllirSymbol ollirGetField(OllirSymbol lhs) {
-        String getter = "getfield(this, " + lhs.toCode() + ")";
-        return new OllirSymbol(getter, lhs.type());
+        var params = Arrays.asList("this", lhs.value());
+        return ollirCall(Call.GetField, params, lhs.type());
     }
-    public String methodName(String methodName){
+
+    private OllirSymbol ollirCall(Call t, List<String> params, String type) {
+        var ollir = t.getName() + "(" + formatArguments(params) + ")";
+        return new OllirSymbol(ollir, type);
+    }
+
+    public String methodName(String methodName) {
         return '"' + methodName + '"';
     }
-    public String ollirInvokeConstructor(String object,List<String> arguments){
-        List<String> args = Arrays.asList(object,methodName("<init>"));
+
+    public String ollirInvokeConstructor(String object, List<String> arguments) {
+        List<String> args = Arrays.asList(object, methodName("<init>"));
         if (arguments != null)
             args.addAll(arguments);
-        return "invokespecial(" + formatArguments(args) + ").V;\n";
+        return ollirCall(Call.InvokeSpecial, args, "V").toCode() + ";\n";
     }
-    public String spaceBetween(List<String> tokens){
+
+    public String spaceBetween(List<String> tokens) {
         return interSperse(tokens, " ");
     }
 
-    public String formatArguments(List<String> arguments){
+    public String formatArguments(List<String> arguments) {
         return interSperse(arguments, ", ");
     }
-    public String interSperse(List<String> tokens,String between){
+
+    public String interSperse(List<String> tokens, String between) {
         var res = new StringBuilder();
         int i = 0;
-        for(;i < tokens.size() - 1; i++){
+        for (; i < tokens.size() - 1; i++) {
             String atI = tokens.get(i);
-            if(atI != null && !atI.equals("")){
+            if (atI != null && !atI.equals("")) {
                 res.append(atI).append(between);
             }
         }
-        if( i < tokens.size()){
+        if (i < tokens.size()) {
             res.append(tokens.get(i));
         }
         return res.toString();
