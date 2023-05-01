@@ -7,6 +7,7 @@ import org.specs.comp.ollir.ElementType;
 import org.specs.comp.ollir.Type;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.ollir2.OllirGenerator;
 import pt.up.fe.specs.util.SpecsIo;
@@ -44,6 +45,19 @@ public class MyOllirTest {
         var output = TestUtils.analyse(jmmCode);
         var rootNode = output.getRootNode();
         System.out.println(rootNode.toTree());
+        var semanticReports = output.getReports();
+        if(semanticReports.size() > 0){
+            System.out.println("Reports:");
+            boolean error = false;
+            for(Report r : semanticReports){
+                error  = error || r.getType().equals(ReportType.ERROR);
+                System.err.println(r.toString());
+            }
+            if(error){
+                System.err.println("Errors during semantic analysis aborting ollir");
+                return;
+            }
+        }
 
         var ollirGenerator = new OllirGenerator((JmmSymbolTable) output.getSymbolTable());
         var reports = new LinkedList<Report>();
