@@ -8,6 +8,7 @@ import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class OllirGenerator extends AOllirGenerator<String> {

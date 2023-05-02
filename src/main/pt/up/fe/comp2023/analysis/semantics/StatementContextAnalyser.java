@@ -55,11 +55,17 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         // Handle while scope
         return this.visit(jmmNode.getJmmChild(1),reports);
     }
+    private boolean isValidSingleStatement(JmmNode jmmNode){
+        var kind = jmmNode.getJmmChild(0).getKind();
+        return  kind.equals("MethodCalling") || kind.equals("NewObject");
 
+    }
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
-        //System.out.println("Visiting single statement");
         ExpressionContextAnalyser ex = new ExpressionContextAnalyser(jmmNode, symbolTable, context);
         reports.addAll(ex.analyse());
+        if(!isValidSingleStatement(jmmNode)){
+            reports.add(createErrorReport(jmmNode,"Not a valid statement!"));
+        }
         return null;
     }
 

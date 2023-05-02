@@ -63,10 +63,11 @@ statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
+    // TODO: Check in semantics what type of expressions can be statements
     | expression ';' #SingleStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
-    // TODO: return type and assumed type interaction!
+    // TODO: return type and assumed type interaction! -> next todo
     | 'return' expression ';' #ReturnStatement
     ;
 // instance of
