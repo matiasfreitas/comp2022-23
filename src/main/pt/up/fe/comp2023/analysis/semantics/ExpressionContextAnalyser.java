@@ -277,7 +277,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
-            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
+            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             error = true;
         }
         if (error) {
@@ -287,7 +287,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     }
 
     private Optional<Type> handleParen(JmmNode jmmNode, List<Report> reports) {
-        return this.visit(jmmNode.getJmmChild(0), reports);
+        var child = jmmNode.getJmmChild(0);
+        var res = this.visit(child, reports);
+        // Anotate the parenthesis node with the kind of expression it contains
+        IdentifierType.fromJmmNode(child).putIdentiferType(jmmNode);
+        return res;
     }
 
 
