@@ -70,7 +70,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         if (!isValidSingleStatement(expression)) {
             reports.add(createErrorReport(jmmNode, "Not a valid statement!"));
         }
-        if (jmmNode.hasAttribute("type") && JmmBuiltins.fromAnnotatedNode(expression).equals(JmmBuiltins.JmmAssumeType)) {
+        if (expression.hasAttribute("type") && JmmBuiltins.fromAnnotatedNode(expression).equals(JmmBuiltins.JmmAssumeType)) {
             reports.add(createTypeAssumptionWarning(jmmNode, JmmBuiltins.JmmVoid));
             JmmBuiltins.annotate(expression, JmmBuiltins.JmmVoid);
         }
