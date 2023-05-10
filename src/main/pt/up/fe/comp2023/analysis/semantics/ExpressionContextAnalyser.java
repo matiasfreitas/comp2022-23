@@ -54,7 +54,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if (maybeT.isPresent()) {
                 Type t = maybeT.get();
-                JmmBuiltins.annotate(jmmNode,t);
+                JmmBuiltins.annotate(jmmNode, t);
             }
             return maybeT;
         };
@@ -213,7 +213,6 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 reports.add(this.createErrorReport(jmmNode, message));
                 return Optional.empty();
             }
-            // anotate the method calling with static information to help ollir
             return t;
         } else {
             // Assume it is static
