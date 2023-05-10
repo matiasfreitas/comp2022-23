@@ -28,10 +28,9 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
-        addVisit("SingleStatement",this::handleSingleStatement);
+        addVisit("SingleStatement", this::handleSingleStatement);
         addVisit("ReturnStatement", this::handleReturn);
     }
-
 
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
@@ -42,9 +41,10 @@ public class OllirGenerator extends AOllirGenerator<String> {
         }
         return code.toString();
     }
+
     private String handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
         var expr = exprGen.visit(jmmNode.getJmmChild(0));
-        return  expr.code() + expr.symbol().toCode() + ";\n";
+        return expr.code() + expr.symbol().toCode() + ";\n";
     }
 
     private String handleReturn(JmmNode jmmNode, List<Report> reports) {
@@ -54,7 +54,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
     }
 
     private String handleImportDeclaration(JmmNode jmmNode, List<Report> reports) {
-        return  "import " + jmmNode.get("fullModule") + ";\n";
+        return "import " + jmmNode.get("fullModule") + ";\n";
 
     }
 
@@ -88,6 +88,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         var className = symbolTable.getClassName();
         var parentClass = symbolTable.getSuper();
+        var extendsParent = (parentClass == null) ? "" : " extends " + parentClass;
         var fields = new ArrayList<String>();
         var methods = new ArrayList<String>();
         for (var child : jmmNode.getChildren()) {
@@ -98,7 +99,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 methods.add(childCode);
             }
         }
-        return  className +
+        return className + extendsParent +
                 " {\n" +
                 String.join("", fields) +
                 ollirConstructor() +

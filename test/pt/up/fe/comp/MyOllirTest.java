@@ -70,7 +70,27 @@ public class MyOllirTest {
         var path = "pt/up/fe/comp/myollir/helloWorld.jmm";
         testOllir(path);
     }
+    @Test
+    public void testExtends(){
+        var path = "pt/up/fe/comp/myollir/testExtends.jmm";
+        testOllir(path);
+    }
 
+    @Test
+    public void testFields(){
+        var path = "pt/up/fe/comp/myollir/testFields.jmm";
+        testOllir(path);
+    }
+    @Test
+    public void testFieldWrite(){
+        var path = "pt/up/fe/comp/myollir/testFieldWrite.jmm";
+        testOllir(path);
+    }
 
+    @Test
+    public void testFieldRead(){
+        var path = "pt/up/fe/comp/myollir/testFieldRead.jmm";
+        testOllir(path);
+    }
 
 }
