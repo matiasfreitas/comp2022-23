@@ -98,7 +98,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 methods.add(childCode);
             }
         }
-        return "class " + className +
+        return  className +
                 " {\n" +
                 String.join("", fields) +
                 ollirConstructor() +
