@@ -3,6 +3,7 @@ package pt.up.fe.comp2023.ollir2;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
@@ -68,6 +69,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var modifier = symbolTable.isStaticMethod(signature) ? "static" : "";
         var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
+        var retV = (t.equals(JmmBuiltins.JmmVoid))? "ret.V;\n" : "";
         String ollirType = OllirSymbol.typeFrom(t);
         var tokens = Arrays.asList(".method", visibility, modifier, methodName);
         var methodDecl = spaceBetween(tokens);
@@ -76,7 +78,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 .toList();
         var codeParams = formatArguments(ollirParams);
 
-        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + "}\n";
+        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + retV +  "}\n";
     }
 
     private String ollirConstructor() {
