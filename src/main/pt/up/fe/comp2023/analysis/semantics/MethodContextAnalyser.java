@@ -19,12 +19,8 @@ public class MethodContextAnalyser extends ContextAnalyser<Void> {
         // TODO: All of this will be done in the MethodTable Generator
         // TODO: method overloading proper implementation
         // TODO: method overloading error logging
-        MethodSymbolTableGen m = new MethodSymbolTableGen(root,new LinkedList<>());
-        m.analyse();
-        this.methodTable = m.getMethodTable();
-        String methodRepresentaion = this.methodTable.getStringRepresentation();
-        // System.out.println("Method Analyser of method with following representation: " + methodRepresentaion);
-        context.setMethodContext(methodRepresentaion);
+        // This implies that the signuture is present
+        context.setMethodContext(root.get("signature"));
     }
 
     @Override

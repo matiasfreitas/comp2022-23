@@ -4,7 +4,6 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +35,23 @@ public class JmmBuiltins {
         };
         return  Optional.ofNullable(t);
     }
+    public static Type fromAnnotatedNode(JmmNode node){
+        var isArray = node.get("isArray").equals("true");
+        var type = node.get("type");
+        if(isArray){
+            return  new Type(type,true);
+        }
+        return switch (type) {
+            case "int" -> JmmInt;
+            case "char" -> JmmChar;
+            case "boolean" -> JmmBoolean;
+            case "String" -> JmmString;
+            case "void" -> JmmVoid;
+            case "JmmBuiltinAssumeType" -> JmmAssumeType;
+            default -> new Type(type,false);
+        };
+    }
+
     public static boolean typeEqualOrAssumed(Type left,Type right){
         boolean assumed = left.equals(JmmAssumeType) || right.equals(JmmAssumeType);
         boolean equal = left.equals(right);
@@ -47,5 +63,10 @@ public class JmmBuiltins {
             result = result && typeEqualOrAssumed(t,right);
         }
         return result;
+    }
+
+    public static void annotate(JmmNode jmmNode, Type t) {
+        jmmNode.put("type", t.getName());
+        jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
     }
 }

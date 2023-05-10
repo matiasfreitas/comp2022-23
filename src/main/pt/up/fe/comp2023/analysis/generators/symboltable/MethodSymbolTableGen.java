@@ -82,6 +82,8 @@ public class MethodSymbolTableGen extends Analyser<Void> {
                 visit(child,reports);
             }
         }
+        String signature = this.methodTable.getStringRepresentation();
+        jmmNode.put("signature",signature);
         return null;
     }
 

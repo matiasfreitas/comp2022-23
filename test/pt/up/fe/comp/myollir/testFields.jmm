@@ -1,0 +1,7 @@
+import M;
+class A{
+    int x;
+    int[] y;
+    String b;
+    M m;
+}

@@ -59,6 +59,7 @@ public class SemanticContextAnalyser extends ContextAnalyser<Void> {
         //System.out.println("Import Declaration");
         // TODO: isto precisa de um refactor são duas classes diferentes
         String fullModule = JmmSymbolTableGen.getImportString(jmmNode);
+        jmmNode.put("fullModule",fullModule);
         Type importType = JmmSymbolTable.getImportTypeFromString(fullModule);
         String typeName = importType.getName();
         JmmNode isImported = importNodes.get(importType.getName());

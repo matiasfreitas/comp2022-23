@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.analysis.semantics;
 
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -30,7 +31,10 @@ public abstract class Analyser<T> extends AJmmVisitor<List<Report>, T> {
         return  report;
 
     }
+    protected  Report createTypeAssumptionWarning(JmmNode node, Type toType){
+        return createWarningReport(node,"Assuming type to be "+ toType);
 
+    }
     protected Report createWarningReport(JmmNode node, String message) {
         return createReport(node,message,ReportType.WARNING);
 

@@ -53,6 +53,7 @@ public class OllirGenerator implements JmmOptimization {
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
+        System.err.println("no im being called");
         this.semanticsResult = semanticsResult;
         JmmNode node = semanticsResult.getRootNode();
 
