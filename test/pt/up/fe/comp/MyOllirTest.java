@@ -103,4 +103,17 @@ public class MyOllirTest {
         testOllir(path);
     }
 
+    @Test
+    public void app1(){
+        var path = "pt/up/fe/comp/myollir/app1.jmm";
+        testOllir(path);
+
+    }
+    @Test
+    public void simple(){
+        var path = "pt/up/fe/comp/myollir/simple.jmm";
+        testOllir(path);
+
+    }
+
 }
