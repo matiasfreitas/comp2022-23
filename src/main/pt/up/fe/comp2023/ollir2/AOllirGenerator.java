@@ -36,7 +36,7 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
 
 
     protected OllirSymbol fromIdentifier(JmmNode node) {
-        System.out.println(node.getAttributes());
+        //System.out.println(node.getAttributes());
         IdentifierType idType = IdentifierType.fromJmmNode(node);
         if (idType == null) {
             System.err.println("This node has no  idType it is not being handled in semantics!!");

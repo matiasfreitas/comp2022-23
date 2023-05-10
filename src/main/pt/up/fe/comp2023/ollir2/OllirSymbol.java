@@ -22,7 +22,7 @@ public record OllirSymbol(String value, String type) {
             default -> null;
         };
         String value = literal.get("value");
-        System.out.println("New Ollir Symbol " + value + " " + type);
+        //System.out.println("New Ollir Symbol " + value + " " + type);
         return new OllirSymbol(value, type);
     }
 

@@ -35,7 +35,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
 
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
-        System.out.println("Visiting node " + node.getKind());
+        //System.out.println("Visiting node " + node.getKind());
         var code = new StringBuilder();
         for (var child : node.getChildren()) {
             code.append(visit(child, reports));
@@ -114,7 +114,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var idType = IdentifierType.fromJmmNode(node);
         if (idType == null || idType.equals(IdentifierType.ClassType)) {
             System.err.println("This node has no  idType it is not being handled in semantics!!");
-            System.out.println(node.toTree());
+            //System.out.println(node.toTree());
             return "";
         }
         OllirSymbol lhs = fromIdentifier(node);

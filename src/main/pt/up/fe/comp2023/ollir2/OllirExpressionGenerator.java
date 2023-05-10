@@ -96,7 +96,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
 
 
     private OllirExpressionResult handleIdentifier(JmmNode node, List<Report> reports) {
-        System.out.println(node.getAttributes());
+        //System.out.println(node.getAttributes());
         IdentifierType idType = IdentifierType.fromJmmNode(node);
         if (idType == null) {
             System.err.println("This node has no  idType it is not being handled in semantics!!");
