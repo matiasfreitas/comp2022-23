@@ -17,6 +17,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
 
     @Override
     protected void buildVisitor() {
+        // TODO assumed type inference
         this.addVisit("ReturnStatement", this::handleReturnStatement);
         this.addVisit("ArrayAssignment", this::handleArrayAssignment);
         this.addVisit("Assignment", this::handleAssignment);
