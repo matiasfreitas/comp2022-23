@@ -106,24 +106,24 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
 
     public String ollirPutField(OllirSymbol field, OllirSymbol value) {
         var params = Arrays.asList("this", field.toCode(), value.toCode());
-        return ollirCall(Call.PutField, params, "V").toCode() + ";\n";
+        return ollirCall(Call.PutField, params, "V", null).code();
 
     }
 
-    public OllirSymbol ollirGetField(OllirSymbol lhs) {
+    public OllirExpressionResult ollirGetField(OllirSymbol lhs, String register) {
         var params = Arrays.asList("this", lhs.value());
-        return ollirCall(Call.GetField, params, lhs.type());
+        return ollirCall(Call.GetField, params, lhs.type(), register);
     }
 
-    public OllirSymbol ollirInvokeStatic(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
-        return ollirInvoke(Call.InvokeStatic, object.type(), method, params, type);
+    public OllirExpressionResult ollirInvokeStatic(OllirSymbol object, String method, List<OllirSymbol> params, String type, String register) {
+        return ollirInvoke(Call.InvokeStatic, object.type(), method, params, type, register);
     }
 
-    public OllirSymbol ollirInvokeVirtual(OllirSymbol object, String method, List<OllirSymbol> params, String type) {
-        return ollirInvoke(Call.InvokeVirtual, object.toCode(), method, params, type);
+    public OllirExpressionResult ollirInvokeVirtual(OllirSymbol object, String method, List<OllirSymbol> params, String type, String register) {
+        return ollirInvoke(Call.InvokeVirtual, object.toCode(), method, params, type, register);
     }
 
-    private OllirSymbol ollirInvoke(Call t, String object, String method, List<OllirSymbol> params, String type) {
+    private OllirExpressionResult ollirInvoke(Call t, String object, String method, List<OllirSymbol> params, String type, String register) {
         // Becuase asList returns a fixed size list
         var ollirParams = new ArrayList<>(Arrays.asList(object, methodName(method)));
         if (params != null) {
@@ -131,12 +131,18 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
                 ollirParams.add(s.toCode());
             }
         }
-        return ollirCall(t, ollirParams, type);
+        return ollirCall(t, ollirParams, type, register);
     }
 
-    private OllirSymbol ollirCall(Call t, List<String> params, String type) {
-        var ollir = t.getName() + "(" + formatArguments(params) + ")";
-        return new OllirSymbol(ollir, type);
+    private OllirExpressionResult ollirCall(Call t, List<String> params, String type, String register) {
+        var call = new OllirSymbol(t.getName() + "(" + formatArguments(params) + ")",type);
+        var symbol = OllirSymbol.noSymbol();
+        var code = call.toCode() + ";\n";
+        if (register != null) {
+            symbol = new OllirSymbol(register, type);
+            code = ollirAssignment(symbol,call);
+        }
+        return new OllirExpressionResult(code,symbol);
     }
 
     public String methodName(String methodName) {
@@ -147,7 +153,7 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
         var args = new LinkedList<>(Arrays.asList(object, methodName("<init>")));
         if (arguments != null)
             args.addAll(arguments);
-        return ollirCall(Call.InvokeSpecial, args, "V").toCode() + ";\n";
+        return ollirCall(Call.InvokeSpecial, args, "V",null).code();
     }
 
     public String spaceBetween(List<String> tokens) {

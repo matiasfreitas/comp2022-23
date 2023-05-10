@@ -45,7 +45,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
 
     private String handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
         var expr = exprGen.visit(jmmNode.getJmmChild(0));
-        return expr.code() + expr.symbol().toCode() + ";\n";
+        return expr.code();
     }
 
     private String handleReturn(JmmNode jmmNode, List<Report> reports) {

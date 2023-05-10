@@ -27,8 +27,8 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     @Override
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
-        addVisit("Paren",this::handleParenthesis);
-        addVisit("NewObject",this::handleNewObject);
+        addVisit("Paren", this::handleParenthesis);
+        addVisit("NewObject", this::handleNewObject);
         addVisit("BinaryOp", this::handleBinaryOp);
         addVisit("MethodCalling", this::handleMethodCalling);
         addVisit("This", this::handleThis);
@@ -41,15 +41,15 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
 
     private OllirExpressionResult handleNewObject(JmmNode jmmNode, List<Report> reports) {
         var ollirType = OllirSymbol.typeFrom(jmmNode);
-        var lhs = new OllirSymbol(nextTemp(),ollirType);
-        var rhs = new OllirSymbol("new",ollirType);
-        var assignment = ollirAssignment(lhs,rhs);
-        var construct = ollirInvokeConstructor(lhs.toCode(),null);
+        var lhs = new OllirSymbol(nextTemp(), ollirType);
+        var rhs = new OllirSymbol("new", ollirType);
+        var assignment = ollirAssignment(lhs, rhs);
+        var construct = ollirInvokeConstructor(lhs.toCode(), null);
         return new OllirExpressionResult(assignment + construct, lhs);
     }
 
     private OllirExpressionResult handleParenthesis(JmmNode jmmNode, List<Report> reports) {
-        return visit(jmmNode.getJmmChild(0),reports);
+        return visit(jmmNode.getJmmChild(0), reports);
     }
 
     public OllirExpressionResult handleThis(JmmNode jmmNode, List<Report> reports) {
@@ -65,7 +65,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
 
     protected OllirExpressionResult handleFieldIdentifier(JmmNode node, List<Report> reports) {
         var field = fromFieldIdentifier(node);
-        return new OllirExpressionResult("", ollirGetField(field));
+        return ollirGetField(field, nextTemp());
     }
 
     private OllirExpressionResult handleLocalVariable(JmmNode node, List<Report> reports) {
@@ -137,13 +137,14 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
             code.append(parameter.code());
             parameters.add(parameter.symbol());
         }
-        OllirSymbol call;
+        OllirExpressionResult invokeRes;
+        var nextTemp = (type.equals("V")) ? null : nextTemp();
         if (jmmNode.get("isStatic").equals("true")) {
-            call = ollirInvokeStatic(lhs.symbol(), method, parameters, type);
+            invokeRes = ollirInvokeStatic(lhs.symbol(), method, parameters, type, nextTemp);
         } else {
-            call = ollirInvokeVirtual(lhs.symbol(), method, parameters, type);
+            invokeRes = ollirInvokeVirtual(lhs.symbol(), method, parameters, type, nextTemp);
         }
-        return new OllirExpressionResult(code.toString(), call);
+        return new OllirExpressionResult(code + invokeRes.code(), invokeRes.symbol());
     }
 
 }
