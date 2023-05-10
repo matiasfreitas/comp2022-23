@@ -54,8 +54,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if (maybeT.isPresent()) {
                 Type t = maybeT.get();
-                jmmNode.put("type", t.getName());
-                jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
+                JmmBuiltins.annotate(jmmNode,t);
             }
             return maybeT;
         };

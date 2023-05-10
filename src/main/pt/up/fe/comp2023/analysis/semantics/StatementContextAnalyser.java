@@ -43,9 +43,9 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         JmmNode conditionNode = jmmNode.getJmmChild(0);
         this.handleCondition(conditionNode, reports);
         // Handle if
-        this.visit(jmmNode.getJmmChild(1),reports);
+        this.visit(jmmNode.getJmmChild(1), reports);
         // Handle  else
-        return this.visit(jmmNode.getJmmChild(2),reports);
+        return this.visit(jmmNode.getJmmChild(2), reports);
     }
 
     private Void handleWhileLoop(JmmNode jmmNode, List<Report> reports) {
@@ -53,19 +53,27 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         JmmNode conditionNode = jmmNode.getJmmChild(0);
         this.handleCondition(conditionNode, reports);
         // Handle while scope
-        return this.visit(jmmNode.getJmmChild(1),reports);
+        return this.visit(jmmNode.getJmmChild(1), reports);
     }
-    private boolean isValidSingleStatement(JmmNode jmmNode){
-        var kind = jmmNode.getJmmChild(0).getKind();
-        return  kind.equals("MethodCalling") || kind.equals("NewObject");
+
+    private boolean isValidSingleStatement(JmmNode jmmNode) {
+        var kind = jmmNode.getKind();
+        return kind.equals("MethodCalling") || kind.equals("NewObject");
 
     }
+
     private Void handleSingleStatement(JmmNode jmmNode, List<Report> reports) {
-        ExpressionContextAnalyser ex = new ExpressionContextAnalyser(jmmNode, symbolTable, context);
+        var expression = jmmNode.getJmmChild(0);
+        ExpressionContextAnalyser ex = new ExpressionContextAnalyser(expression, symbolTable, context);
         reports.addAll(ex.analyse());
-        if(!isValidSingleStatement(jmmNode)){
-            reports.add(createErrorReport(jmmNode,"Not a valid statement!"));
+        if (!isValidSingleStatement(expression)) {
+            reports.add(createErrorReport(jmmNode, "Not a valid statement!"));
         }
+        if (JmmBuiltins.fromAnnotatedNode(expression).equals(JmmBuiltins.JmmAssumeType)) {
+            reports.add(createTypeAssumptionWarning(jmmNode, JmmBuiltins.JmmVoid));
+            JmmBuiltins.annotate(expression, JmmBuiltins.JmmVoid);
+        }
+
         return null;
     }
 
@@ -86,7 +94,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
                 if (this.symbolTable.isImportedSymbol(assignedType.getName())) {
                     return null;
                 }
-                if (!JmmBuiltins.typeEqualOrAssumed(type,assignedType)) {
+                if (!JmmBuiltins.typeEqualOrAssumed(type, assignedType)) {
                     boolean thisClass = this.symbolTable.isThisClassType(assignedType.getName());
                     String thisClassSuper = this.symbolTable.getSuper();
                     if (thisClass && thisClassSuper != null && thisClassSuper.equals(type.getName())) {
@@ -124,8 +132,8 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
             ex = new ExpressionContextAnalyser(expressionNode, symbolTable, context);
             reports.addAll(ex.analyse());
             Optional<Type> maybeAssignType = ex.getType();
-            Type acceptsType = new Type(arrayType.getName(),false);
-            if (maybeAssignType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(acceptsType,maybeAssignType.get())) {
+            Type acceptsType = new Type(arrayType.getName(), false);
+            if (maybeAssignType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(acceptsType, maybeAssignType.get())) {
                 StringBuilder b = new StringBuilder("Trying to assign ");
                 b.append(maybeAssignType.get());
                 b.append("To an array of ");
@@ -145,7 +153,7 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
         String thisMethod = this.context.getMethodSignature();
         //System.out.println("We are returning from " + thisMethod);
         Type methodReturnType = symbolTable.getReturnType(thisMethod);
-        if (exType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(methodReturnType,exType.get())) {
+        if (exType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(methodReturnType, exType.get())) {
             StringBuilder error = new StringBuilder("Method Returns ");
             error.append(methodReturnType)
                     .append(" But ")
