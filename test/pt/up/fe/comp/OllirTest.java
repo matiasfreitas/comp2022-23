@@ -29,7 +29,9 @@ import static org.junit.Assert.fail;
 public class OllirTest {
 
     static OllirResult getOllirResult(String filename) {
-        return new OllirResult(SpecsIo.getResource("pt/up/fe/comp/ollir/" + filename), new HashMap<>());
+        var res = new OllirResult(SpecsIo.getResource("pt/up/fe/comp/ollir/" + filename), new HashMap<>());
+        System.out.println(res.getOllirCode());
+        return res;
     }
 
     @Test

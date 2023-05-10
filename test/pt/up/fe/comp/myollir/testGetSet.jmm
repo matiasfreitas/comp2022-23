@@ -1,0 +1,15 @@
+class A {
+    int x;
+    public void setX(int newX){
+        x = newX;
+    }
+    public int getX(){
+        return x;
+    }
+
+    public int incrementBy(int inc){
+       x = x + inc;
+       return x;
+    }
+
+}

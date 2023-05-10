@@ -97,5 +97,10 @@ public class MyOllirTest {
         var path = "pt/up/fe/comp/myollir/retV.jmm";
         testOllir(path);
     }
+    @Test
+    public void testGetSet(){
+        var path = "pt/up/fe/comp/myollir/testGetSet.jmm";
+        testOllir(path);
+    }
 
 }
