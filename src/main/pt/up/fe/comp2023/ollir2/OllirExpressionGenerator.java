@@ -27,6 +27,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     @Override
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
+        addVisit("Paren",this::handleParenthesis);
         addVisit("BinaryOp", this::handleBinaryOp);
         addVisit("MethodCalling", this::handleMethodCalling);
         addVisit("This", this::handleThis);
@@ -35,6 +36,10 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
+    }
+
+    private OllirExpressionResult handleParenthesis(JmmNode jmmNode, List<Report> reports) {
+        return visit(jmmNode.getJmmChild(0),reports);
     }
 
     public OllirExpressionResult handleThis(JmmNode jmmNode, List<Report> reports) {
