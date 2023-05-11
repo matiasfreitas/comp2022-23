@@ -186,7 +186,6 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
 
         }
         // TODO : WHEN assume type is seen  give type of father (type inference)
-        // TODO: Node Paren does not contain attribute 'idType' when calling (expression).method();
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
@@ -215,8 +214,13 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             }
             return t;
         } else {
-            // Assume it is static
-            jmmNode.put("isStatic", String.valueOf(true));
+            if (varType.equals(IdentifierType.ClassType)) {
+                // Assume it is static
+                jmmNode.put("isStatic", String.valueOf(true));
+            } else {
+                jmmNode.put("isStatic", String.valueOf(false));
+
+            }
             return Optional.of(JmmBuiltins.JmmAssumeType);
         }
 
