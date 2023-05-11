@@ -107,6 +107,12 @@ public class StatementContextAnalyser extends ContextAnalyser<Void> {
                     b.append(type);
                     reports.add(this.createErrorReport(jmmNode, b.toString()));
                 }
+                else{
+                    if(JmmBuiltins.JmmAssumeType.equals(assignedType)){
+                        reports.add(createTypeAssumptionWarning(expressionNode,type));
+                    }
+                    JmmBuiltins.annotate(expressionNode,type);
+                }
             }
         }
         return null;
