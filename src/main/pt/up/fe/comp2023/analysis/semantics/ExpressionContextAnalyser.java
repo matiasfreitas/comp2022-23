@@ -9,7 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
-import pt.up.fe.comp2023.ollir2.IdentifierType;
+import pt.up.fe.comp2023.ollir.IdentifierType;
 
 import java.util.*;
 import java.util.function.BiFunction;

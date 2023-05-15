@@ -5,7 +5,7 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
-import pt.up.fe.comp2023.ollir2.OllirGenerator;
+import pt.up.fe.comp2023.ollir.OllirGenerator;
 import pt.up.fe.specs.util.SpecsIo;
 
 import java.util.HashMap;

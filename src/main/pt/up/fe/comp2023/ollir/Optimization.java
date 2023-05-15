@@ -1,4 +1,4 @@
-package pt.up.fe.comp2023.ollir2;
+package pt.up.fe.comp2023.ollir;
 
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
@@ -7,7 +7,6 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.LinkedList;
-import java.util.List;
 
 public class Optimization implements JmmOptimization {
     @Override

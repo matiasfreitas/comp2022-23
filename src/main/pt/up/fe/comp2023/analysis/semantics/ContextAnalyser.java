@@ -7,7 +7,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
-import pt.up.fe.comp2023.ollir2.IdentifierType;
+import pt.up.fe.comp2023.ollir.IdentifierType;
 
 import java.util.ArrayList;
 import java.util.List;
