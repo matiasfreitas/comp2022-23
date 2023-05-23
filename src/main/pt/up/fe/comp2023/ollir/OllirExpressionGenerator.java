@@ -1,8 +1,11 @@
 package pt.up.fe.comp2023.ollir;
 
 import org.specs.comp.ollir.Ollir;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
+import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
 import java.util.ArrayList;
@@ -24,6 +27,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         setDefaultVisit(this::defaultVisit);
         addVisit("Paren", this::handleParenthesis);
         addVisit("NewObject", this::handleNewObject);
+        addVisit("NewArray", this::handleNewArray);
         addVisit("BinaryOp", this::handleBinaryOp);
         addVisit("MethodCalling", this::handleMethodCalling);
         addVisit("This", this::handleThis);
@@ -32,6 +36,19 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
+    }
+
+    private OllirExpressionResult handleNewArray(JmmNode jmmNode, List<Report> reports) {
+        var tg = new TypeGen();
+        tg.visit(jmmNode.getJmmChild(0));
+        var type = tg.getType();
+        var arrayType = new Type(type.getName(), true);
+        var ollirType = OllirSymbol.typeFrom(arrayType);
+        var ollirSize = visit(jmmNode.getJmmChild(1), reports);
+        var ollirArraySymbol = ollirNewArray(ollirSize.symbol(), ollirType);
+
+        return new OllirExpressionResult(ollirSize.code(), ollirArraySymbol);
+
     }
 
     private OllirExpressionResult handleNewObject(JmmNode jmmNode, List<Report> reports) {

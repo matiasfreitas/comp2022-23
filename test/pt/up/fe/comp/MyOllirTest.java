@@ -16,12 +16,12 @@ import static org.junit.Assert.fail;
 
 /**
  * Copyright 2022 SPeCS.
- * 
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License. under the License.
@@ -34,20 +34,20 @@ public class MyOllirTest {
     }
 
 
-    public void testOllir(String path){
-        String jmmCode= SpecsIo.getResource(path);
+    public void testOllir(String path) {
+        String jmmCode = SpecsIo.getResource(path);
         var output = TestUtils.analyse(jmmCode);
         var rootNode = output.getRootNode();
         System.out.println(rootNode.toTree());
         var semanticReports = output.getReports();
-        if(semanticReports.size() > 0){
+        if (semanticReports.size() > 0) {
             System.out.println("Reports:");
             boolean error = false;
-            for(Report r : semanticReports){
-                error  = error || r.getType().equals(ReportType.ERROR);
+            for (Report r : semanticReports) {
+                error = error || r.getType().equals(ReportType.ERROR);
                 System.err.println(r.toString());
             }
-            if(error){
+            if (error) {
                 System.err.println("Errors during semantic analysis aborting ollir");
                 return;
             }
@@ -55,63 +55,75 @@ public class MyOllirTest {
 
         var ollirGenerator = new OllirGenerator((JmmSymbolTable) output.getSymbolTable());
         var reports = new LinkedList<Report>();
-        var ollirCode = ollirGenerator.visit(rootNode,reports);
-        System.out.println("Ollir Code:\n"+ ollirCode);
+        var ollirCode = ollirGenerator.visit(rootNode, reports);
+        System.out.println("Ollir Code:\n" + ollirCode);
     }
 
     @Test
-    public void idTypeBug(){
+    public void idTypeBug() {
         var path = "pt/up/fe/comp/myollir/idTypeBug.jmm";
         testOllir(path);
     }
 
     @Test
-    public void helloWorld(){
+    public void helloWorld() {
         var path = "pt/up/fe/comp/myollir/helloWorld.jmm";
         testOllir(path);
     }
+
     @Test
-    public void testExtends(){
+    public void testExtends() {
         var path = "pt/up/fe/comp/myollir/testExtends.jmm";
         testOllir(path);
     }
 
     @Test
-    public void testFields(){
+    public void testFields() {
         var path = "pt/up/fe/comp/myollir/testFields.jmm";
         testOllir(path);
     }
+
     @Test
-    public void testFieldWrite(){
+    public void testFieldWrite() {
         var path = "pt/up/fe/comp/myollir/testFieldWrite.jmm";
         testOllir(path);
     }
 
     @Test
-    public void testFieldRead(){
+    public void testFieldRead() {
         var path = "pt/up/fe/comp/myollir/testFieldRead.jmm";
         testOllir(path);
     }
+
     @Test
-    public void testRetV(){
+    public void testRetV() {
         var path = "pt/up/fe/comp/myollir/retV.jmm";
         testOllir(path);
     }
+
     @Test
-    public void testGetSet(){
+    public void testGetSet() {
         var path = "pt/up/fe/comp/myollir/testGetSet.jmm";
         testOllir(path);
     }
 
     @Test
-    public void app1(){
+    public void app1() {
         var path = "pt/up/fe/comp/myollir/app1.jmm";
         testOllir(path);
 
     }
+
     @Test
-    public void simple(){
+    public void simple() {
         var path = "pt/up/fe/comp/myollir/simple.jmm";
+        testOllir(path);
+
+    }
+
+    @Test
+    public void arrayInitialization() {
+        var path = "pt/up/fe/comp/myollir/arrayInitialization.jmm";
         testOllir(path);
 
     }
