@@ -175,7 +175,7 @@ public class OllirToJasmin {
             }
 
             code.append(".limit stack " + JasminUtils.stackLimit + "\n");
-            code.append(".limit locals 99\n");
+            code.append(".limit locals " + methodLocalLimit(method) +  "\n");
             code.append(body);
             code.append(".end method\n");
 
@@ -183,6 +183,20 @@ public class OllirToJasmin {
         }
 
     }
+
+    public int methodLocalLimit(Method method) {
+        ArrayList<Integer> methodRegs = new ArrayList<>();
+
+        methodRegs.add(0); // Class Register
+
+        for (var descriptor : method.getVarTable().values()) {
+            if (!methodRegs.contains(descriptor.getVirtualReg()))
+                methodRegs.add(descriptor.getVirtualReg());
+        }
+
+        return methodRegs.size();
+    }
+
 
     public String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
 

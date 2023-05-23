@@ -181,9 +181,11 @@ public class JasminUtils {
                     code.append(invokeInstruction);
                 }
 
-                if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+                if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID) {
                     updateLimit(-1);
-                    code.append("pop\n");
+                    if (tempLimit < 0)
+                        code.append("pop\n");
+                }
                 return code.toString();
 
             case GETFIELD:
