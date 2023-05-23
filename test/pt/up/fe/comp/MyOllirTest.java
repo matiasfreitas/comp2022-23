@@ -125,7 +125,11 @@ public class MyOllirTest {
     public void arrayInitialization() {
         var path = "pt/up/fe/comp/myollir/arrayInitialization.jmm";
         testOllir(path);
-
+    }
+    @Test
+    public void arrayIndexing() {
+        var path = "pt/up/fe/comp/myollir/arrayIndexing.jmm";
+        testOllir(path);
     }
 
 }

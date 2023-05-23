@@ -28,6 +28,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("Paren", this::handleParenthesis);
         addVisit("NewObject", this::handleNewObject);
         addVisit("NewArray", this::handleNewArray);
+        addVisit("ArrayIndexing", this::handleArrayIndexing);
         addVisit("BinaryOp", this::handleBinaryOp);
         addVisit("MethodCalling", this::handleMethodCalling);
         addVisit("This", this::handleThis);
@@ -37,6 +38,16 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
     }
+
+    private OllirExpressionResult handleArrayIndexing(JmmNode jmmNode, List<Report> reports) {
+        //  expression '[' expression ']' #ArrayIndexing
+        var array = visit(jmmNode.getJmmChild(0));
+        var index = visit(jmmNode.getJmmChild(1));
+        OllirSymbol indexed = ollirArrayIndex(array.symbol(), index.symbol());
+        return new OllirExpressionResult(array.code() + index.code(), indexed);
+    }
+
+
 
     private OllirExpressionResult handleNewArray(JmmNode jmmNode, List<Report> reports) {
         var tg = new TypeGen();

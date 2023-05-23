@@ -5,6 +5,8 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 
+import java.util.Arrays;
+
 
 public record OllirSymbol(String value, String type) {
 
@@ -63,4 +65,16 @@ public record OllirSymbol(String value, String type) {
     }
 
 
+    public String containedType() {
+        var split = type.split("\\.");
+        int start = split.length >1 ?  1 : 0;
+        var type = new StringBuilder();
+        for(;start < split.length-1;start++){
+            type.append(split[start]).append(".");
+        }
+        if(start < split.length){
+            type.append(split[start]);
+        }
+        return type.toString();
+    }
 }
