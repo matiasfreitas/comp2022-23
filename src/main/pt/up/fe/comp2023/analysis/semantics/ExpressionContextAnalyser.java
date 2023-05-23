@@ -9,6 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.analysis.symboltable.MethodSymbolTable;
+import pt.up.fe.comp2023.ollir.IdentifierType;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -53,8 +54,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             Optional<Type> maybeT = function.apply(jmmNode, reports);
             if (maybeT.isPresent()) {
                 Type t = maybeT.get();
-                jmmNode.put("type", t.getName());
-                jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
+                JmmBuiltins.annotate(jmmNode, t);
             }
             return maybeT;
         };
@@ -171,6 +171,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
         }
+        IdentifierType varType = IdentifierType.fromJmmNode(object);
         Type objectType = maybeObjectType.get();
         String method = jmmNode.get("methodName");
         List<Type> parameters = new LinkedList<>();
@@ -184,6 +185,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             }
 
         }
+        // TODO : WHEN assume type is seen  give type of father (type inference)
         String signature = MethodSymbolTable.getStringRepresentation(method, parameters);
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             Optional<Type> t = this.symbolTable.getReturnTypeTry(signature);
@@ -192,6 +194,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                 // Check if it extends an imported class if so assume it is correct
                 String superClass = this.symbolTable.getSuper();
                 if (this.symbolTable.isImportedSymbol(superClass)) {
+                    jmmNode.put("isStatic", String.valueOf(true));
                     return Optional.of(JmmBuiltins.JmmAssumeType);
                 }
                 reports.add(this.createErrorReport(jmmNode, "Is Not an available Method"));
@@ -200,12 +203,25 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
                     String message = this.createOverloadReports(method, parameters, similars);
                     reports.add(this.createErrorReport(jmmNode, message));
                 }
+                return t;
+            }
+            boolean isStatic = symbolTable.isStaticMethod(signature);
+            jmmNode.put("isStatic", String.valueOf(isStatic));
+            if (!isStatic && varType.equals(IdentifierType.ClassType)) {
+                String message = "Trying to access non static method of class " + objectType.getName();
+                reports.add(this.createErrorReport(jmmNode, message));
+                return Optional.empty();
             }
             return t;
         } else {
-            // TODO:  Verificar que object é um import
-            // Se não for  retornar erro
-            return Optional.empty();
+            if (varType.equals(IdentifierType.ClassType)) {
+                // Assume it is static
+                jmmNode.put("isStatic", String.valueOf(true));
+            } else {
+                jmmNode.put("isStatic", String.valueOf(false));
+
+            }
+            return Optional.of(JmmBuiltins.JmmAssumeType);
         }
 
     }
@@ -263,7 +279,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         JmmNode indexNode = jmmNode.getJmmChild(1);
         Optional<Type> indexType = this.visit(indexNode, reports);
         if (indexType.isPresent() && !JmmBuiltins.typeEqualOrAssumed(indexType.get(), JmmBuiltins.JmmInt)) {
-            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get().toString()));
+            reports.add(this.createErrorReport(jmmNode, "Index of an Array Must be an integer got: " + indexType.get()));
             error = true;
         }
         if (error) {
@@ -273,7 +289,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
     }
 
     private Optional<Type> handleParen(JmmNode jmmNode, List<Report> reports) {
-        return this.visit(jmmNode.getJmmChild(0), reports);
+        var child = jmmNode.getJmmChild(0);
+        var res = this.visit(child, reports);
+        // Anotate the parenthesis node with the kind of expression it contains
+        IdentifierType.fromJmmNode(child).putIdentiferType(jmmNode);
+        return res;
     }
 
 
@@ -287,6 +307,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             return Optional.empty();
         }
         String className = this.symbolTable.getClassName();
+        IdentifierType.LocalVariable.putIdentiferType(jmmNode);
         return Optional.of(new Type(className, false));
     }
 

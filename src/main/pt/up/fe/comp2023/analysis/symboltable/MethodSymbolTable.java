@@ -102,4 +102,8 @@ public class MethodSymbolTable {
         }
         return Optional.empty();
     }
+
+    public String getVisibility() {
+        return  visibility;
+    }
 }

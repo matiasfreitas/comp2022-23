@@ -18,7 +18,7 @@ STRING: '"' ~["\\]* '"';
 
 VISIBILITY : 'public' | 'private' | 'protected' ;
 
-TYPE: 'int' | 'boolean' | 'String' | 'char' | 'double';
+TYPE: 'int' | 'boolean' | 'String' | 'char';
 
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
@@ -50,11 +50,12 @@ type: simpleType | arrayType;
 // assignment	= += -= *= /= %= &= ^= |= <<= >>= >>>= ???
 
 varTypeSpecification : type varName=ID ;
-
+// Isto também é redundante
 varDeclaration :  varTypeSpecification ;
 
 methodArguments : varTypeSpecification (',' varTypeSpecification)* ;
 
+// TODO: se é opcional não preciso desta regra redundante
 classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration ';' ;
 
 // TODO: Need to correct this  scopedBlock should disapear
@@ -62,9 +63,11 @@ statement
     : '{' statement* '}' #ScopedBlock
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
+    // TODO: Check in semantics what type of expressions can be statements
     | expression ';' #SingleStatement
     | varName=ID '=' expression ';' #Assignment
     | varName=ID '[' expression ']' '=' expression ';' #ArrayAssignment
+    // TODO: return type and assumed type interaction! -> next todo
     | 'return' expression ';' #ReturnStatement
     ;
 // instance of
@@ -80,6 +83,8 @@ expression
     | expression op='&&' expression #BinaryOp
     | 'new' type '[' expression ']' #NewArray
     | 'new' typeName=ID '(' ')' #NewObject
+    // TODO: what should i do with chars?
+    // Should have a subtype called literal instead of int,boolean char,string....
     | value=INT  #Int
     | value=BOOLEAN #Boolean
     | value=CHAR #Char

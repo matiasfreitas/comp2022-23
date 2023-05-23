@@ -16,6 +16,8 @@ public class JmmSymbolTable implements SymbolTable {
     Map<String, Integer> importsUsage;
     List<String> methodNames;
 
+    private String currentMethod;
+
     public JmmSymbolTable(List<String> imports, ClassSymbolTable classSymbolTable) {
         this.imports = imports;
         this.importTypes = getImportTypes(imports);
@@ -47,10 +49,31 @@ public class JmmSymbolTable implements SymbolTable {
         return new Type(typeName, false);
     }
 
-    public Optional<Type> getFieldTry(String t) {
+    public Optional<Type> getFieldTypeTry(String t) {
         for (Symbol s : this.getFields()) {
             if (s.getName().equals(t)) {
-                return Optional.ofNullable(s.getType());
+                return Optional.of(s.getType());
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Symbol> getFieldTry(String t) {
+        for (Symbol s : this.getFields()) {
+            if (s.getName().equals(t)) {
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Symbol> getLocalVariableTry(String signature, String identifier) {
+        var locals = getLocalVariablesTry(signature);
+        if (locals.isPresent()) {
+            for (Symbol s : locals.get()) {
+                if (s.getName().equals(identifier)) {
+                    return Optional.of(s);
+                }
             }
         }
         return Optional.empty();
@@ -154,4 +177,15 @@ public class JmmSymbolTable implements SymbolTable {
 
     }
 
+    public String getCurrentMethod() {
+        return currentMethod;
+    }
+
+    public void setCurrentMethod(String currentMethod) {
+        this.currentMethod = currentMethod;
+    }
+
+    public String getMethodVisibility(String signature) {
+        return methods.get(signature).getVisibility();
+    }
 }

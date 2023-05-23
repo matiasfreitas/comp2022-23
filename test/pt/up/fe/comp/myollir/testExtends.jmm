@@ -1,0 +1,3 @@
+import B;
+class A extends B {
+}

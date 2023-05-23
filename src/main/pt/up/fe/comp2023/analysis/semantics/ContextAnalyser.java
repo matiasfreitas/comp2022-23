@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
+import pt.up.fe.comp2023.ollir.IdentifierType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,27 +30,38 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
     }
 
 
-    private Optional<Type> checkClassScope(String identifier) {
-        return symbolTable.getFieldTry(identifier);
+    private Optional<Type> checkClassFields(String identifier, JmmNode node) {
+        var res = symbolTable.getFieldTypeTry(identifier);
+        if (res.isPresent()) {
+            IdentifierType.ClassField.putIdentiferType(node);
+        }
+        return res;
 
     }
 
-    private Optional<Type> checkMethodScope(String identifier, String currentMethod) {
+    private Optional<Type> checkMethodScope(String identifier, String currentMethod, JmmNode node) {
         for (Symbol s : symbolTable.getLocalVariables(currentMethod)) {
             if (s.getName().equals(identifier)) {
-                return Optional.ofNullable(s.getType());
-            }
-        }
-        for (Symbol s : symbolTable.getParameters(currentMethod)) {
-            if (s.getName().equals(identifier)) {
+                IdentifierType.LocalVariable.putIdentiferType(node);
                 return Optional.ofNullable(s.getType());
             }
         }
         return Optional.empty();
     }
 
-    private Optional<Type> checkImports(String identifier) {
+    private Optional<Type> checkMethodParameters(String identifier, String currentMethod, JmmNode node) {
+        for (Symbol s : symbolTable.getParameters(currentMethod)) {
+            if (s.getName().equals(identifier)) {
+                IdentifierType.MethodParameter.putIdentiferType(node);
+                return Optional.ofNullable(s.getType());
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Type> checkImports(String identifier, JmmNode node) {
         if (symbolTable.isImportedSymbol(identifier)) {
+            IdentifierType.ClassType.putIdentiferType(node);
             return Optional.of(new Type(identifier, false));
         }
         return Optional.empty();
@@ -86,16 +98,21 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         return null;
     }
 
-    private Optional<Type> handleIdentifierInMethod(String identifier, String currentMethod, JmmNode jmmNode, List<Report> reports) {
-        Optional<Type> inMethod = checkMethodScope(identifier, currentMethod);
+    private Optional<Type> handleIdentifierInMethod(String identifier, String currentMethod, JmmNode node, List<Report> reports) {
+        Optional<Type> inMethod = checkMethodScope(identifier, currentMethod, node);
         if (inMethod.isPresent()) {
             return inMethod;
         }
-        Optional<Type> inClass = checkClassScope(identifier);
+
+        Optional<Type> inParameter = checkMethodParameters(identifier, currentMethod, node);
+        if (inParameter.isPresent()) {
+            return inParameter;
+        }
+        Optional<Type> inClass = checkClassFields(identifier, node);
         if (inClass.isPresent()) {
             if (symbolTable.isStaticMethod(currentMethod)) {
                 // For now we assume that this is an error but we could try to check for imports to see if something is available
-                reports.add(this.createErrorReport(jmmNode, "Trying to acess non static field " + identifier + " in static method"));
+                reports.add(this.createErrorReport(node, "Trying to acess non static field " + identifier + " in static method"));
                 return Optional.empty();
             }
             return inClass;
@@ -103,24 +120,25 @@ public abstract class ContextAnalyser<T> extends Analyser<T> {
         return Optional.empty();
     }
 
-    public Optional<Type> checkIdentifier(String identifier, JmmNode jmmNode, List<Report> reports) {
+    public Optional<Type> checkIdentifier(String identifier, JmmNode node, List<Report> reports) {
         if (!context.isClassContext()) {
-            Optional<Type> inMethod = handleIdentifierInMethod(identifier, context.getMethodSignature(), jmmNode, reports);
+            Optional<Type> inMethod = handleIdentifierInMethod(identifier, context.getMethodSignature(), node, reports);
             if (inMethod.isPresent())
                 return inMethod;
         }
         // Class Context
         else {
-            Optional<Type> inClass = checkClassScope(identifier);
+            Optional<Type> inClass = checkClassFields(identifier, node);
             if (inClass.isPresent())
                 return inClass;
         }
         // Could be an import
         Type identifierType = new Type(identifier, false);
         if (!validType(identifierType)) {
-            reports.add(this.createErrorReport(jmmNode, "Undefined Identifier " + identifier));
+            reports.add(this.createErrorReport(node, "Undefined Identifier " + identifier));
             return Optional.empty();
         }
+        IdentifierType.ClassType.putIdentiferType(node);
         return Optional.of(identifierType);
     }
 
