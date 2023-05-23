@@ -102,7 +102,9 @@ public class JasminUtils {
 
                 addCodeOperand(varTable, code, left);
                 addCodeOperand(varTable, code, right);
-                if (!left.isLiteral() || !right.isLiteral())
+                if (!left.isLiteral())
+                    updateLimit(-1);
+                if (!right.isLiteral())
                     updateLimit(-1);
 
                 switch (opType) {
