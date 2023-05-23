@@ -34,14 +34,15 @@ public class JasminUtils {
 
                 if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
                     prefix = "a";
-                if (varTable.get(op1.getName()).getVarType().getTypeOfElement() == ElementType.ARRAYREF)
-                    updateLimit(-3);
-                else
-                    updateLimit(-1);
+
                 hasAssign = true;
                 code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
                 hasAssign = false;
                 code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
+                if (varTable.get(op1.getName()).getVarType().getTypeOfElement() == ElementType.ARRAYREF)
+                    updateLimit(-3);
+                else
+                    updateLimit(-1);
                 return code.toString();
 
             case NOPER:
@@ -101,6 +102,8 @@ public class JasminUtils {
 
                 addCodeOperand(varTable, code, left);
                 addCodeOperand(varTable, code, right);
+                if (!left.isLiteral() || !right.isLiteral())
+                    updateLimit(-1);
 
                 switch (opType) {
 
@@ -263,7 +266,7 @@ public class JasminUtils {
     private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
         if (!element.isLiteral()) {
             Operand el = (Operand) element;
-            if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
+            if (element.getType().getTypeOfElement() == ElementType.BOOLEAN || element.getType().getTypeOfElement() == ElementType.INT32)
                 code.append("iload ");
             else
                 code.append("aload ");
@@ -273,7 +276,7 @@ public class JasminUtils {
         else {
             LiteralElement el = (LiteralElement) element;
             code.append(constantPusher(el) + el.getLiteral() + "\n");
-
+            updateLimit(-1);
         }
     }
 
