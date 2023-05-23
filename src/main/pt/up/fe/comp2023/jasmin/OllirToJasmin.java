@@ -29,7 +29,7 @@ public class OllirToJasmin {
             code.append(info.toLowerCase() + " ");
         if (info.equals("DEFAULT")) code.append("public ");
         if (isStatic) code.append("static ");
-        if (isFinal) code.append("final ");
+        if (isFinal)  code.append("final ");
     }
     public void addClass() {
 
@@ -167,22 +167,27 @@ public class OllirToJasmin {
                 throw new RuntimeException(e);
             }
 
-            code.append(".limit stack 99\n");
-            code.append(".limit locals 99\n");
+
+            StringBuilder body = new StringBuilder();
 
             for (Instruction instruction: method.getInstructions()) {
-                addInstruction(instruction, method.getVarTable());
+                body.append(addInstruction(instruction, method.getVarTable()));
             }
 
+            code.append(".limit stack " + JasminUtils.stackLimit + "\n");
+            code.append(".limit locals 99\n");
+            code.append(body);
             code.append(".end method\n");
+
+            JasminUtils.resetLimit();
         }
 
     }
 
-    public void addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
+    public String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable) {
 
         ArrayList<String> imports = classUnit.getImports();
         imports.add(classUnit.getClassName());
-        code.append(JasminUtils.addInstruction(instruction, varTable, imports).replace("Dummy", classUnit.getClassName()));
+        return (JasminUtils.addInstruction(instruction, varTable, imports).replace("Dummy", classUnit.getClassName()));
     }
 }

@@ -12,6 +12,8 @@ import static org.specs.comp.ollir.ElementType.OBJECTREF;
 
 public class JasminUtils {
 
+    public static int stackLimit = 0;
+    private static int tempLimit = 0;
     private static boolean hasAssign = false;
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
@@ -30,9 +32,12 @@ public class JasminUtils {
                 Type type                           = (Type) op1.getType();
                 prefix                              = "i";
 
-                if (type.getTypeOfElement() == ElementType.OBJECTREF)
+                if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
                     prefix = "a";
-
+                if (varTable.get(op1.getName()).getVarType().getTypeOfElement() == ElementType.ARRAYREF)
+                    updateLimit(-3);
+                else
+                    updateLimit(-1);
                 hasAssign = true;
                 code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
                 hasAssign = false;
@@ -54,6 +59,7 @@ public class JasminUtils {
                         if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                        updateLimit(1);
                 }
 
                 return code.toString();
@@ -124,6 +130,8 @@ public class JasminUtils {
                 if (callInstruction.getInvocationType() == CallType.NEW) {
 
                     code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
+                    if (object.getType().getTypeOfElement() == OBJECTREF)
+                        updateLimit(1);
                     return code.toString();
                 }
                 else if (callInstruction.getInvocationType() == CallType.invokestatic) {
@@ -136,6 +144,7 @@ public class JasminUtils {
                     invokeInstruction.append(callInstruction.getInvocationType() + " " );
                     methodName = method.getLiteral().replace("\"","");
                     code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+                    updateLimit(1);
                     invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
                 }
 
@@ -154,6 +163,7 @@ public class JasminUtils {
                         if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                        updateLimit(1);
                     }
 
                     addComma = false;
@@ -172,6 +182,7 @@ public class JasminUtils {
                 }
 
                 if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+                    updateLimit(-1);
                     code.append("pop\n");
                 return code.toString();
 
@@ -183,6 +194,7 @@ public class JasminUtils {
 
                 code.append("aload "    +  varTable.get(object.getName()).getVirtualReg() + "\n");
                 code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
+
                 return code.toString();
 
             case PUTFIELD:
@@ -195,12 +207,12 @@ public class JasminUtils {
                 code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
 
                 constType = constantPusher(newValue);
-                code.append(constType +    newValue.getLiteral() + "\n");
+                code.append(constType +  newValue.getLiteral() + "\n");
                 code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
                 return code.toString();
-            case RETURN:
 
+            case RETURN:
 
                 ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
                 if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
@@ -233,6 +245,7 @@ public class JasminUtils {
                         if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                        updateLimit(1);
                         code.append(prefix + "return\n");
 
                     }
@@ -253,6 +266,7 @@ public class JasminUtils {
             else
                 code.append("aload ");
             code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
+            updateLimit(1);
         }
         else {
             LiteralElement el = (LiteralElement) element;
@@ -305,7 +319,22 @@ public class JasminUtils {
         }
     }
 
+    public static void updateLimit(Integer value) {
+
+        tempLimit += value;
+        stackLimit = Math.max(tempLimit, stackLimit);
+
+    }
+
+    public static void resetLimit() {
+        tempLimit  = 0;
+        stackLimit = 0;
+    }
+
     public static String constantPusher (LiteralElement op) {
+
+        updateLimit(1);
+
         int num;
         try {
             num = Integer.parseInt(op.getLiteral());
@@ -322,6 +351,8 @@ public class JasminUtils {
     }
 
     public static String constantPusher (int num) {
+
+        updateLimit(1);
 
         if (-1 < num && num < 5) return "iconst_";
         else if (-127 < num && num < 128) return "bipush ";
