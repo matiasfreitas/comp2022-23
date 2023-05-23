@@ -28,8 +28,17 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
+        addVisit("ArrayAssignment",this::handleArrayAssignment);
         addVisit("SingleStatement", this::handleSingleStatement);
         addVisit("ReturnStatement", this::handleReturn);
+    }
+
+    private String handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
+        var index = exprGen.visit(jmmNode.getJmmChild(0));
+        var value = exprGen.visit(jmmNode.getJmmChild(1));
+        var array = jmmNode.get("varName");
+        var arrayAssignment = ollirArrayAssignment(array,index.symbol(),value.symbol());
+        return index.code() + value.code() + arrayAssignment;
     }
 
 
