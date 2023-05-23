@@ -1,0 +1,8 @@
+class ArrayIndexing{
+    public static void main(String[] args){
+       int[] a;
+       int c;
+       a = new int[3];
+       c = 2 + a[1];
+    }
+    }
