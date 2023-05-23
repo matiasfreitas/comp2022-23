@@ -186,7 +186,7 @@ public class JasminUtils {
 
                 if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID) {
                     updateLimit(-1);
-                    if (tempLimit < 0)
+                    if (!(tempLimit < 0))
                         code.append("pop\n");
                 }
                 return code.toString();
@@ -266,7 +266,7 @@ public class JasminUtils {
     private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
         if (!element.isLiteral()) {
             Operand el = (Operand) element;
-            if (element.getType().getTypeOfElement() == ElementType.BOOLEAN || element.getType().getTypeOfElement() == ElementType.INT32)
+            if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
                 code.append("iload ");
             else
                 code.append("aload ");
