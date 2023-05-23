@@ -102,10 +102,7 @@ public class JasminUtils {
 
                 addCodeOperand(varTable, code, left);
                 addCodeOperand(varTable, code, right);
-                if (!left.isLiteral())
-                    updateLimit(-1);
-                if (!right.isLiteral())
-                    updateLimit(-1);
+                updateLimit(-1);
 
                 switch (opType) {
 
@@ -199,6 +196,7 @@ public class JasminUtils {
                 object                                    = (Operand) getFieldInstruction.getFirstOperand();
                 field                                     = (Operand) getFieldInstruction.getSecondOperand();
 
+                updateLimit(1);
                 code.append("aload "    +  varTable.get(object.getName()).getVirtualReg() + "\n");
                 code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
@@ -211,6 +209,7 @@ public class JasminUtils {
                 field                                     = (Operand) putFieldInstruction.getSecondOperand();
                 LiteralElement newValue                   = (LiteralElement) putFieldInstruction.getThirdOperand();
 
+                updateLimit(1);
                 code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
 
                 constType = constantPusher(newValue);
@@ -278,7 +277,6 @@ public class JasminUtils {
         else {
             LiteralElement el = (LiteralElement) element;
             code.append(constantPusher(el) + el.getLiteral() + "\n");
-            updateLimit(-1);
         }
     }
 
