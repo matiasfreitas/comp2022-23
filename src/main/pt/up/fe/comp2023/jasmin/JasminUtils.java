@@ -35,14 +35,15 @@ public class JasminUtils {
                 if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
                     prefix = "a";
 
+                if (op1 instanceof ArrayOperand)
+                    prefix = "i"; //TODO
+
                 hasAssign = true;
                 code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
                 hasAssign = false;
                 code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
-                if (varTable.get(op1.getName()).getVarType().getTypeOfElement() == ElementType.ARRAYREF)
-                    updateLimit(-3);
-                else
-                    updateLimit(-1);
+
+                updateLimit(-1);
                 return code.toString();
 
             case NOPER:
@@ -131,6 +132,21 @@ public class JasminUtils {
 
                 if (callInstruction.getInvocationType() == CallType.NEW) {
 
+                    if (object.getName() == "array") {
+                        for (Element element : callInstruction.getListOfOperands()) {
+                            if (element instanceof Operand) {
+                                Operand operand = (Operand) element;
+                                updateLimit(1);
+
+                                code.append("aload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
+                            }
+                        }
+
+                        code.append("newarray int\n");
+
+                    }
+                    else
+
                     code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
                     if (object.getType().getTypeOfElement() == OBJECTREF)
                         updateLimit(1);
@@ -142,12 +158,21 @@ public class JasminUtils {
                     invokeInstruction.append("invokestatic " + object.getName() + "/");
                 }
 
+                else if (callInstruction.getInvocationType() == CallType.arraylength) {
+
+                    code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+                    invokeInstruction.append(callInstruction.getInvocationType() + "\n");
+                    updateLimit(1);
+                    code.append(invokeInstruction);
+                    return code.toString();
+                }
                 else {
                     invokeInstruction.append(callInstruction.getInvocationType() + " " );
                     methodName = method.getLiteral().replace("\"","");
                     code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
                     updateLimit(1);
                     invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
+
                 }
 
                 invokeInstruction.append("" + methodName + "(");
@@ -312,7 +337,7 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     boolean reference = false;
-                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
+                        Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
                     if (jasminType(newFieldType, imports) != "I" && jasminType(newFieldType) != "Z")
                         reference = true;
 

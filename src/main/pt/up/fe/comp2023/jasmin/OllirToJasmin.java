@@ -176,6 +176,7 @@ public class OllirToJasmin {
 
             code.append(".limit stack " + JasminUtils.stackLimit + "\n");
             code.append(".limit locals " + methodLocalLimit(method) +  "\n");
+
             code.append(body);
             code.append(".end method\n");
 

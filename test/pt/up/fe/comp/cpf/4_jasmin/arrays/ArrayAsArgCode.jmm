@@ -6,7 +6,7 @@ class ArrayAsArg {
         int x;
         int[] arr;
         ArrayAsArg c;
-        
+
 		c = new ArrayAsArg();
         arr = new int[2];
         x = c.func(arr);
