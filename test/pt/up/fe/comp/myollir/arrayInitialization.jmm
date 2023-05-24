@@ -1,0 +1,10 @@
+class ArrayInit{
+    public static void main(String[] args){
+        int[] a;
+        // Constant
+        a = new int[3];
+        // Binary Op
+        a = new int[3*3*3];
+
+    }
+}
