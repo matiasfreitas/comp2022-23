@@ -27,6 +27,7 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
     protected void buildVisitor() {
         setDefaultVisit(this::defaultVisit);
         addVisit("Paren", this::handleParenthesis);
+        addVisit("Unary", this::handleUnaryOperator);
         addVisit("NewObject", this::handleNewObject);
         addVisit("NewArray", this::handleNewArray);
         addVisit("ArrayIndexing", this::handleArrayIndexing);
@@ -40,6 +41,17 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
     }
+
+    private OllirExpressionResult handleUnaryOperator(JmmNode jmmNode, List<Report> reports) {
+        var rhs = visit(jmmNode.getJmmChild(0));
+        var op = jmmNode.get("op");
+        var resultingType = OllirSymbol.typeFrom(jmmNode);
+        var newTemp = new OllirSymbol(nextTemp(), resultingType);
+        var assign = ollirAssignment(newTemp, rhs.symbol(), op);
+        var code = rhs.code() + assign;
+        return new OllirExpressionResult(code, newTemp);
+    }
+
 
     private OllirExpressionResult handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
         // We assume that this is calling array length
