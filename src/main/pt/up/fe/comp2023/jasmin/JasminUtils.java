@@ -43,8 +43,8 @@ public class JasminUtils {
 
                     code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
                     code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
-                    updateLimit(1);
-                    updateLimit(-3);
+                    updateLimit(2);
+                    updateLimit(-1);
                     ret = false;
 
 
