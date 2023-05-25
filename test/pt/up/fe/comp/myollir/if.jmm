@@ -1,0 +1,17 @@
+class If {
+    public static void main(String[] args){
+       int a;
+       If i;
+       a = i.max(3,4);
+    }
+
+    public int max(int a, int b){
+        if( a < b){
+            return b;
+        }
+        else{
+            return a;
+        }
+    }
+
+}
