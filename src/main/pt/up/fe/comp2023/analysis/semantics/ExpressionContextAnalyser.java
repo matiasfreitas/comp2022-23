@@ -146,6 +146,10 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         }
         Type objectType = maybeObjectType.get();
         String attributeName = jmmNode.get("attributeName");
+        if(attributeName.equals("length") && objectType.isArray()){
+            return Optional.of(JmmBuiltins.JmmInt);
+        }
+
         if (this.symbolTable.isThisClassType(objectType.getName())) {
             List<Symbol> fields = this.symbolTable.getFields();
             for (Symbol f : fields) {

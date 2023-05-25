@@ -104,10 +104,15 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
         return code.toString();
     }
 
+    public String ollirAssignment(OllirSymbol res, OllirSymbol lhs, OllirSymbol rhs, String op) {
+        return res.toCode() + " :=." + res.type() + " " + lhs.toCode() + " " + op + "." + res.type() + " " + rhs.toCode() +
+                ";\n";
+    }
+
     public String ollirArrayAssignment(String array, OllirSymbol index, OllirSymbol value) {
         var arrayOllir = array + "[" + index.toCode() + "]";
-        var arraySymbol = new OllirSymbol(arrayOllir,value.type());
-        return  ollirAssignment(arraySymbol,value);
+        var arraySymbol = new OllirSymbol(arrayOllir, value.type());
+        return ollirAssignment(arraySymbol, value);
     }
 
     public OllirSymbol ollirNewArray(OllirSymbol size, String type) {

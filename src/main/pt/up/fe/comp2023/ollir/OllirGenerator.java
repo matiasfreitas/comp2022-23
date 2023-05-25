@@ -14,9 +14,14 @@ import java.util.List;
 public class OllirGenerator extends AOllirGenerator<String> {
     private OllirExpressionGenerator exprGen;
 
+    private LabelPair labelIf;
+    private LabelPair labelWhile;
+
     public OllirGenerator(JmmSymbolTable symbolTable) {
         super(symbolTable);
         this.exprGen = new OllirExpressionGenerator(symbolTable);
+        this.labelIf = new LabelPair("if");
+        this.labelWhile = new LabelPair("while");
 
     }
 
@@ -28,16 +33,52 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
-        addVisit("ArrayAssignment",this::handleArrayAssignment);
+        addVisit("ArrayAssignment", this::handleArrayAssignment);
         addVisit("SingleStatement", this::handleSingleStatement);
         addVisit("ReturnStatement", this::handleReturn);
+        addVisit("IfStatement", this::handleIfStatement);
+        addVisit("WhileLoop", this::handleWhileStatement);
+    }
+
+    private String handleWhileStatement(JmmNode jmmNode, List<Report> reports) {
+        //| 'while' '(' expression ')' statement #WhileLoop
+        var condition = exprGen.visit(jmmNode.getJmmChild(0));
+        var whileBlock = visit(jmmNode.getJmmChild(1));
+
+        var enterWhile = labelWhile.enter();
+        var endWhile = labelWhile.end();
+        labelWhile.next();
+        return condition.code() + "if(" + condition.symbol().toCode() + ")" + ollirGoTo(enterWhile) + ollirGoTo(endWhile) + ollirLabel(enterWhile) + whileBlock + ollirLabel(endWhile);
+
+    }
+
+    private String handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+        // 'if' '(' expression ')' statement 'else' statement  #IfStatement
+        var condition = exprGen.visit(jmmNode.getJmmChild(0));
+
+        var ifBlock = visit(jmmNode.getJmmChild(1));
+        var elseBlock = visit(jmmNode.getJmmChild(2));
+
+        var enterIf = labelIf.enter();
+        var endIf = labelIf.end();
+        labelIf.next();
+        return condition.code() + "if(" + condition.symbol().toCode() + ")" + ollirGoTo(enterIf) + elseBlock + ollirGoTo(endIf) + ollirLabel(enterIf) + ifBlock + ollirLabel(endIf);
+
+    }
+
+    private String ollirGoTo(String label) {
+        return "goto " + label + ";\n";
+    }
+
+    private String ollirLabel(String label) {
+        return label + ":\n";
     }
 
     private String handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
         var index = exprGen.visit(jmmNode.getJmmChild(0));
         var value = exprGen.visit(jmmNode.getJmmChild(1));
         var array = jmmNode.get("varName");
-        var arrayAssignment = ollirArrayAssignment(array,index.symbol(),value.symbol());
+        var arrayAssignment = ollirArrayAssignment(array, index.symbol(), value.symbol());
         return index.code() + value.code() + arrayAssignment;
     }
 
@@ -77,22 +118,18 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var modifier = symbolTable.isStaticMethod(signature) ? "static" : "";
         var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
-        var retV = (t.equals(JmmBuiltins.JmmVoid))? "ret.V;\n" : "";
+        var retV = (t.equals(JmmBuiltins.JmmVoid)) ? "ret.V;\n" : "";
         String ollirType = OllirSymbol.typeFrom(t);
         var tokens = Arrays.asList(".method", visibility, modifier, methodName);
         var methodDecl = spaceBetween(tokens);
-        List<String> ollirParams = symbolTable.getParameters(signature)
-                .stream().map(s -> OllirSymbol.fromSymbol(s).toCode())
-                .toList();
+        List<String> ollirParams = symbolTable.getParameters(signature).stream().map(s -> OllirSymbol.fromSymbol(s).toCode()).toList();
         var codeParams = formatArguments(ollirParams);
 
-        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + retV +  "}\n";
+        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + retV + "}\n";
     }
 
     private String ollirConstructor() {
-        return ".construct " + symbolTable.getClassName() + "().V {\n" +
-                ollirInvokeConstructor("this", null) +
-                "}\n";
+        return ".construct " + symbolTable.getClassName() + "().V {\n" + ollirInvokeConstructor("this", null) + "}\n";
     }
 
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
@@ -109,12 +146,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 methods.add(childCode);
             }
         }
-        return className + extendsParent +
-                " {\n" +
-                String.join("", fields) +
-                ollirConstructor() +
-                String.join("", methods) +
-                "}";
+        return className + extendsParent + " {\n" + String.join("", fields) + ollirConstructor() + String.join("", methods) + "}";
     }
 
 
