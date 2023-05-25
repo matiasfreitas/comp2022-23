@@ -174,8 +174,8 @@ public class OllirToJasmin {
                 body.append(addInstruction(instruction, method.getVarTable()));
             }
 
-            code.append(".limit stack " + JasminUtils.stackLimit + "\n");
-            code.append(".limit locals " + methodLocalLimit(method) +  "\n");
+            code.append(".limit stack 99"  + "\n");
+            code.append(".limit locals 99" +  "\n");
 
             code.append(body);
             code.append(".end method\n");
