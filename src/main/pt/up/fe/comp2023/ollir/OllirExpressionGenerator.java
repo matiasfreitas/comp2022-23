@@ -149,11 +149,9 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         var lhs = visit(jmmNode.getJmmChild(0), reports);
         var rhs = visit(jmmNode.getJmmChild(1), reports);
         var newTemp = new OllirSymbol(nextTemp(), resultingType);
-        var operation = newTemp.toCode() + " :=." + resultingType + " " + lhs.symbol().toCode() + " " + op + "." + resultingType + " " + rhs.symbol().toCode() + ";\n";
-        var code = new StringBuilder(lhs.code());
-        code.append(rhs.code())
-                .append(operation);
-        return new OllirExpressionResult(code.toString(), newTemp);
+        var assign = ollirAssignment(newTemp, lhs.symbol(), rhs.symbol(), op);
+        var code = lhs.code() + rhs.code() + assign;
+        return new OllirExpressionResult(code, newTemp);
     }
 
 
