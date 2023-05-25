@@ -67,7 +67,9 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         var array = visit(jmmNode.getJmmChild(0));
         var index = visit(jmmNode.getJmmChild(1));
         OllirSymbol indexed = ollirArrayIndex(array.symbol(), index.symbol());
-        return new OllirExpressionResult(array.code() + index.code(), indexed);
+        var temp = new OllirSymbol(nextTemp(),indexed.type());
+        var assigned = ollirAssignment(temp,indexed);
+        return new OllirExpressionResult(array.code() + index.code() + assigned, temp);
     }
 
 

@@ -132,6 +132,11 @@ public class MyOllirTest {
         testOllir(path);
     }
     @Test
+    public void arrayComplex() {
+        var path = "pt/up/fe/comp/myollir/arrayComplex.jmm";
+        testOllir(path);
+    }
+    @Test
     public void arrayAssignment() {
         var path = "pt/up/fe/comp/myollir/arrayAssignment.jmm";
         testOllir(path);
