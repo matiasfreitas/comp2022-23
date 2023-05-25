@@ -242,7 +242,7 @@ public class JasminUtils {
 
                 if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID) {
                     updateLimit(-1);
-                    if (!(tempLimit < 0))
+                    if (tempLimit >= 0)
                         code.append("pop\n");
                 }
                 return code.toString();
