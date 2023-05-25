@@ -1,7 +1,9 @@
 class A{
-public static void main(String[] args){
-   int a;
-   while(!(a < 10)){
-a = a + 1;
+    public static void main(String[] args){
+        int a;
+        a = (new A()).foo();
+    }
+    public int foo() {
+        return 3;
+    }
 }
-}}

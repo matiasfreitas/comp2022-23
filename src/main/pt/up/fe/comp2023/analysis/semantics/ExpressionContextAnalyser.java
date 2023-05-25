@@ -175,7 +175,11 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             // Não faz sentido continuar a checkar?
             return Optional.empty();
         }
-        IdentifierType varType = IdentifierType.fromJmmNode(object);
+        boolean mustBeStatic = false;
+        if (object.hasAttribute("idType")) {
+            IdentifierType varType = IdentifierType.fromJmmNode(object);
+            mustBeStatic = varType.equals(IdentifierType.ClassType);
+        }
         Type objectType = maybeObjectType.get();
         String method = jmmNode.get("methodName");
         List<Type> parameters = new LinkedList<>();
@@ -211,14 +215,14 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
             }
             boolean isStatic = symbolTable.isStaticMethod(signature);
             jmmNode.put("isStatic", String.valueOf(isStatic));
-            if (!isStatic && varType.equals(IdentifierType.ClassType)) {
+            if (!isStatic && mustBeStatic) {
                 String message = "Trying to access non static method of class " + objectType.getName();
                 reports.add(this.createErrorReport(jmmNode, message));
                 return Optional.empty();
             }
             return t;
         } else {
-            if (varType.equals(IdentifierType.ClassType)) {
+            if (mustBeStatic) {
                 // Assume it is static
                 jmmNode.put("isStatic", String.valueOf(true));
             } else {
