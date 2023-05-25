@@ -44,12 +44,10 @@ public class JasminUtils {
                     code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
                     code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
                     updateLimit(2);
-                    updateLimit(-1);
                     ret = false;
 
 
                 }
-
 
                 if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
                     prefix = "a";
@@ -58,8 +56,12 @@ public class JasminUtils {
                 hasAssign = false;
 
                 code.append(prefix + "store ");
-                if (ret)
+                if (ret) {
                     code.append(varTable.get(op1.getName()).getVirtualReg());
+                }
+                else {
+                    updateLimit(-1);
+                }
                 code.append("\n");
 
                 updateLimit(-1);
