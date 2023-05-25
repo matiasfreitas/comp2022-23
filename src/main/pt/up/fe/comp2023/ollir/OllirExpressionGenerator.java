@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
+import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
@@ -31,12 +32,34 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         addVisit("ArrayIndexing", this::handleArrayIndexing);
         addVisit("BinaryOp", this::handleBinaryOp);
         addVisit("MethodCalling", this::handleMethodCalling);
+        addVisit("AttributeAccessing", this::handleAttributeAccessing);
         addVisit("This", this::handleThis);
         addVisit("Int", this::handleLiteral);
         addVisit("Char", this::handleLiteral);
         addVisit("String", this::handleLiteral);
         addVisit("Boolean", this::handleLiteral);
         addVisit("Identifier", this::handleIdentifier);
+    }
+
+    private OllirExpressionResult handleAttributeAccessing(JmmNode jmmNode, List<Report> reports) {
+        // We assume that this is calling array length
+        var attributeName = jmmNode.get("attributeName");
+        var lhs = visit(jmmNode.getJmmChild(0));
+        if (!(attributeName.equals("length") && lhs.symbol().isArray())) {
+            System.err.println("Unavailable attribute accessing");
+            return new OllirExpressionResult(lhs.code(), OllirSymbol.noSymbol());
+        }
+        var arrayLength = ollirArrayLength(lhs.symbol());
+        return new OllirExpressionResult(lhs.code() + arrayLength.code(), arrayLength.symbol());
+    }
+
+    private OllirExpressionResult ollirArrayLength(OllirSymbol array) {
+        var value = "arraylength(" + array.toCode() + ")";
+        var ollirInt = OllirSymbol.typeFrom(JmmBuiltins.JmmInt);
+        var lenCall = new OllirSymbol(value, ollirInt);
+        var lenVar = new OllirSymbol(nextTemp(), ollirInt);
+        var assignment = ollirAssignment(lenVar, lenCall);
+        return new OllirExpressionResult(assignment, lenVar);
     }
 
     private OllirExpressionResult handleArrayIndexing(JmmNode jmmNode, List<Report> reports) {
@@ -46,7 +69,6 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         OllirSymbol indexed = ollirArrayIndex(array.symbol(), index.symbol());
         return new OllirExpressionResult(array.code() + index.code(), indexed);
     }
-
 
 
     private OllirExpressionResult handleNewArray(JmmNode jmmNode, List<Report> reports) {

@@ -77,4 +77,8 @@ public record OllirSymbol(String value, String type) {
         }
         return type.toString();
     }
+
+    public boolean isArray() {
+        return type.startsWith("array");
+    }
 }

@@ -61,6 +61,7 @@ classVarDeclaration: visibility=VISIBILITY? varDeclaration ';' | varDeclaration 
 // TODO: Need to correct this  scopedBlock should disapear
 statement
     : '{' statement* '}' #ScopedBlock
+    // For the statements i just visit() and then add lablels while incrementing the labels names
     | 'if' '(' expression ')' statement 'else' statement  #IfStatement
     | 'while' '(' expression ')' statement #WhileLoop
     // TODO: Check in semantics what type of expressions can be statements
