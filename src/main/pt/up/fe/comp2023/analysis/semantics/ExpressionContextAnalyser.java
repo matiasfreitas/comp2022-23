@@ -146,7 +146,7 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         }
         Type objectType = maybeObjectType.get();
         String attributeName = jmmNode.get("attributeName");
-        if(attributeName.equals("length") && objectType.isArray()){
+        if (attributeName.equals("length") && objectType.isArray()) {
             return Optional.of(JmmBuiltins.JmmInt);
         }
 
@@ -296,7 +296,9 @@ public class ExpressionContextAnalyser extends ContextAnalyser<Optional<Type>> {
         var child = jmmNode.getJmmChild(0);
         var res = this.visit(child, reports);
         // Anotate the parenthesis node with the kind of expression it contains
-        IdentifierType.fromJmmNode(child).putIdentiferType(jmmNode);
+        if (child.getKind().equals("Identifier")) {
+            IdentifierType.fromJmmNode(child).putIdentiferType(jmmNode);
+        }
         return res;
     }
 
