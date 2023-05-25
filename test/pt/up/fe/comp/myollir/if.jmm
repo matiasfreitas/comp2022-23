@@ -6,12 +6,13 @@ class If {
     }
 
     public int max(int a, int b){
+        int result;
         if( a < b){
-            return b;
+            result = b;
         }
         else{
-            return a;
+            result = a;
         }
+        return result;
     }
-
 }

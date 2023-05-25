@@ -28,16 +28,40 @@ public class OllirGenerator extends AOllirGenerator<String> {
         addVisit("ClassVarDeclaration", this::handleClassField);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("Assignment", this::handleAssignment);
-        addVisit("ArrayAssignment",this::handleArrayAssignment);
+        addVisit("ArrayAssignment", this::handleArrayAssignment);
         addVisit("SingleStatement", this::handleSingleStatement);
         addVisit("ReturnStatement", this::handleReturn);
+        addVisit("IfStatement", this::handleIfStatement);
+    }
+
+    private String handleIfStatement(JmmNode jmmNode, List<Report> reports) {
+        // 'if' '(' expression ')' statement 'else' statement  #IfStatement
+        var condition = exprGen.visit(jmmNode.getJmmChild(0));
+
+        var ifBlock = visit(jmmNode.getJmmChild(1));
+        var elseBlock = visit(jmmNode.getJmmChild(2));
+
+        var enterIf = "if_lable";
+        var endIf = "if_end_lable";
+
+        return condition.code() + "if(" + condition.symbol().toCode() + ")"
+                + ollirGoTo(enterIf) + elseBlock + ollirGoTo(endIf) + ollirLabel(enterIf) + ifBlock + ollirLabel(endIf);
+
+    }
+
+    private String ollirGoTo(String label) {
+        return "goto " + label + ";\n";
+    }
+
+    private String ollirLabel(String label) {
+        return label + ":\n";
     }
 
     private String handleArrayAssignment(JmmNode jmmNode, List<Report> reports) {
         var index = exprGen.visit(jmmNode.getJmmChild(0));
         var value = exprGen.visit(jmmNode.getJmmChild(1));
         var array = jmmNode.get("varName");
-        var arrayAssignment = ollirArrayAssignment(array,index.symbol(),value.symbol());
+        var arrayAssignment = ollirArrayAssignment(array, index.symbol(), value.symbol());
         return index.code() + value.code() + arrayAssignment;
     }
 
@@ -77,7 +101,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var modifier = symbolTable.isStaticMethod(signature) ? "static" : "";
         var methodName = jmmNode.get("methodName");
         Type t = symbolTable.getReturnType(signature);
-        var retV = (t.equals(JmmBuiltins.JmmVoid))? "ret.V;\n" : "";
+        var retV = (t.equals(JmmBuiltins.JmmVoid)) ? "ret.V;\n" : "";
         String ollirType = OllirSymbol.typeFrom(t);
         var tokens = Arrays.asList(".method", visibility, modifier, methodName);
         var methodDecl = spaceBetween(tokens);
@@ -86,7 +110,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 .toList();
         var codeParams = formatArguments(ollirParams);
 
-        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + retV +  "}\n";
+        return methodDecl + "(" + codeParams + ")." + ollirType + " {\n" + innerCode + retV + "}\n";
     }
 
     private String ollirConstructor() {

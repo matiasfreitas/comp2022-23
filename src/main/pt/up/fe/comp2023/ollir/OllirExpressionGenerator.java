@@ -67,8 +67,8 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
         var array = visit(jmmNode.getJmmChild(0));
         var index = visit(jmmNode.getJmmChild(1));
         OllirSymbol indexed = ollirArrayIndex(array.symbol(), index.symbol());
-        var temp = new OllirSymbol(nextTemp(),indexed.type());
-        var assigned = ollirAssignment(temp,indexed);
+        var temp = new OllirSymbol(nextTemp(), indexed.type());
+        var assigned = ollirAssignment(temp, indexed);
         return new OllirExpressionResult(array.code() + index.code() + assigned, temp);
     }
 
@@ -145,15 +145,13 @@ public class OllirExpressionGenerator extends AOllirGenerator<OllirExpressionRes
 
     private OllirExpressionResult handleBinaryOp(JmmNode jmmNode, List<Report> reports) {
         var op = jmmNode.get("op");
+        var resultingType = OllirSymbol.typeFrom(jmmNode);
         var lhs = visit(jmmNode.getJmmChild(0), reports);
         var rhs = visit(jmmNode.getJmmChild(1), reports);
-        // This assumes type checking was already done
-        var newTemp = new OllirSymbol(nextTemp(), lhs.symbol().type());
-        var operation = newTemp.toCode() + " :=." + lhs.symbol().type() + " " + lhs.symbol().toCode() + " " + op + "." + lhs.symbol().type() + " " + rhs.symbol().toCode() + ";\n";
-        var code = new StringBuilder(lhs.code());
-        code.append(rhs.code())
-                .append(operation);
-        return new OllirExpressionResult(code.toString(), newTemp);
+        var newTemp = new OllirSymbol(nextTemp(), resultingType);
+        var assign = ollirAssignment(newTemp, lhs.symbol(), rhs.symbol(), op);
+        var code = lhs.code() + rhs.code() + assign;
+        return new OllirExpressionResult(code, newTemp);
     }
 
 
