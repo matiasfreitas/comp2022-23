@@ -27,21 +27,40 @@ public class JasminUtils {
 
             case ASSIGN :
 
+
+
                 AssignInstruction assignInstruction = (AssignInstruction) instruction;
                 Operand op1                         = (Operand) assignInstruction.getDest();
                 Type type                           = (Type) op1.getType();
                 prefix                              = "i";
+                boolean ret                         = true;
+
+                if (op1 instanceof ArrayOperand) {
+                    ArrayOperand op = (ArrayOperand) op1;
+                    Operand indexOperand = (Operand) op.getIndexOperands().get(0);
+                    op1 = indexOperand;
+                    prefix = "ia";
+
+                    code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
+                    code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+                    updateLimit(1);
+                    updateLimit(-3);
+                    ret = false;
+
+
+                }
+
 
                 if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
                     prefix = "a";
-
-                if (op1 instanceof ArrayOperand)
-                    prefix = "i"; //TODO
-
                 hasAssign = true;
                 code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
                 hasAssign = false;
-                code.append(prefix + "store " +  varTable.get(op1.getName()).getVirtualReg() + "\n");
+
+                code.append(prefix + "store ");
+                if (ret)
+                    code.append(varTable.get(op1.getName()).getVirtualReg());
+                code.append("\n");
 
                 updateLimit(-1);
                 return code.toString();
@@ -55,10 +74,21 @@ public class JasminUtils {
                     constType = constantPusher(op);
                     code.append(constType + op.getLiteral() + '\n');
                 }
+                else if (onlyOperand instanceof ArrayOperand) {
+
+                    ArrayOperand op = (ArrayOperand) onlyOperand;
+                    code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
+                    Operand indexOperand = (Operand) op.getIndexOperands().get(0);
+                    if (op.getIndexOperands().get(0) instanceof Operand) {
+                        code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+                        code.append("iaload\n");
+                        updateLimit(3);
+                    }
+                }
                 else {
                         Operand op = (Operand) onlyOperand;
                         prefix = "i";
-                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
+                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
                         updateLimit(1);
@@ -138,7 +168,7 @@ public class JasminUtils {
                                 Operand operand = (Operand) element;
                                 updateLimit(1);
 
-                                code.append("aload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
+                                code.append("iload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
                             }
                         }
 
@@ -147,7 +177,7 @@ public class JasminUtils {
                     }
                     else
 
-                    code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
+                    code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\n");
                     if (object.getType().getTypeOfElement() == OBJECTREF)
                         updateLimit(1);
                     return code.toString();
@@ -187,7 +217,7 @@ public class JasminUtils {
                     else {
                         Operand op = (Operand) operand;
                         prefix = "i";
-                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
+                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
                         updateLimit(1);
@@ -273,7 +303,7 @@ public class JasminUtils {
 
                         Operand op = (Operand) operand;
                         prefix = "i";
-                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF)
+                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
                             prefix = "a";
                         code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
                         updateLimit(1);
@@ -373,7 +403,7 @@ public class JasminUtils {
 
         }
 
-        if (-1 < num && num < 5) return "iconst_";
+        if (-1 < num && num <= 5) return "iconst_";
         else if (-127 < num && num < 128) return "bipush ";
         else if (-32768 < num && num < 32767) return "sipush ";
         else return "ldc ";
@@ -384,7 +414,7 @@ public class JasminUtils {
 
         updateLimit(1);
 
-        if (-1 < num && num < 5) return "iconst_";
+        if (-1 < num && num <= 5) return "iconst_";
         else if (-127 < num && num < 128) return "bipush ";
         else if (-32768 < num && num < 32767) return "sipush ";
         else return "ldc ";
