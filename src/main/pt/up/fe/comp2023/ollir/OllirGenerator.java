@@ -14,9 +14,14 @@ import java.util.List;
 public class OllirGenerator extends AOllirGenerator<String> {
     private OllirExpressionGenerator exprGen;
 
+    private LabelPair labelIf;
+    private LabelPair labelwhile;
+
     public OllirGenerator(JmmSymbolTable symbolTable) {
         super(symbolTable);
         this.exprGen = new OllirExpressionGenerator(symbolTable);
+        this.labelIf = new LabelPair("if");
+        this.labelwhile = new LabelPair("while");
 
     }
 
@@ -41,9 +46,9 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var ifBlock = visit(jmmNode.getJmmChild(1));
         var elseBlock = visit(jmmNode.getJmmChild(2));
 
-        var enterIf = "if_lable";
-        var endIf = "if_end_lable";
-
+        var enterIf = labelIf.enter();
+        var endIf = labelIf.end();
+        labelIf.next();
         return condition.code() + "if(" + condition.symbol().toCode() + ")"
                 + ollirGoTo(enterIf) + elseBlock + ollirGoTo(endIf) + ollirLabel(enterIf) + ifBlock + ollirLabel(endIf);
 

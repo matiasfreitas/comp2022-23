@@ -147,6 +147,11 @@ public class MyOllirTest {
         var path = "pt/up/fe/comp/myollir/if.jmm";
         testOllir(path);
     }
+    @Test
+    public void ifswitchTest() {
+        var path = "pt/up/fe/comp/myollir/switch.jmm";
+        testOllir(path);
+    }
 
     @Test
     public void whileTest() {
