@@ -85,11 +85,7 @@ public class JasminUtils {
 
             case ASSIGN : return createAssignCode((AssignInstruction) instruction, varTable, imports);
             case UNARYOPER: return createUnaryCode((UnaryOpInstruction) instruction, varTable, imports);
-
-            case NOPER:
-                SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
-                Element onlyOperand                      = singleOpInstruction.getSingleOperand();
-                return loadVariable(onlyOperand, varTable);
+            case NOPER: return loadVariable(((SingleOpInstruction) instruction).getSingleOperand(), varTable);
 
             case BINARYOPER:
 
@@ -150,7 +146,8 @@ public class JasminUtils {
                     case AND, ANDB: code.append("iand\n"); break;
                     case LTE, LTH: code.append(boolJumpOperation("if_icmplt")); break;
                     case GTE, GTH: code.append(boolJumpOperation("if_icmpgt")); break;
-                    case EQ, NEQ: code.append(boolJumpOperation("ifne"));break;
+                    case EQ: code.append(boolJumpOperation("ifne"));break;
+                    case NEQ: code.append(boolJumpOperation("ifqe"));break;
 
                     default:
                         code.append("\n");
