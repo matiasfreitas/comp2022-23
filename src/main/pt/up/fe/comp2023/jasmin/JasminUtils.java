@@ -73,262 +73,262 @@ public class JasminUtils {
         return code.toString();
 
     }
-    public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+    public static String createBinaryCode(BinaryOpInstruction binaryInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code     = new StringBuilder();
+        Element left                          =  binaryInstruction.getLeftOperand();
+        Element right                         =  binaryInstruction.getRightOperand();
+        OperationType opType                  =  binaryInstruction.getOperation().getOpType();
+
+        if (right.isLiteral() && left.isLiteral()) {
+
+            LiteralElement l = (LiteralElement) left;
+            LiteralElement r = (LiteralElement) right;
+
+
+            switch (opType) {
+
+                case ADD:
+                    code.append(constantPusher(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral())));
+                    code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
+
+                case SUB:
+                    code.append(constantPusher(Integer.parseInt(l.getLiteral()) - Integer.parseInt(r.getLiteral())));
+                    code.append(Integer.parseInt(l.getLiteral()) - Integer.parseInt(r.getLiteral()) + "\n"); break;
+
+                case MUL:
+                    code.append(constantPusher(Integer.parseInt(l.getLiteral()) * Integer.parseInt(r.getLiteral())));
+                    code.append(Integer.parseInt(l.getLiteral()) * Integer.parseInt(r.getLiteral()) + "\n"); break;
+                case DIV:
+                    code.append(constantPusher(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral())));
+                    code.append(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral()) + "\n"); break;
+
+                default:
+                    if(boolLiteralOperation(opType, l, r)) {
+                        code.append(constantPusher(1) +  "1\n");
+                    }
+                    else code.append(constantPusher(0) + "0\n");
+                    break;
+
+            }
+
+            return code.toString();
+        }
+
+
+        addCodeOperand(varTable, code, left);
+        addCodeOperand(varTable, code, right);
+
+
+        updateLimit(-1);
+
+
+        switch (opType) {
+
+            case ADD: code.append("iadd\n"); break;
+            case SUB: code.append("isub\n"); break;
+            case MUL: code.append("imul\n"); break;
+            case DIV: code.append("idiv\n"); break;
+            case AND, ANDB: code.append("iand\n"); break;
+            case LTE, LTH: code.append(boolJumpOperation("if_icmplt")); break;
+            case GTE, GTH: code.append(boolJumpOperation("if_icmpgt")); break;
+            case EQ: code.append(boolJumpOperation("ifne"));break;
+            case NEQ: code.append(boolJumpOperation("ifqe"));break;
+
+            default:
+                code.append("\n");
+        }
+        return code.toString();
+
+    }
+
+    public static String createBranchCode(CondBranchInstruction conditionInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code      = new StringBuilder();
+        Instruction condition = conditionInstruction.getCondition();
+        code.append(addInstruction(condition, varTable, imports));
+
+        code.append("ifne ");
+        code.append(conditionInstruction.getLabel() + "\n");
+
+        return code.toString();
+    }
+
+    public static String createCallCode(CallInstruction callInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+        StringBuilder code              = new StringBuilder();
+        StringBuilder invokeInstruction = new StringBuilder();
+
+        if (callInstruction.getInvocationType() == CallType.ldc)
+            return "ldc " + ((LiteralElement) callInstruction.getFirstArg()).getLiteral() + "\n";
+
+        Operand object                          = (Operand) callInstruction.getFirstArg();
+        LiteralElement method           = (LiteralElement) callInstruction.getSecondArg();
+        boolean addComma;
+        String methodName;
+
+
+        if (callInstruction.getInvocationType() == CallType.NEW) {
+
+            if (object.getName() == "array") {
+                for (Element element : callInstruction.getListOfOperands()) {
+                    if (element instanceof Operand) {
+                        Operand operand = (Operand) element;
+                        updateLimit(1);
+
+                        code.append("iload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
+                    }
+                }
+
+                code.append("newarray int\n");
+
+            }
+            else
+                code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
+            if (object.getType().getTypeOfElement() == OBJECTREF)
+                updateLimit(1);
+            return code.toString();
+        }
+        else if (callInstruction.getInvocationType() == CallType.invokestatic) {
+
+            methodName = method.getLiteral().replace("\"","");
+            invokeInstruction.append("invokestatic " + object.getName() + "/");
+        }
+
+        else if (callInstruction.getInvocationType() == CallType.arraylength) {
+
+            code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+            invokeInstruction.append(callInstruction.getInvocationType() + "\n");
+            updateLimit(1);
+            code.append(invokeInstruction);
+            return code.toString();
+        }
+
+        else {
+
+            invokeInstruction.append(callInstruction.getInvocationType() + " " );
+            methodName = method.getLiteral().replace("\"","");
+            code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+            updateLimit(1);
+            invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
+
+        }
+
+        invokeInstruction.append("" + methodName + "(");
+
+        for (Element operand: callInstruction.getListOfOperands()) {
+            code.append(loadVariable(operand, varTable));
+            addComma = false;
+            if (operand.getType().getTypeOfElement() == OBJECTREF) {
+                invokeInstruction.append("L");
+                addComma = true;
+            }
+            invokeInstruction.append(jasminType(operand.getType(), imports));
+            if (addComma)
+                invokeInstruction.append(";");
+        }
+
+        invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
+        if (callInstruction.getInvocationType() != CallType.invokevirtual || methodName != "<init>") {
+            code.append(invokeInstruction);
+        }
+
+        if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID) {
+            updateLimit(-1);
+            if (tempLimit >= 0)
+                code.append("pop\n");
+        }
+        return code.toString();
+    }
+
+    public static String createGetFieldCode(GetFieldInstruction getFieldInstruction,  HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code                        = new StringBuilder();
+        Operand object                                    = (Operand) getFieldInstruction.getFirstOperand();
+        Operand field                                     = (Operand) getFieldInstruction.getSecondOperand();
+
+        updateLimit(1);
+        code.append(loadVariable(object, varTable));
+        code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
+
+        return code.toString();
+    }
+
+    public static String createPutFieldCode(PutFieldInstruction putFieldInstruction,  HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         StringBuilder code = new StringBuilder();
-        Operand object;
-        Operand field;
-        String prefix;
-        String constType;
+        Operand object     = (Operand) putFieldInstruction.getFirstOperand();
+        Operand field      = (Operand) putFieldInstruction.getSecondOperand();
+
+        LiteralElement newValue                   = (LiteralElement) putFieldInstruction.getThirdOperand();
+
+        updateLimit(1);
+        code.append(loadVariable(object, varTable));
+        code.append(constantPusher(newValue) +  newValue.getLiteral() + "\n");
+        code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
+
+        return code.toString();
+    }
+
+    public static String createReturnCode(ReturnInstruction returnInstruction,  HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code = new StringBuilder();
+        if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
+            return "return\n";
+        }
+
+        else {
+
+            Element operand = returnInstruction.getOperand();
+            if (operand instanceof LiteralElement) {
+
+                LiteralElement constant = ((LiteralElement) operand);
+                code.append(constantPusher(constant) + constant.getLiteral() + '\n');
+
+                try {
+                    Integer.parseInt(constant.getLiteral());
+                } catch (NumberFormatException e) {
+                    code.append("areturn\n");
+                    return code.toString();
+
+                }
+
+                code.append("ireturn\n");
+
+            } else {
+
+                Operand op = (Operand) operand;
+                String prefix = "i";
+                if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
+                    prefix = "a";
+                code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                updateLimit(1);
+                code.append(prefix + "return\n");
+
+            }
+        }
+
+        return code.toString();
+    }
+    public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         switch(instruction.getInstType()){
 
-            case ASSIGN : return createAssignCode((AssignInstruction) instruction, varTable, imports);
-            case UNARYOPER: return createUnaryCode((UnaryOpInstruction) instruction, varTable, imports);
-            case NOPER: return loadVariable(((SingleOpInstruction) instruction).getSingleOperand(), varTable);
-
-            case BINARYOPER:
-
-                BinaryOpInstruction binaryInstruction = (BinaryOpInstruction) instruction;
-                Element left                          =  binaryInstruction.getLeftOperand();
-                Element right                         =  binaryInstruction.getRightOperand();
-                OperationType opType                  = binaryInstruction.getOperation().getOpType();
-
-                if (right.isLiteral() && left.isLiteral()) {
-
-                    LiteralElement l = (LiteralElement) left;
-                    LiteralElement r = (LiteralElement) right;
-
-
-                    switch (opType) {
-
-                        case ADD:
-                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral())));
-                            code.append(Integer.parseInt(l.getLiteral()) + Integer.parseInt(r.getLiteral()) + "\n"); break;
-
-                        case SUB:
-                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) - Integer.parseInt(r.getLiteral())));
-                            code.append(Integer.parseInt(l.getLiteral()) - Integer.parseInt(r.getLiteral()) + "\n"); break;
-
-                        case MUL:
-                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) * Integer.parseInt(r.getLiteral())));
-                            code.append(Integer.parseInt(l.getLiteral()) * Integer.parseInt(r.getLiteral()) + "\n"); break;
-                        case DIV:
-                            code.append(constantPusher(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral())));
-                            code.append(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral()) + "\n"); break;
-                            
-                        default:
-                            if(boolLiteralOperation(opType, l, r)) {
-                                code.append(constantPusher(1) +  "1\n");
-                            }
-                            else code.append(constantPusher(0) + "0\n");
-                            break;
-
-                    }
-
-                    return code.toString();
-                }
-
-
-                addCodeOperand(varTable, code, left);
-                addCodeOperand(varTable, code, right);
-
-
-                updateLimit(-1);
-
-
-                switch (opType) {
-
-                    case ADD: code.append("iadd\n"); break;
-                    case SUB: code.append("isub\n"); break;
-                    case MUL: code.append("imul\n"); break;
-                    case DIV: code.append("idiv\n"); break;
-                    case AND, ANDB: code.append("iand\n"); break;
-                    case LTE, LTH: code.append(boolJumpOperation("if_icmplt")); break;
-                    case GTE, GTH: code.append(boolJumpOperation("if_icmpgt")); break;
-                    case EQ: code.append(boolJumpOperation("ifne"));break;
-                    case NEQ: code.append(boolJumpOperation("ifqe"));break;
-
-                    default:
-                        code.append("\n");
-                }
-                return code.toString();
-
-            case BRANCH:
-
-                CondBranchInstruction conditionInstruction = (CondBranchInstruction) instruction;
-                Instruction condition = conditionInstruction.getCondition();
-                code.append(addInstruction(condition, varTable, imports));
-
-                code.append("ifne ");
-                code.append(conditionInstruction.getLabel() + "\n");
-
-
-                return code.toString();
-
-            case GOTO:
-                GotoInstruction gotoInstruction = (GotoInstruction) instruction ;
-                code.append("goto " + gotoInstruction.getLabel() + "\n");
-                return code.toString();
-
-            case CALL:
-
-                StringBuilder invokeInstruction = new StringBuilder();
-                CallInstruction callInstruction = (CallInstruction) instruction;
-
-                if (callInstruction.getInvocationType() == CallType.ldc)
-                    return "ldc " + ((LiteralElement) callInstruction.getFirstArg()).getLiteral() + "\n";
-
-                object                          = (Operand) callInstruction.getFirstArg();
-                LiteralElement method           = (LiteralElement) callInstruction.getSecondArg();
-                boolean addComma;
-                String methodName;
-
-
-                if (callInstruction.getInvocationType() == CallType.NEW) {
-
-                    if (object.getName() == "array") {
-                        for (Element element : callInstruction.getListOfOperands()) {
-                            if (element instanceof Operand) {
-                                Operand operand = (Operand) element;
-                                updateLimit(1);
-
-                                code.append("iload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
-                            }
-                        }
-
-                        code.append("newarray int\n");
-
-                    }
-                    else
-                        code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
-                    if (object.getType().getTypeOfElement() == OBJECTREF)
-                        updateLimit(1);
-                    return code.toString();
-                }
-                else if (callInstruction.getInvocationType() == CallType.invokestatic) {
-
-                    methodName = method.getLiteral().replace("\"","");
-                    invokeInstruction.append("invokestatic " + object.getName() + "/");
-                }
-
-                else if (callInstruction.getInvocationType() == CallType.arraylength) {
-
-                    code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
-                    invokeInstruction.append(callInstruction.getInvocationType() + "\n");
-                    updateLimit(1);
-                    code.append(invokeInstruction);
-                    return code.toString();
-                }
-
-                else {
-
-                    invokeInstruction.append(callInstruction.getInvocationType() + " " );
-                    methodName = method.getLiteral().replace("\"","");
-                    code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
-                    updateLimit(1);
-                    invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
-
-                }
-
-                invokeInstruction.append("" + methodName + "(");
-
-                for (Element operand: callInstruction.getListOfOperands()) {
-                    code.append(loadVariable(operand, varTable));
-                    addComma = false;
-                    if (operand.getType().getTypeOfElement() == OBJECTREF) {
-                        invokeInstruction.append("L");
-                        addComma = true;
-                    }
-                    invokeInstruction.append(jasminType(operand.getType(), imports));
-                    if (addComma)
-                        invokeInstruction.append(";");
-                }
-
-                invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
-                if (callInstruction.getInvocationType() != CallType.invokevirtual || methodName != "<init>") {
-                    code.append(invokeInstruction);
-                }
-
-                if (!hasAssign && callInstruction.getReturnType().getTypeOfElement() != ElementType.VOID) {
-                    updateLimit(-1);
-                    if (tempLimit >= 0)
-                        code.append("pop\n");
-                }
-                return code.toString();
-
-            case GETFIELD:
-
-                GetFieldInstruction getFieldInstruction   = (GetFieldInstruction) instruction;
-                object                                    = (Operand) getFieldInstruction.getFirstOperand();
-                field                                     = (Operand) getFieldInstruction.getSecondOperand();
-
-                updateLimit(1);
-                code.append(loadVariable(object, varTable));
-                code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
-
-                return code.toString();
-
-            case PUTFIELD:
-
-                PutFieldInstruction putFieldInstruction   = (PutFieldInstruction) instruction;
-                object                                    = (Operand) putFieldInstruction.getFirstOperand();
-                field                                     = (Operand) putFieldInstruction.getSecondOperand();
-                LiteralElement newValue                   = (LiteralElement) putFieldInstruction.getThirdOperand();
-
-                updateLimit(1);
-                code.append(loadVariable(object, varTable));
-                constType = constantPusher(newValue);
-                code.append(constType +  newValue.getLiteral() + "\n");
-                code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
-
-                return code.toString();
-
-            case RETURN:
-
-                ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
-                if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
-                    return "return\n";
-                }
-
-                else {
-
-                    Element operand = returnInstruction.getOperand();
-                    if (operand instanceof LiteralElement) {
-
-                        LiteralElement constant = ((LiteralElement) operand);
-                        constType = constantPusher(constant);
-                        code.append(constType + constant.getLiteral() + '\n');
-
-                        try {
-                            Integer.parseInt(constant.getLiteral());
-                        } catch (NumberFormatException e) {
-                            code.append("areturn\n");
-                            return code.toString();
-
-                        }
-
-                        code.append("ireturn\n");
-
-                    } else {
-
-                        Operand op = (Operand) operand;
-                        prefix = "i";
-                        if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
-                            prefix = "a";
-                        code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
-                        updateLimit(1);
-                        code.append(prefix + "return\n");
-
-                    }
-                }
-
-                return code.toString();
-
+            case ASSIGN :    return createAssignCode((AssignInstruction) instruction, varTable, imports);
+            case UNARYOPER:  return createUnaryCode((UnaryOpInstruction) instruction, varTable, imports);
+            case BINARYOPER: return createBinaryCode((BinaryOpInstruction) instruction, varTable, imports);
+            case BRANCH:     return createBranchCode((CondBranchInstruction) instruction, varTable, imports);
+            case CALL:       return createCallCode((CallInstruction) instruction, varTable, imports);
+            case GETFIELD:   return createGetFieldCode((GetFieldInstruction) instruction, varTable, imports);
+            case PUTFIELD:   return createPutFieldCode((PutFieldInstruction) instruction, varTable, imports);
+            case RETURN:     return createReturnCode((ReturnInstruction) instruction, varTable, imports);
+            case NOPER:      return loadVariable(((SingleOpInstruction) instruction).getSingleOperand(), varTable);
+            case GOTO:       return "goto " + ((GotoInstruction) instruction).getLabel() + "\n";
+            default:         return "";
 
         }
-        return "";
     }
+
     private static String loadVariable(Element operand, HashMap<String, Descriptor> varTable) {
 
         StringBuilder code = new StringBuilder();
