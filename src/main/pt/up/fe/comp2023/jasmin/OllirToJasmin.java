@@ -171,6 +171,10 @@ public class OllirToJasmin {
             StringBuilder body = new StringBuilder();
 
             for (Instruction instruction: method.getInstructions()) {
+                var labels = method.getLabels(instruction);
+                for (String label : labels) {
+                    body.append(label + ":\n");
+                }
                 body.append(addInstruction(instruction, method.getVarTable()));
             }
 

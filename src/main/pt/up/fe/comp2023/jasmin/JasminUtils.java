@@ -12,8 +12,9 @@ import static org.specs.comp.ollir.ElementType.OBJECTREF;
 
 public class JasminUtils {
 
-    public static int stackLimit = 0;
-    private static int tempLimit = 0;
+    public static int stackLimit  = 0;
+    private static int tempLimit  = 0;
+    public static int labelNumber = 0;
     private static boolean hasAssign = false;
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
@@ -67,6 +68,54 @@ public class JasminUtils {
                 updateLimit(-1);
                 return code.toString();
 
+            case UNARYOPER:
+
+                UnaryOpInstruction unaryOpInstruction = (UnaryOpInstruction) instruction;
+                Element unaryOperand                      = unaryOpInstruction.getOperand();
+                Operation operation                      = unaryOpInstruction.getOperation();
+
+                if (unaryOperand instanceof LiteralElement) {
+                    LiteralElement op = (LiteralElement) unaryOperand;
+                    constType = constantPusher(op);
+                    code.append(constType + op.getLiteral() + '\n');
+                }
+                else if (unaryOperand instanceof ArrayOperand) {
+
+                    ArrayOperand op = (ArrayOperand) unaryOperand;
+                    code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
+                    Operand indexOperand = (Operand) op.getIndexOperands().get(0);
+                    if (op.getIndexOperands().get(0) instanceof Operand) {
+                        code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+                        code.append("iaload\n");
+                        updateLimit(3);
+                    }
+                }
+                else {
+                    Operand op = (Operand) unaryOperand;
+                    prefix = "i";
+                    if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
+                        prefix = "a";
+                    code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+                    updateLimit(1);
+                }
+
+                switch(operation.getOpType()){
+                    case NOT:
+                    case NOTB:
+                        code.append("ifne GO" + labelNumber + "\n");
+                        updateLimit(1);
+                        updateLimit(-1);
+                        code.append("iconst_1\n");
+                        code.append("goto STEP" + labelNumber + "\n");
+                        code.append("GO" + labelNumber + ":\n");
+                        code.append("iconst_0\n");
+                        code.append("STEP"+labelNumber+":\n");
+                        updateLimit(1);
+                        labelNumber++;
+                        break;
+                }
+
+                return code.toString();
             case NOPER:
                 SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
                 Element onlyOperand                      = singleOpInstruction.getSingleOperand();
@@ -97,6 +146,7 @@ public class JasminUtils {
                 }
 
                 return code.toString();
+
             case BINARYOPER:
 
                 BinaryOpInstruction binaryInstruction = (BinaryOpInstruction) instruction;
@@ -126,16 +176,26 @@ public class JasminUtils {
                         case DIV:
                             code.append(constantPusher(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral())));
                             code.append(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral()) + "\n"); break;
+                            
                         default:
-                            code.append("\n");
+                            if(boolLiteralOperation(opType, l, r)) {
+                                code.append(constantPusher(1) +  "1\n");
+                            }
+                            else code.append(constantPusher(0) + "0\n");
+                            break;
+
                     }
 
                     return code.toString();
                 }
 
+
                 addCodeOperand(varTable, code, left);
                 addCodeOperand(varTable, code, right);
+
+
                 updateLimit(-1);
+
 
                 switch (opType) {
 
@@ -143,9 +203,31 @@ public class JasminUtils {
                     case SUB: code.append("isub\n"); break;
                     case MUL: code.append("imul\n"); break;
                     case DIV: code.append("idiv\n"); break;
+                    case AND, ANDB: code.append("iand\n"); break;
+                    case LTE, LTH: code.append(boolJumpOperation("lt")); break;
+                    case GTE, GTH: code.append(boolJumpOperation("gt")); break;
+                    case NOT, NOTB: code.append("ifeq\n");break;
                     default:
                         code.append("\n");
                 }
+                return code.toString();
+
+            case BRANCH:
+
+                CondBranchInstruction conditionInstruction = (CondBranchInstruction) instruction;
+                Instruction condition = conditionInstruction.getCondition();
+                code.append(addInstruction(condition, varTable, imports));
+
+
+                code.append("ifne ");
+                code.append(conditionInstruction.getLabel() + "\n");
+
+
+                return code.toString();
+
+            case GOTO:
+                GotoInstruction gotoInstruction = (GotoInstruction) instruction ;
+                code.append("goto " + gotoInstruction.getLabel() + "\n");
                 return code.toString();
 
             case CALL:
@@ -179,7 +261,7 @@ public class JasminUtils {
                     }
                     else
 
-                    code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\n");
+                    code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
                     if (object.getType().getTypeOfElement() == OBJECTREF)
                         updateLimit(1);
                     return code.toString();
@@ -321,6 +403,35 @@ public class JasminUtils {
         return "";
     }
 
+    private static boolean boolLiteralOperation (OperationType opType, LiteralElement l, LiteralElement r) {
+            boolean firstFlag  = (l.getLiteral().equals("1")) ? true : false;
+            boolean secondFlag = (r.getLiteral().equals("1")) ? true : false;
+
+            switch (opType) {
+
+                case AND, ANDB: return firstFlag && secondFlag;
+                case OR, ORB: return firstFlag || secondFlag;
+
+                case EQ: return firstFlag == secondFlag;
+                case NEQ: return firstFlag != secondFlag;
+                case LTE, LTH: return Integer.parseInt(l.getLiteral()) < Integer.parseInt(r.getLiteral());
+                case GTE, GTH: return Integer.parseInt(l.getLiteral()) > Integer.parseInt(r.getLiteral());
+                default:
+                    return false;
+        }
+    }
+    private static String boolJumpOperation (String prefix) {
+        StringBuilder code = new StringBuilder();
+        code.append("if_icmp" + prefix + " STEP" + labelNumber + "\n" );
+        code.append("iconst_0\n");
+        code.append("goto GO" + labelNumber +"\n");
+        code.append("STEP" + labelNumber + ":\n");
+        code.append("iconst_1\n");
+        code.append("GO" + labelNumber + ":\n");
+        updateLimit(1);
+        labelNumber++;
+        return code.toString();
+    }
     private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
         if (!element.isLiteral()) {
             Operand el = (Operand) element;
@@ -411,6 +522,8 @@ public class JasminUtils {
         else return "ldc ";
 
     }
+
+
 
     public static String constantPusher (int num) {
 
