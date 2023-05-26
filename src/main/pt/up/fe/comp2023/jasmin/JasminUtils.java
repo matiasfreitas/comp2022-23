@@ -16,6 +16,63 @@ public class JasminUtils {
     private static int tempLimit  = 0;
     public static int labelNumber = 0;
     private static boolean hasAssign = false;
+
+    private static String createAssignCode(AssignInstruction assignInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code                  = new StringBuilder();
+        Operand op1                         = (Operand) assignInstruction.getDest();
+        Type type                           = (Type) op1.getType();
+        String prefix                       = "i";
+        boolean ret                         = true;
+
+        if (op1 instanceof ArrayOperand) {
+            ArrayOperand op = (ArrayOperand) op1;
+            Operand indexOperand = (Operand) op.getIndexOperands().get(0);
+            op1 = indexOperand;
+            prefix = "ia";
+
+            code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
+            code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+            updateLimit(2);
+            ret = false;
+
+
+        }
+
+        if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
+            prefix = "a";
+        hasAssign = true;
+        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+        hasAssign = false;
+
+        code.append(prefix + "store ");
+        if (ret) {
+            code.append(varTable.get(op1.getName()).getVirtualReg());
+        }
+        else {
+            updateLimit(-1);
+        }
+        code.append("\n");
+
+        updateLimit(-1);
+        return code.toString();
+    }
+
+    public static String createUnaryCode(UnaryOpInstruction unaryOpInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code     = new StringBuilder();
+        Element unaryOperand   = unaryOpInstruction.getOperand();
+        Operation operation    = unaryOpInstruction.getOperation();
+        code.append(loadVariable(unaryOperand, varTable));
+
+        switch(operation.getOpType()){
+            case NOT:
+            case NOTB: code.append(boolJumpOperation("ifeq"));
+        }
+
+        return code.toString();
+
+    }
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         StringBuilder code = new StringBuilder();
@@ -26,72 +83,9 @@ public class JasminUtils {
 
         switch(instruction.getInstType()){
 
-            case ASSIGN :
+            case ASSIGN : return createAssignCode((AssignInstruction) instruction, varTable, imports);
+            case UNARYOPER: return createUnaryCode((UnaryOpInstruction) instruction, varTable, imports);
 
-
-
-                AssignInstruction assignInstruction = (AssignInstruction) instruction;
-                Operand op1                         = (Operand) assignInstruction.getDest();
-                Type type                           = (Type) op1.getType();
-                prefix                              = "i";
-                boolean ret                         = true;
-
-                if (op1 instanceof ArrayOperand) {
-                    ArrayOperand op = (ArrayOperand) op1;
-                    Operand indexOperand = (Operand) op.getIndexOperands().get(0);
-                    op1 = indexOperand;
-                    prefix = "ia";
-
-                    code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
-                    code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
-                    updateLimit(2);
-                    ret = false;
-
-
-                }
-
-                if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
-                    prefix = "a";
-                hasAssign = true;
-                code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
-                hasAssign = false;
-
-                code.append(prefix + "store ");
-                if (ret) {
-                    code.append(varTable.get(op1.getName()).getVirtualReg());
-                }
-                else {
-                    updateLimit(-1);
-                }
-                code.append("\n");
-
-                updateLimit(-1);
-                return code.toString();
-
-            case UNARYOPER:
-
-                UnaryOpInstruction unaryOpInstruction = (UnaryOpInstruction) instruction;
-                Element unaryOperand                      = unaryOpInstruction.getOperand();
-                Operation operation                      = unaryOpInstruction.getOperation();
-                code.append(loadVariable(unaryOperand, varTable));
-
-                switch(operation.getOpType()){
-                    case NOT:
-                    case NOTB:
-                        code.append("ifne GO" + labelNumber + "\n");
-                        updateLimit(1);
-                        updateLimit(-1);
-                        code.append("iconst_1\n");
-                        code.append("goto STEP" + labelNumber + "\n");
-                        code.append("GO" + labelNumber + ":\n");
-                        code.append("iconst_0\n");
-                        code.append("STEP"+labelNumber+":\n");
-                        updateLimit(1);
-                        labelNumber++;
-                        break;
-                }
-
-                return code.toString();
             case NOPER:
                 SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
                 Element onlyOperand                      = singleOpInstruction.getSingleOperand();
@@ -154,9 +148,10 @@ public class JasminUtils {
                     case MUL: code.append("imul\n"); break;
                     case DIV: code.append("idiv\n"); break;
                     case AND, ANDB: code.append("iand\n"); break;
-                    case LTE, LTH: code.append(boolJumpOperation("lt")); break;
-                    case GTE, GTH: code.append(boolJumpOperation("gt")); break;
-                    case NOT, NOTB: code.append("ifeq\n");break;
+                    case LTE, LTH: code.append(boolJumpOperation("if_icmplt")); break;
+                    case GTE, GTH: code.append(boolJumpOperation("if_icmpgt")); break;
+                    case EQ, NEQ: code.append(boolJumpOperation("ifne"));break;
+
                     default:
                         code.append("\n");
                 }
@@ -337,7 +332,6 @@ public class JasminUtils {
         }
         return "";
     }
-
     private static String loadVariable(Element operand, HashMap<String, Descriptor> varTable) {
 
         StringBuilder code = new StringBuilder();
@@ -391,7 +385,7 @@ public class JasminUtils {
     private static String boolJumpOperation (String prefix) {
 
         StringBuilder code = new StringBuilder();
-        code.append("if_icmp" + prefix + " STEP" + labelNumber + "\n" );
+        code.append(prefix + " STEP" + labelNumber + "\n" );
         code.append("iconst_0\n");
         code.append("goto GO" + labelNumber +"\n");
         code.append("STEP" + labelNumber + ":\n");
