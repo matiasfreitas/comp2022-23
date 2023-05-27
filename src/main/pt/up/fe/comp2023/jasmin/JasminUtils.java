@@ -29,10 +29,13 @@ public class JasminUtils {
         if (op1 instanceof ArrayOperand) {
 
             ArrayOperand op      = (ArrayOperand) op1;
-            Operand indexOperand = (Operand) op.getIndexOperands().get(0);
+            Element indexOperand = op.getIndexOperands().get(0);
 
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
-            code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+            if (indexOperand instanceof Operand)
+                code.append("iload" + getRegisterHandle(varTable.get(((Operand)indexOperand).getName()).getVirtualReg()) + varTable.get(((Operand)indexOperand).getName()).getVirtualReg() + "\n");
+            else
+                code.append(constantPusher((LiteralElement) indexOperand) + ((LiteralElement) indexOperand).getLiteral() + "\n");
             updateLimit(2);
             hasAssign = true;
             code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
@@ -235,9 +238,8 @@ public class JasminUtils {
 
         else if (callInstruction.getInvocationType() == CallType.arraylength) {
 
-            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
+            code.append(loadVariable(object, varTable));
             invokeInstruction.append(callInstruction.getInvocationType() + "\n");
-            updateLimit(1);
             code.append(invokeInstruction);
             return code.toString();
         }
@@ -246,8 +248,7 @@ public class JasminUtils {
 
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
-            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
-            updateLimit(1);
+            code.append(loadVariable(object, varTable));
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
         }
@@ -285,7 +286,7 @@ public class JasminUtils {
         Operand field       = (Operand) getFieldInstruction.getSecondOperand();
 
         updateLimit(1);
-        code.append("aload" +  varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) +  varTable.get(object.getName()).getVirtualReg() + "\n");
         code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
