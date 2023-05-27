@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.jasmin;
 
+import com.google.gson.annotations.Since;
 import org.specs.comp.ollir.*;
 
 import javax.sound.midi.SysexMessage;
@@ -15,13 +16,8 @@ public class JasminUtils {
     public static int stackLimit  = 0;
     private static int tempLimit  = 0;
     public static int labelNumber = 0;
-    private static boolean hasAssign = false;
-    private static Operand assignOperand;
-
-    private static String getRegisterHandle(int num) {
-        if (num < 4) return "_";
-        return " ";
-    }
+    private static boolean hasAssign  = false;
+    private static boolean iincAssign = false;
 
     private static String createAssignCode(AssignInstruction assignInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
@@ -29,19 +25,21 @@ public class JasminUtils {
         Operand op1        = (Operand) assignInstruction.getDest();
         Type type          = (Type) op1.getType();
         String prefix      = "i";
-        boolean ret        = true;
 
         if (op1 instanceof ArrayOperand) {
 
             ArrayOperand op      = (ArrayOperand) op1;
             Operand indexOperand = (Operand) op.getIndexOperands().get(0);
-            op1                  = indexOperand;
-            prefix               = "ia";
 
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
             code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
             updateLimit(2);
-            ret = false;
+            hasAssign = true;
+            code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+            code.append("iastore\n");
+            hasAssign = false;
+            updateLimit(-1);
+            return code.toString();
 
 
         }
@@ -49,22 +47,24 @@ public class JasminUtils {
         else if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
             prefix = "a";
 
-        hasAssign = true;
-        assignOperand = op1;
-        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
-        if (assignOperand != null) {
-            code.append(prefix + "store");
-            if (ret) {
-                code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
+        hasAssign  = true;
+        iincAssign = false;
+
+        String iincCode = "";
+        if (assignInstruction.getRhs().getInstType() == InstructionType.BINARYOPER ) {
+            iincCode = generateIincCode(assignInstruction, varTable, imports);
+            if (iincAssign) {
+                return iincCode;
             }
-            else updateLimit(-1);
-
-            code.append("\n");
-            updateLimit(-1);
         }
-        hasAssign = false;
-        assignOperand = null;
 
+        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+        code.append(prefix + "store");
+        code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
+        code.append("\n");
+        updateLimit(-1);
+
+        hasAssign  = false;
         return code.toString();
     }
 
@@ -91,14 +91,6 @@ public class JasminUtils {
         Element right          =  binaryInstruction.getRightOperand();
         OperationType opType   =  binaryInstruction.getOperation().getOpType();
 
-        if (left instanceof Operand)
-            if (assignOperand != null && assignOperand.getParamId() == ((Operand) left).getParamId() && right.isLiteral()) { //inc
-
-                if (opType == OperationType.ADD) {
-                    assignOperand = null;
-                    return "iinc " + varTable.get(((Operand) left).getName()).getVirtualReg() + " " + ((LiteralElement) right).getLiteral() + "\n";
-                }
-            }
 
         if (right.isLiteral() && left.isLiteral()) {
 
@@ -379,6 +371,45 @@ public class JasminUtils {
 
     }
 
+    private static String generateIincCode(AssignInstruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+        if (instruction.getRhs().getInstType() == InstructionType.BINARYOPER) {
+            BinaryOpInstruction rightInstruction = (BinaryOpInstruction) instruction.getRhs();
+
+            Element left  = rightInstruction.getLeftOperand();
+            Element right = rightInstruction.getRightOperand();
+            Operand assignee = (Operand) instruction.getDest();
+
+            if (left instanceof Operand) {
+                if(((Operand) left).getName().equals(assignee.getName())) {
+                    if (right.isLiteral()) {
+                        int num = Integer.parseInt(((LiteralElement) right).getLiteral());
+                        if ((rightInstruction.getOperation().getOpType() == OperationType.ADD && num >= 0 && num <= 127)
+                        || (rightInstruction.getOperation().getOpType() == OperationType.SUB && num >= 0 && num <= 128)) {
+                            iincAssign = true;
+                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + num + "\n";
+                        }
+                    }
+                }
+            }
+
+            else if (right instanceof Operand) {
+                if(((Operand) right).getName().equals(assignee.getName())) {
+                    if (left.isLiteral()) {
+                        int num = Integer.parseInt(((LiteralElement) left).getLiteral());
+                        if ((rightInstruction.getOperation().getOpType() == OperationType.ADD && num >= 0 && num <= 127)
+                                || (rightInstruction.getOperation().getOpType() == OperationType.SUB && num >= 0 && num <= 128)) {
+                            iincAssign = true;
+                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + num + "\n";
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return "";
+
+    }
     private static boolean boolLiteralOperation (OperationType opType, LiteralElement l, LiteralElement r) {
             boolean firstFlag  = (l.getLiteral().equals("1")) ? true : false;
             boolean secondFlag = (r.getLiteral().equals("1")) ? true : false;
@@ -526,5 +557,8 @@ public class JasminUtils {
         }
     }
 
-
+    private static String getRegisterHandle(int num) {
+        if (num < 4) return "_";
+        return " ";
+    }
 }
