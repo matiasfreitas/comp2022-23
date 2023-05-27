@@ -19,18 +19,18 @@ public class JasminUtils {
 
     private static String createAssignCode(AssignInstruction assignInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
-        StringBuilder code                  = new StringBuilder();
-        Operand op1                         = (Operand) assignInstruction.getDest();
-        Type type                           = (Type) op1.getType();
-        String prefix                       = "i";
-        boolean ret                         = true;
+        StringBuilder code = new StringBuilder();
+        Operand op1        = (Operand) assignInstruction.getDest();
+        Type type          = (Type) op1.getType();
+        String prefix      = "i";
+        boolean ret        = true;
 
         if (op1 instanceof ArrayOperand) {
 
-            ArrayOperand op = (ArrayOperand) op1;
+            ArrayOperand op      = (ArrayOperand) op1;
             Operand indexOperand = (Operand) op.getIndexOperands().get(0);
-            op1 = indexOperand;
-            prefix = "ia";
+            op1                  = indexOperand;
+            prefix               = "ia";
 
             code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
             code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
@@ -40,21 +40,18 @@ public class JasminUtils {
 
         }
 
-        if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
+        else if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
             prefix = "a";
+
         hasAssign = true;
         code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+        code.append(prefix + "store ");
         hasAssign = false;
 
-        code.append(prefix + "store ");
-        if (ret) {
-            code.append(varTable.get(op1.getName()).getVirtualReg());
-        }
-        else {
-            updateLimit(-1);
-        }
-        code.append("\n");
+        if (ret) code.append(varTable.get(op1.getName()).getVirtualReg());
+        else updateLimit(-1);
 
+        code.append("\n");
         updateLimit(-1);
         return code.toString();
     }
@@ -77,10 +74,10 @@ public class JasminUtils {
 
     public static String createBinaryCode(BinaryOpInstruction binaryInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
-        StringBuilder code     = new StringBuilder();
-        Element left                          =  binaryInstruction.getLeftOperand();
-        Element right                         =  binaryInstruction.getRightOperand();
-        OperationType opType                  =  binaryInstruction.getOperation().getOpType();
+        StringBuilder code     =  new StringBuilder();
+        Element left           =  binaryInstruction.getLeftOperand();
+        Element right          =  binaryInstruction.getRightOperand();
+        OperationType opType   =  binaryInstruction.getOperation().getOpType();
 
         if (right.isLiteral() && left.isLiteral()) {
 
