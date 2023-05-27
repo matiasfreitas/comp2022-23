@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.specs.comp.ollir.ElementType.OBJECTREF;
+import static org.specs.comp.ollir.ElementType.*;
 
 
 public class JasminUtils {
@@ -274,41 +274,12 @@ public class JasminUtils {
     public static String createReturnCode(ReturnInstruction returnInstruction,  HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         StringBuilder code = new StringBuilder();
-        if (returnInstruction.getReturnType().getTypeOfElement() == ElementType.VOID) {
-            return "return\n";
-        }
-
-        else {
-
-            Element operand = returnInstruction.getOperand();
-            if (operand instanceof LiteralElement) {
-
-                LiteralElement constant = ((LiteralElement) operand);
-                code.append(constantPusher(constant) + constant.getLiteral() + '\n');
-
-                try {
-                    Integer.parseInt(constant.getLiteral());
-                } catch (NumberFormatException e) {
-                    code.append("areturn\n");
-                    return code.toString();
-
-                }
-
-                code.append("ireturn\n");
-
-            } else {
-
-                Operand op = (Operand) operand;
-                String prefix = "i";
-                if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
-                    prefix = "a";
-                code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
-                updateLimit(1);
-                code.append(prefix + "return\n");
-
-            }
-        }
-
+        if (returnInstruction.getOperand() == null) return "return\n";
+        code.append(loadVariable(returnInstruction.getOperand(), varTable));
+        ElementType returnType = returnInstruction.getOperand().getType().getTypeOfElement();
+        if (returnType == BOOLEAN || returnType == INT32) code.append("i");
+        else if (returnType == ARRAYREF || returnType == OBJECTREF) code.append("a");
+        code.append("return\n");
         return code.toString();
     }
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
@@ -334,7 +305,6 @@ public class JasminUtils {
 
         StringBuilder code = new StringBuilder();
         String prefix = "";
-
         if (operand instanceof LiteralElement) {
             LiteralElement op = (LiteralElement) operand;
             code.append(constantPusher(op) + op.getLiteral() + '\n');
@@ -509,4 +479,6 @@ public class JasminUtils {
                 return "";
         }
     }
+
+
 }
