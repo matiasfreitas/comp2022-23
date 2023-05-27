@@ -532,7 +532,7 @@ public class JasminUtils {
 
         if (0 <= num && num < 6)          return "iconst_";
         else if (0 <= num && num < 128)   return "bipush ";
-        else if (0 <= num && num < 32767) return "sipush ";
+        else if (0 <= num && num < 32768) return "sipush ";
         else return "ldc ";
 
     }
@@ -545,7 +545,7 @@ public class JasminUtils {
 
         if (0 <= num && num < 6)          return "iconst_";
         else if (0 <= num && num < 128)   return "bipush ";
-        else if (0 <= num && num < 32767) return "sipush ";
+        else if (0 <= num && num < 32768) return "sipush ";
         else return "ldc ";
 
     }
