@@ -1,11 +1,10 @@
 package pt.up.fe.comp2023.ollir;
 
-import org.specs.comp.ollir.Ollir;
+
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.JmmBuiltins;
-import pt.up.fe.comp2023.analysis.generators.SymbolGen;
 import pt.up.fe.comp2023.analysis.generators.TypeGen;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 
