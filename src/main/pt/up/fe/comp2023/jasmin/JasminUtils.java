@@ -2,6 +2,7 @@ package pt.up.fe.comp2023.jasmin;
 
 import com.google.gson.annotations.Since;
 import org.specs.comp.ollir.*;
+import org.specs.comp.ollir.tree.ElementNode;
 
 import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
@@ -248,7 +249,7 @@ public class JasminUtils {
 
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
-            code.append(loadVariable(object, varTable));
+            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
         }
@@ -352,12 +353,19 @@ public class JasminUtils {
 
             ArrayOperand op = (ArrayOperand) operand;
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
-            Operand indexOperand = (Operand) op.getIndexOperands().get(0);
-            if (op.getIndexOperands().get(0) instanceof Operand) {
-                code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
-                code.append("iaload\n");
-                updateLimit(3);
+            Element indexOperand = op.getIndexOperands().get(0);
+            if (indexOperand instanceof Operand) {
+                code.append("iload" + getRegisterHandle(varTable.get(((Operand) indexOperand).getName()).getVirtualReg()) + varTable.get(((Operand)indexOperand).getName()).getVirtualReg() + "\n");
+                updateLimit(1);
+
             }
+
+            else {
+                code.append(constantPusher((LiteralElement) indexOperand) + ((LiteralElement) indexOperand).getLiteral() + "\n");
+
+            }
+            updateLimit(3);
+            code.append("iaload\n");
         }
         else {
             Operand op = (Operand) operand;
@@ -454,6 +462,7 @@ public class JasminUtils {
                 code.append("iload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
             else
                 code.append("aload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
+
             code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
             updateLimit(1);
         }
