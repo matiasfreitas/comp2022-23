@@ -357,20 +357,8 @@ public class JasminUtils {
         }
         else {
             Operand op = (Operand) operand;
-
-            int id = 0;
-            if (op.isParameter()) id = op.getParamId();
-            else varTable.get(op.getName()).getVirtualReg();
-
-            if (id < 0) {
-
-                code.append("aload_0\n" + "getfield " + "Dummy" + "/" + op.getName() + "\n");
-                updateLimit(1);
-                return code.toString();
-            }
-
             prefix = "i";
-            if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
+            if (op.getType().getTypeOfElement() != INT32 && op.getType().getTypeOfElement() != BOOLEAN)
                 prefix = "a";
             code.append(prefix + "load" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + '\n');
             updateLimit(1);
