@@ -243,12 +243,12 @@ public class JasminUtils {
 
     public static String createGetFieldCode(GetFieldInstruction getFieldInstruction,  HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
-        StringBuilder code                        = new StringBuilder();
-        Operand object                                    = (Operand) getFieldInstruction.getFirstOperand();
-        Operand field                                     = (Operand) getFieldInstruction.getSecondOperand();
+        StringBuilder code  = new StringBuilder();
+        Operand object      = (Operand) getFieldInstruction.getFirstOperand();
+        Operand field       = (Operand) getFieldInstruction.getSecondOperand();
 
         updateLimit(1);
-        code.append(loadVariable(object, varTable));
+        code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
         code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
@@ -260,10 +260,10 @@ public class JasminUtils {
         Operand object     = (Operand) putFieldInstruction.getFirstOperand();
         Operand field      = (Operand) putFieldInstruction.getSecondOperand();
 
-        LiteralElement newValue                   = (LiteralElement) putFieldInstruction.getThirdOperand();
+        LiteralElement newValue = (LiteralElement) putFieldInstruction.getThirdOperand();
 
         updateLimit(1);
-        code.append(loadVariable(object, varTable));
+        code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
         code.append(constantPusher(newValue) +  newValue.getLiteral() + "\n");
         code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
@@ -477,8 +477,8 @@ public class JasminUtils {
 
         }
 
-        if (-1 < num && num <= 5) return "iconst_";
-        else if (-127 < num && num < 128) return "bipush ";
+        if (-1 < num && num <= 5)             return "iconst_";
+        else if (-127 < num && num < 128)     return "bipush ";
         else if (-32768 < num && num < 32767) return "sipush ";
         else return "ldc ";
 
@@ -490,8 +490,8 @@ public class JasminUtils {
 
         updateLimit(1);
 
-        if (-1 < num && num <= 5) return "iconst_";
-        else if (-127 < num && num < 128) return "bipush ";
+        if (-1 < num && num <= 5)             return "iconst_";
+        else if (-127 < num && num < 128)     return "bipush ";
         else if (-32768 < num && num < 32767) return "sipush ";
         else return "ldc ";
 
@@ -499,16 +499,11 @@ public class JasminUtils {
     public static String jasminType(Type fieldType) {
 
         switch (fieldType.getTypeOfElement()) {
-            case BOOLEAN:
-                return "Z";
-            case STRING:
-                return "java/lang/String";
-            case VOID:
-                return "V";
-            case INT32:
-                return "I";
-            case OBJECTREF:
-                return "a";
+            case BOOLEAN:   return "Z";
+            case STRING:    return "java/lang/String";
+            case VOID:      return "V";
+            case INT32:     return "I";
+            case OBJECTREF: return "a";
             default:
                 return "";
         }
