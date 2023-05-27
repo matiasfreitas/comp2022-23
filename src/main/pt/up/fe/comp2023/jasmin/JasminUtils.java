@@ -16,6 +16,12 @@ public class JasminUtils {
     private static int tempLimit  = 0;
     public static int labelNumber = 0;
     private static boolean hasAssign = false;
+    private static Operand assignOperand;
+
+    private static String getRegisterHandle(int num) {
+        if (num < 4) return "_";
+        return " ";
+    }
 
     private static String createAssignCode(AssignInstruction assignInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
@@ -32,8 +38,8 @@ public class JasminUtils {
             op1                  = indexOperand;
             prefix               = "ia";
 
-            code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
-            code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+            code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
+            code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
             updateLimit(2);
             ret = false;
 
@@ -44,15 +50,21 @@ public class JasminUtils {
             prefix = "a";
 
         hasAssign = true;
+        assignOperand = op1;
         code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
-        code.append(prefix + "store ");
+        if (assignOperand != null) {
+            code.append(prefix + "store");
+            if (ret) {
+                code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
+            }
+            else updateLimit(-1);
+
+            code.append("\n");
+            updateLimit(-1);
+        }
         hasAssign = false;
+        assignOperand = null;
 
-        if (ret) code.append(varTable.get(op1.getName()).getVirtualReg());
-        else updateLimit(-1);
-
-        code.append("\n");
-        updateLimit(-1);
         return code.toString();
     }
 
@@ -78,6 +90,15 @@ public class JasminUtils {
         Element left           =  binaryInstruction.getLeftOperand();
         Element right          =  binaryInstruction.getRightOperand();
         OperationType opType   =  binaryInstruction.getOperation().getOpType();
+
+        if (left instanceof Operand)
+            if (assignOperand != null && assignOperand.getParamId() == ((Operand) left).getParamId() && right.isLiteral()) { //inc
+
+                if (opType == OperationType.ADD) {
+                    assignOperand = null;
+                    return "iinc " + varTable.get(((Operand) left).getName()).getVirtualReg() + " " + ((LiteralElement) right).getLiteral() + "\n";
+                }
+            }
 
         if (right.isLiteral() && left.isLiteral()) {
 
@@ -201,7 +222,7 @@ public class JasminUtils {
                         Operand operand = (Operand) element;
                         updateLimit(1);
 
-                        code.append("iload " + varTable.get(operand.getName()).getVirtualReg() + "\n");
+                        code.append("iload" + getRegisterHandle(varTable.get(operand.getName()).getVirtualReg()) + varTable.get(operand.getName()).getVirtualReg() + "\n");
                     }
                 }
 
@@ -222,7 +243,7 @@ public class JasminUtils {
 
         else if (callInstruction.getInvocationType() == CallType.arraylength) {
 
-            code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
             invokeInstruction.append(callInstruction.getInvocationType() + "\n");
             updateLimit(1);
             code.append(invokeInstruction);
@@ -233,7 +254,7 @@ public class JasminUtils {
 
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
-            code.append("aload " + varTable.get(object.getName()).getVirtualReg() + "\n");
+            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
             updateLimit(1);
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
@@ -272,7 +293,7 @@ public class JasminUtils {
         Operand field       = (Operand) getFieldInstruction.getSecondOperand();
 
         updateLimit(1);
-        code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload" +  varTable.get(object.getName()).getVirtualReg() + "\n");
         code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
@@ -286,7 +307,7 @@ public class JasminUtils {
         Element newValue   = putFieldInstruction.getThirdOperand();
 
         updateLimit(1);
-        code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
         code.append(loadVariable(newValue, varTable));
         code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
@@ -337,10 +358,10 @@ public class JasminUtils {
         else if (operand instanceof ArrayOperand) {
 
             ArrayOperand op = (ArrayOperand) operand;
-            code.append("aload " + varTable.get(op.getName()).getVirtualReg() + "\n");
+            code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
             Operand indexOperand = (Operand) op.getIndexOperands().get(0);
             if (op.getIndexOperands().get(0) instanceof Operand) {
-                code.append("iload " + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
+                code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
                 code.append("iaload\n");
                 updateLimit(3);
             }
@@ -350,7 +371,7 @@ public class JasminUtils {
             prefix = "i";
             if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
                 prefix = "a";
-            code.append(prefix + "load " + varTable.get(op.getName()).getVirtualReg() + '\n');
+            code.append(prefix + "load" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + '\n');
             updateLimit(1);
         }
 
@@ -393,9 +414,9 @@ public class JasminUtils {
         if (!element.isLiteral()) {
             Operand el = (Operand) element;
             if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
-                code.append("iload ");
+                code.append("iload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
             else
-                code.append("aload ");
+                code.append("aload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
             code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
             updateLimit(1);
         }
@@ -474,8 +495,8 @@ public class JasminUtils {
         }
 
         if (-1 < num && num <= 5)             return "iconst_";
-        else if (-127 < num && num < 128)     return "bipush ";
-        else if (-32768 < num && num < 32767) return "sipush ";
+        else if (-127 <= num && num <= 128)     return "bipush ";
+        else if (-32768 <= num && num <= 32767) return "sipush ";
         else return "ldc ";
 
     }

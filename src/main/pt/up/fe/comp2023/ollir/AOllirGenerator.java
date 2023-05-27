@@ -77,7 +77,9 @@ public abstract class AOllirGenerator<T> extends AJmmVisitor<List<Report>, T> {
 
     protected OllirSymbol fromParameterIdentifier(JmmNode node) {
         String currentMethod = symbolTable.getCurrentMethod();
-        String identifier = node.get("value");
+        String identifier = "";
+        if (node.hasAttribute("value")) identifier = node.get("value");
+        else identifier = node.get("varName");
         var arguments = symbolTable.getParameters(currentMethod);
         int i = 0;
         for (; i < arguments.size(); i++) {
