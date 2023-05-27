@@ -209,15 +209,8 @@ public class JasminUtils {
         if (callInstruction.getInvocationType() == CallType.NEW) {
 
             if (object.getName() == "array") {
-                for (Element element : callInstruction.getListOfOperands()) {
-                    if (element instanceof Operand) {
-                        Operand operand = (Operand) element;
-                        updateLimit(1);
 
-                        code.append("iload" + getRegisterHandle(varTable.get(operand.getName()).getVirtualReg()) + varTable.get(operand.getName()).getVirtualReg() + "\n");
-                    }
-                }
-
+                code.append(loadVariable(callInstruction.getListOfOperands().get(0), varTable));
                 code.append("newarray int\n");
 
             }
