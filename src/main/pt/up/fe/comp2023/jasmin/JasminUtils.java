@@ -374,6 +374,7 @@ public class JasminUtils {
     private static String generateIincCode(AssignInstruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
         if (instruction.getRhs().getInstType() == InstructionType.BINARYOPER) {
             BinaryOpInstruction rightInstruction = (BinaryOpInstruction) instruction.getRhs();
+            OperationType opType = rightInstruction.getOperation().getOpType();
 
             Element left  = rightInstruction.getLeftOperand();
             Element right = rightInstruction.getRightOperand();
@@ -383,10 +384,10 @@ public class JasminUtils {
                 if(((Operand) left).getName().equals(assignee.getName())) {
                     if (right.isLiteral()) {
                         int num = Integer.parseInt(((LiteralElement) right).getLiteral());
-                        if ((rightInstruction.getOperation().getOpType() == OperationType.ADD && num >= 0 && num <= 127)
-                        || (rightInstruction.getOperation().getOpType() == OperationType.SUB && num >= 0 && num <= 128)) {
+                        if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
                             iincAssign = true;
-                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + num + "\n";
+                            String signal = (opType == OperationType.ADD)? "": "-";
+                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
                         }
                     }
                 }
@@ -396,10 +397,10 @@ public class JasminUtils {
                 if(((Operand) right).getName().equals(assignee.getName())) {
                     if (left.isLiteral()) {
                         int num = Integer.parseInt(((LiteralElement) left).getLiteral());
-                        if ((rightInstruction.getOperation().getOpType() == OperationType.ADD && num >= 0 && num <= 127)
-                                || (rightInstruction.getOperation().getOpType() == OperationType.SUB && num >= 0 && num <= 128)) {
+                        if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
                             iincAssign = true;
-                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + num + "\n";
+                            String signal = (opType == OperationType.ADD)? "": "-";
+                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
                         }
                     }
                 }
