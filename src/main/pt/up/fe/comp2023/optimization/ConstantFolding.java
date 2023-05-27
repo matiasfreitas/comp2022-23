@@ -55,7 +55,7 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         return areInt || areBool;
     }
 
-    private Void foldBooleanOperation(JmmNode jmmNode) {
+    private void foldBooleanOperation(JmmNode jmmNode) {
         boolean lhs = jmmNode.getJmmChild(0).get("value").equals("true");
         boolean rhs = jmmNode.getJmmChild(1).get("value").equals("true");
         boolean result = lhs;
@@ -65,16 +65,33 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         var newNode = new JmmNodeImpl("Boolean");
         newNode.put("value", String.valueOf(result));
         jmmNode.replace(newNode);
-        return null;
     }
 
-    private Void foldIntegerOperation(JmmNode jmmNode) {
-        return null;
+    private void foldIntegerOperation(JmmNode jmmNode) {
+        int lhs = Integer.parseInt(jmmNode.getJmmChild(0).get("value"));
+        int rhs = Integer.parseInt(jmmNode.getJmmChild(1).get("value"));
+        var operation = jmmNode.get("op");
+        if (operation.equals("<")) {
+            boolean result = lhs < rhs;
+            var newNode = new JmmNodeImpl("Boolean");
+            newNode.put("value", String.valueOf(result));
+            jmmNode.replace(newNode);
+            return;
+        }
+        int result = switch (operation) {
+            case "+" -> lhs + rhs;
+            case "-" -> lhs - rhs;
+            case "*" -> lhs * rhs;
+            case "/" -> lhs / rhs;
+            default -> 0;
+        };
+        var newNode = new JmmNodeImpl("Int");
+        newNode.put("value", String.valueOf(result));
+        jmmNode.replace(newNode);
 
     }
 
     private Void handleBinaryOp(JmmNode jmmNode, Void unused) {
-        var operation = jmmNode.get("op");
         visit(jmmNode.getJmmChild(0));
         visit(jmmNode.getJmmChild(1));
         if (!canFoldBinaryNode(jmmNode)) {

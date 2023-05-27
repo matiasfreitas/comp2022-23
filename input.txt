@@ -5,4 +5,9 @@ class ConstantFolding {
         b = true && false && true;
         a = !(!((true && true) && (true && false)));
     }
+
+    public int foldIntOperations(int b){
+        int a;
+        a = 2 + 1 / 2;
+    }
 }
