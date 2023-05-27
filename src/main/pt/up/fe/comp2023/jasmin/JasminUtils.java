@@ -26,6 +26,7 @@ public class JasminUtils {
         boolean ret                         = true;
 
         if (op1 instanceof ArrayOperand) {
+
             ArrayOperand op = (ArrayOperand) op1;
             Operand indexOperand = (Operand) op.getIndexOperands().get(0);
             op1 = indexOperand;
