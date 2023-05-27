@@ -241,15 +241,21 @@ public class JasminUtils {
             return code.toString();
         }
 
+
         else {
 
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
+            if  (callInstruction.getInvocationType() == CallType.invokespecial) {
+                methodName = (methodName.equals(""))? "<init>": methodName;
+            }
+
             code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
             updateLimit(1);
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
         }
+
 
         invokeInstruction.append("" + methodName + "(");
 
@@ -312,7 +318,7 @@ public class JasminUtils {
         code.append(loadVariable(returnInstruction.getOperand(), varTable));
         ElementType returnType = returnInstruction.getOperand().getType().getTypeOfElement();
         if (returnType == BOOLEAN || returnType == INT32) code.append("i");
-        else if (returnType == ARRAYREF || returnType == OBJECTREF) code.append("a");
+        else code.append("a");
         code.append("return\n");
         return code.toString();
     }
@@ -450,6 +456,7 @@ public class JasminUtils {
 
         switch (fieldType.getTypeOfElement()) {
             case THIS:
+            case CLASS:
             case ARRAYREF:
             case OBJECTREF:
                 String objectClass;
@@ -457,32 +464,29 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
-                    objectClass = ((ArrayType) fieldType).getElementClass();
-                }
-                else {
-                    objectClass = ((ClassType) fieldType).getName();
-                    dimensions = 0;
-                }
-                for (String statement : imports) {
-                    String[] importArray = statement.split("\\.");
-                    if (importArray[importArray.length - 1].equals(objectClass)) {
-                        if (fieldType instanceof ArrayType) {
-                            return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
-                        }
-                        else
-                            return statement.replace("\\.", "/");
-                    }
-                }
-
-                if (fieldType instanceof ArrayType) {
                     boolean reference = false;
-                        Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
+                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
                     if (jasminType(newFieldType, imports) != "I" && jasminType(newFieldType) != "Z")
                         reference = true;
 
                     return "[".repeat(dimensions) + (reference ? "L" : "") + jasminType(newFieldType, imports) + (reference ? ";" : "");
                 }
+                else {
+                    objectClass = ((ClassType) fieldType).getName();
+                    dimensions = 0;
 
+                    for (String statement : imports) {
+                        String[] importArray = statement.split("\\.");
+                        if (importArray[importArray.length - 1].equals(objectClass)) {
+                            if (fieldType instanceof ArrayType) {
+                                return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
+                            } else
+                                return statement.replace("\\.", "/");
+                        }
+                    }
+
+                    return objectClass;
+                }
             default:
                 return jasminType(fieldType);
         }
