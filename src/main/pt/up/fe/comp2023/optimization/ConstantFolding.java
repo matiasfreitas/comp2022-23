@@ -44,13 +44,51 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         return null;
     }
 
+    private boolean isBinaryNodeKind(JmmNode jmmNode, String kind) {
+        return jmmNode.getJmmChild(0).getKind().equals(kind)
+                && jmmNode.getJmmChild(1).getKind().equals(kind);
+    }
+
+    private boolean canFoldBinaryNode(JmmNode jmmNode) {
+        boolean areInt = isBinaryNodeKind(jmmNode, "Int");
+        boolean areBool = isBinaryNodeKind(jmmNode, "Boolean");
+        return areInt || areBool;
+    }
+
+    private Void foldBooleanOperation(JmmNode jmmNode) {
+        boolean lhs = jmmNode.getJmmChild(0).get("value").equals("true");
+        boolean rhs = jmmNode.getJmmChild(1).get("value").equals("true");
+        boolean result = lhs;
+        if (jmmNode.get("op").equals("&&")) {
+            result = lhs && rhs;
+        }
+        var newNode = new JmmNodeImpl("Boolean");
+        newNode.put("value", String.valueOf(result));
+        jmmNode.replace(newNode);
+        return null;
+    }
+
+    private Void foldIntegerOperation(JmmNode jmmNode) {
+        return null;
+
+    }
+
     private Void handleBinaryOp(JmmNode jmmNode, Void unused) {
-        System.out.println("Seeing binary operator");
+        var operation = jmmNode.get("op");
+        visit(jmmNode.getJmmChild(0));
+        visit(jmmNode.getJmmChild(1));
+        if (!canFoldBinaryNode(jmmNode)) {
+            return null;
+        }
+        if (isBinaryNodeKind(jmmNode, "Boolean")) {
+            foldBooleanOperation(jmmNode);
+        } else {
+            foldIntegerOperation(jmmNode);
+        }
         return null;
     }
 
     private Void handleUnary(JmmNode jmmNode, Void unused) {
-        System.out.println("Seeing unary operator");
         JmmNode child = jmmNode.getJmmChild(0);
         visit(child);
         JmmNode foldedChild = jmmNode.getJmmChild(0);
