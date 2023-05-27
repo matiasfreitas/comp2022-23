@@ -1,27 +1,13 @@
-class MethodsAndFields{
-	int field1;
-	boolean field2;
-	MethodsAndFields field3;
+class ConstantFolding {
+    public static void main(String[] args){
+        boolean a;
+        boolean b;
+        b = true && false && true;
+        a = !(!((true && true) && (true && false)));
+    }
 
-	public int getField1(){
-		return field1;
-	}
-
-	public boolean getField2(){
-		return field2;
-	}
-
-	public MethodsAndFields getField3(){
-		return field3;
-	}
-
-	public int[] all(int a, boolean b, MethodsAndFields maf){
-		int[] c;
-		c = new int[1];
-		return c;
-	}
-
-	public static void main(String[] args){
-
-	}
+    public int foldIntOperations(int b){
+        int a;
+        a = 2 + 1 / 2;
+    }
 }

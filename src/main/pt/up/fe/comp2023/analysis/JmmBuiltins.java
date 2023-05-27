@@ -2,6 +2,7 @@ package pt.up.fe.comp2023.analysis;
 
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,21 +12,23 @@ public class JmmBuiltins {
 
     // TODO add JmmVoid builtin?
 
-    public static Type JmmVoid = new Type("void",false);
-    public static Type JmmInt = new Type("int",false);
-    public static Type JmmChar = new Type("char",false);
-    public static Type JmmBoolean = new Type("boolean",false);
+    public static Type JmmVoid = new Type("void", false);
+    public static Type JmmInt = new Type("int", false);
+    public static Type JmmChar = new Type("char", false);
+    public static Type JmmBoolean = new Type("boolean", false);
 
-    public static Type JmmString = new Type("String",false);
+    public static Type JmmString = new Type("String", false);
 
-    public static Type JmmAssumeType = new Type("JmmBuiltinAssumeType",false);
+    public static Type JmmAssumeType = new Type("JmmBuiltinAssumeType", false);
 
-    public static List<Type> builtinTypes(){
-        return Arrays.asList(JmmInt,JmmChar,JmmString,JmmBoolean,JmmVoid);
+    public static List<Type> builtinTypes() {
+        return Arrays.asList(JmmInt, JmmChar, JmmString, JmmBoolean, JmmVoid);
     }
 
-    public static Optional<Type> fromJmmNode(JmmNode node){
-        String kind = node.getKind();
+
+    private static final List<String> literals = Arrays.asList("Int", "Boolean", "Char", "String", "Identifier", "This");
+
+    private static Optional<Type> kindToType(String kind) {
         Type t = switch (kind) {
             case "Int" -> JmmInt;
             case "Char" -> JmmChar;
@@ -33,13 +36,27 @@ public class JmmBuiltins {
             case "String" -> JmmString;
             default -> null;
         };
-        return  Optional.ofNullable(t);
+        return Optional.ofNullable(t);
     }
-    public static Type fromAnnotatedNode(JmmNode node){
+
+    private static String typeToKind(Type t) {
+        return switch (t.getName()) {
+            case "int" -> "Int";
+            case "boolean" -> "Boolean";
+            default -> null;
+        };
+    }
+
+    public static Optional<Type> fromJmmNode(JmmNode node) {
+        String kind = node.getKind();
+        return kindToType(kind);
+    }
+
+    public static Type fromAnnotatedNode(JmmNode node) {
         var isArray = node.get("isArray").equals("true");
         var type = node.get("type");
-        if(isArray){
-            return  new Type(type,true);
+        if (isArray) {
+            return new Type(type, true);
         }
         return switch (type) {
             case "int" -> JmmInt;
@@ -48,19 +65,20 @@ public class JmmBuiltins {
             case "String" -> JmmString;
             case "void" -> JmmVoid;
             case "JmmBuiltinAssumeType" -> JmmAssumeType;
-            default -> new Type(type,false);
+            default -> new Type(type, false);
         };
     }
 
-    public static boolean typeEqualOrAssumed(Type left,Type right){
+    public static boolean typeEqualOrAssumed(Type left, Type right) {
         boolean assumed = left.equals(JmmAssumeType) || right.equals(JmmAssumeType);
         boolean equal = left.equals(right);
         return assumed || equal;
     }
-    public static boolean typesEqualOrAssumed(List<Type> types, Type right){
+
+    public static boolean typesEqualOrAssumed(List<Type> types, Type right) {
         boolean result = true;
-        for(Type t: types){
-            result = result && typeEqualOrAssumed(t,right);
+        for (Type t : types) {
+            result = result && typeEqualOrAssumed(t, right);
         }
         return result;
     }
@@ -69,4 +87,26 @@ public class JmmBuiltins {
         jmmNode.put("type", t.getName());
         jmmNode.put("isArray", (t.isArray()) ? "true" : "false");
     }
+
+    public static boolean isLiteralNode(JmmNode jmmNode) {
+        return literals.contains(jmmNode.getKind());
+    }
+
+    public static boolean noNeedParenthesis(JmmNode jmmNode) {
+        return literals.contains(jmmNode.getKind());
+    }
+
+
+    public static JmmNode newIntNode(String value) {
+        var node = new JmmNodeImpl("Int");
+        node.put("value", value);
+        return node;
+    }
+
+    public static JmmNode newBooleanNode(String value) {
+        var node = new JmmNodeImpl("Boolean");
+        node.put("value", value);
+        return node;
+    }
+
 }
