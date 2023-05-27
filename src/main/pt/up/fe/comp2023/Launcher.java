@@ -12,6 +12,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.Analyser;
+import pt.up.fe.comp2023.optimization.ConstantFolding;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -56,6 +57,9 @@ public class Launcher {
         for(Report r : l){
             System.err.println(r.toString());
         }
+        ConstantFolding folder = new ConstantFolding();
+        JmmSemanticsResult folded = folder.optimize(s);
+        System.out.println(folded.getRootNode().toTree());
         // ... add remaining stages
     }
 
