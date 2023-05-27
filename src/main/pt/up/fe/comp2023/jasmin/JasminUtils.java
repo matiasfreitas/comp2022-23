@@ -58,12 +58,25 @@ public class JasminUtils {
             }
         }
 
-        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
-        code.append(prefix + "store");
-        code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
-        code.append("\n");
-        updateLimit(-1);
+        int id = 0;
+        if (op1.isParameter()) id = op1.getParamId();
+        else varTable.get(op1.getName()).getVirtualReg();
 
+        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+
+        if (id < 0) {
+
+            code.append("putfield " + "Dummy" + "/" + op1.getName() + " " + jasminType(op1.getType(), imports));
+            updateLimit(-1);
+            return code.toString();
+        }
+
+        else {
+            code.append(prefix + "store");
+            code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
+            code.append("\n");
+            updateLimit(-1);
+        }
         hasAssign  = false;
         return code.toString();
     }
@@ -355,7 +368,20 @@ public class JasminUtils {
             code.append("iaload\n");
         }
         else {
+
             Operand op = (Operand) operand;
+
+            int id = 0;
+            if (op.isParameter()) id = op.getParamId();
+            else varTable.get(op.getName()).getVirtualReg();
+
+            if (id < 0) {
+
+                code.append("aload_0\n" + "getfield " + "Dummy" + "/" + op.getName() + "\n");
+                updateLimit(1);
+                return code.toString();
+            }
+
             prefix = "i";
             if (op.getType().getTypeOfElement() != INT32 && op.getType().getTypeOfElement() != BOOLEAN)
                 prefix = "a";
