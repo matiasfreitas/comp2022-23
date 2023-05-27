@@ -387,6 +387,8 @@ public class JasminUtils {
                         if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
                             iincAssign = true;
                             String signal = (opType == OperationType.ADD)? "": "-";
+                            if (num == 0)
+                                return "";
                             return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
                         }
                     }
@@ -400,6 +402,8 @@ public class JasminUtils {
                         if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
                             iincAssign = true;
                             String signal = (opType == OperationType.ADD)? "": "-";
+                            if (num == 0)
+                                return "";
                             return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
                         }
                     }
