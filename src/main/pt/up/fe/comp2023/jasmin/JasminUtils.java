@@ -283,7 +283,7 @@ public class JasminUtils {
         Operand field       = (Operand) getFieldInstruction.getSecondOperand();
 
         updateLimit(1);
-        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) +  varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload_0\n");
         code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
@@ -297,7 +297,7 @@ public class JasminUtils {
         Element newValue   = putFieldInstruction.getThirdOperand();
 
         updateLimit(1);
-        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload_0\n");
         code.append(loadVariable(newValue, varTable));
         code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
