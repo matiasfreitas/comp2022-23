@@ -1,7 +1,8 @@
 class ConstantFolding {
     public static void main(String[] args){
         boolean a;
-        a = !true;
-        a = true && true;
+        bolean b;
+        b = true && true;
+        a = !(!(true));
     }
 }

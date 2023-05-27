@@ -5,45 +5,69 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 
-public class ConstantFolding extends AJmmVisitor<Void, JmmNode> {
+import java.util.Arrays;
+import java.util.List;
+
+public class ConstantFolding extends AJmmVisitor<Void, Void> {
+
+    private final List<String> literals = Arrays.asList("Int", "Boolean", "Char", "String", "Identifier", "This");
+
     @Override
     protected void buildVisitor() {
         setDefaultVisit(this::noOptimization);
         addVisit("Unary", this::handleUnary);
         addVisit("BinaryOp", this::handleBinaryOp);
+        addVisit("Paren", this::handleParen);
 
     }
 
-    private JmmNode noOptimization(JmmNode jmmNode, Void unused){
-        for(var child : jmmNode.getChildren()){
-            var foldedChild = visit(child);
-            child.replace(foldedChild);
+    private boolean literalNode(JmmNode jmmNode) {
+        return literals.contains(jmmNode.getKind());
+    }
+
+    private Void handleParen(JmmNode jmmNode, Void unused) {
+        var child = jmmNode.getJmmChild(0);
+        visit(child);
+        var foldedChild = jmmNode.getJmmChild(0);
+        if (!literalNode(foldedChild)) {
+            return null;
         }
-        return jmmNode;
-    }
-    private JmmNode handleBinaryOp(JmmNode jmmNode, Void unused) {
-        System.out.println("Seeing binary operator");
-        return jmmNode;
+        jmmNode.replace(foldedChild);
+        return null;
+
     }
 
-    private JmmNode handleUnary(JmmNode jmmNode, Void unused) {
+    private Void noOptimization(JmmNode jmmNode, Void unused) {
+        for (var child : jmmNode.getChildren()) {
+            visit(child);
+        }
+        return null;
+    }
+
+    private Void handleBinaryOp(JmmNode jmmNode, Void unused) {
+        System.out.println("Seeing binary operator");
+        return null;
+    }
+
+    private Void handleUnary(JmmNode jmmNode, Void unused) {
         System.out.println("Seeing unary operator");
         JmmNode child = jmmNode.getJmmChild(0);
-        JmmNode foldedChild = visit(child);
+        visit(child);
+        JmmNode foldedChild = jmmNode.getJmmChild(0);
         if (!foldedChild.getKind().equals("Boolean")) {
-            child.replace(foldedChild);
-            return jmmNode;
+            return null;
         }
-        boolean value = child.get("value").equals("true");
+        boolean value = foldedChild.get("value").equals("true");
         boolean result = !value;
         JmmNode n = new JmmNodeImpl("Boolean");
         n.put("value", String.valueOf(result));
-        return n;
+        jmmNode.replace(n);
+        return null;
     }
 
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
-        JmmNode rootNode = visit(semanticsResult.getRootNode());
-        return new JmmSemanticsResult(rootNode,semanticsResult.getSymbolTable(),semanticsResult.getReports(),semanticsResult.getConfig());
+        visit(semanticsResult.getRootNode());
+        return semanticsResult;
     }
 
 }
