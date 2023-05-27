@@ -260,12 +260,11 @@ public class JasminUtils {
         StringBuilder code = new StringBuilder();
         Operand object     = (Operand) putFieldInstruction.getFirstOperand();
         Operand field      = (Operand) putFieldInstruction.getSecondOperand();
-
-        LiteralElement newValue = (LiteralElement) putFieldInstruction.getThirdOperand();
+        Element newValue   = putFieldInstruction.getThirdOperand();
 
         updateLimit(1);
         code.append("aload " +  varTable.get(object.getName()).getVirtualReg() + "\n");
-        code.append(constantPusher(newValue) +  newValue.getLiteral() + "\n");
+        code.append(loadVariable(newValue, varTable));
         code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
