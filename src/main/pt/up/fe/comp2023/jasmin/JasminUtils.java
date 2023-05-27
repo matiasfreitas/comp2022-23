@@ -144,8 +144,8 @@ public class JasminUtils {
             }
         }
 
-        if(!leftIsZero  || isArithmetic(opType)) addCodeOperand(varTable, code, left);
-        if(!rightIsZero || isArithmetic(opType)) addCodeOperand(varTable, code, right);
+        if(!leftIsZero  || isArithmetic(opType)) code.append(loadVariable(left, varTable));
+        if(!rightIsZero || isArithmetic(opType)) code.append(loadVariable(right, varTable));
 
         updateLimit(-1);
 
@@ -442,22 +442,6 @@ public class JasminUtils {
         labelNumber++;
         return code.toString();
 
-    }
-    private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
-        if (!element.isLiteral()) {
-            Operand el = (Operand) element;
-            if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
-                code.append("iload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
-            else
-                code.append("aload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
-
-            code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
-            updateLimit(1);
-        }
-        else {
-            LiteralElement el = (LiteralElement) element;
-            code.append(constantPusher(el) + el.getLiteral() + "\n");
-        }
     }
 
 
