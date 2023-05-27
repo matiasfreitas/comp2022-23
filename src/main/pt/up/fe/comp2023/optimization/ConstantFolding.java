@@ -4,13 +4,13 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
+import pt.up.fe.comp2023.analysis.JmmBuiltins;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class ConstantFolding extends AJmmVisitor<Void, Void> {
 
-    private final List<String> literals = Arrays.asList("Int", "Boolean", "Char", "String", "Identifier", "This");
 
     @Override
     protected void buildVisitor() {
@@ -21,15 +21,12 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
 
     }
 
-    private boolean literalNode(JmmNode jmmNode) {
-        return literals.contains(jmmNode.getKind());
-    }
 
     private Void handleParen(JmmNode jmmNode, Void unused) {
         var child = jmmNode.getJmmChild(0);
         visit(child);
         var foldedChild = jmmNode.getJmmChild(0);
-        if (!literalNode(foldedChild)) {
+        if (!JmmBuiltins.noNeedParenthesis(foldedChild)) {
             return null;
         }
         jmmNode.replace(foldedChild);
@@ -62,9 +59,8 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         if (jmmNode.get("op").equals("&&")) {
             result = lhs && rhs;
         }
-        var newNode = new JmmNodeImpl("Boolean");
-        newNode.put("value", String.valueOf(result));
-        jmmNode.replace(newNode);
+        var folded = JmmBuiltins.newBooleanNode(String.valueOf(lhs));
+        jmmNode.replace(folded);
     }
 
     private void foldIntegerOperation(JmmNode jmmNode) {
@@ -73,9 +69,8 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         var operation = jmmNode.get("op");
         if (operation.equals("<")) {
             boolean result = lhs < rhs;
-            var newNode = new JmmNodeImpl("Boolean");
-            newNode.put("value", String.valueOf(result));
-            jmmNode.replace(newNode);
+            var folded = JmmBuiltins.newBooleanNode(String.valueOf(result));
+            jmmNode.replace(folded);
             return;
         }
         int result = switch (operation) {
@@ -85,9 +80,8 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
             case "/" -> lhs / rhs;
             default -> 0;
         };
-        var newNode = new JmmNodeImpl("Int");
-        newNode.put("value", String.valueOf(result));
-        jmmNode.replace(newNode);
+        var folded = JmmBuiltins.newIntNode(String.valueOf(result));
+        jmmNode.replace(folded);
 
     }
 
@@ -114,9 +108,8 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         }
         boolean value = foldedChild.get("value").equals("true");
         boolean result = !value;
-        JmmNode n = new JmmNodeImpl("Boolean");
-        n.put("value", String.valueOf(result));
-        jmmNode.replace(n);
+        var folded = JmmBuiltins.newBooleanNode(String.valueOf(result));
+        jmmNode.replace(folded);
         return null;
     }
 
