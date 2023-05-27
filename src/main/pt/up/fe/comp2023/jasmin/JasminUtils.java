@@ -117,10 +117,25 @@ public class JasminUtils {
             return code.toString();
         }
 
+        boolean leftIsZero  = false;
+        boolean rightIsZero = false;
 
-        addCodeOperand(varTable, code, left);
-        addCodeOperand(varTable, code, right);
+        if (left.isLiteral()) {
+            int value = Integer.parseInt(((LiteralElement) left).getLiteral());
+            if (value == 0) {
+                leftIsZero = true;
+            }
+        }
 
+        if (right.isLiteral()) {
+            int value = Integer.parseInt(((LiteralElement) right).getLiteral());
+            if (value == 0) {
+                rightIsZero = true;
+            }
+        }
+
+        if(!leftIsZero  || isArithmetic(opType)) addCodeOperand(varTable, code, left);
+        if(!rightIsZero || isArithmetic(opType)) addCodeOperand(varTable, code, right);
 
         updateLimit(-1);
 
@@ -132,8 +147,20 @@ public class JasminUtils {
             case MUL: code.append("imul\n"); break;
             case DIV: code.append("idiv\n"); break;
             case AND, ANDB: code.append("iand\n"); break;
-            case LTE, LTH: code.append(boolJumpOperation("if_icmplt")); break;
-            case GTE, GTH: code.append(boolJumpOperation("if_icmpgt")); break;
+            case LTE, LTH:
+
+                if (leftIsZero) code.append(boolJumpOperation("ifgt"));
+                else if (rightIsZero) code.append(boolJumpOperation("iflt"));
+                else code.append(boolJumpOperation("if_icmplt"));
+                break;
+
+            case GTE, GTH:
+
+                if (leftIsZero) code.append(boolJumpOperation("iflt"));
+                else if (rightIsZero) code.append(boolJumpOperation("ifgt"));
+                else code.append(boolJumpOperation("if_icmpgt"));
+                break;
+
             case EQ: code.append(boolJumpOperation("ifne"));break;
             case NEQ: code.append(boolJumpOperation("ifqe"));break;
 
@@ -300,6 +327,9 @@ public class JasminUtils {
         }
     }
 
+    private static boolean isArithmetic(OperationType opType) {
+        return opType == OperationType.ADD || opType == OperationType.SUB || opType == OperationType.MUL || opType == OperationType.DIV;
+    }
     private static String loadVariable(Element operand, HashMap<String, Descriptor> varTable) {
 
         StringBuilder code = new StringBuilder();
