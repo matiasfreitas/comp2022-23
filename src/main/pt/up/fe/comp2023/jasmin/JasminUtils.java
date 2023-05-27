@@ -246,6 +246,7 @@ public class JasminUtils {
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
             code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
+            updateLimit(1);
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
         }
@@ -350,21 +351,24 @@ public class JasminUtils {
             ArrayOperand op = (ArrayOperand) operand;
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
             Element indexOperand = op.getIndexOperands().get(0);
-            if (indexOperand instanceof Operand) {
-                code.append("iload" + getRegisterHandle(varTable.get(((Operand) indexOperand).getName()).getVirtualReg()) + varTable.get(((Operand)indexOperand).getName()).getVirtualReg() + "\n");
-                updateLimit(1);
-
-            }
-
-            else {
-                code.append(constantPusher((LiteralElement) indexOperand) + ((LiteralElement) indexOperand).getLiteral() + "\n");
-
-            }
-            updateLimit(3);
+            code.append(loadVariable(indexOperand, varTable));
+            updateLimit(2);
             code.append("iaload\n");
         }
         else {
             Operand op = (Operand) operand;
+
+            int id = 0;
+            if (op.isParameter()) id = op.getParamId();
+            else varTable.get(op.getName()).getVirtualReg();
+
+            if (id < 0) {
+
+                code.append("aload_0\n" + "getfield " + "Dummy" + "/" + op.getName() + "\n");
+                updateLimit(1);
+                return code.toString();
+            }
+
             prefix = "i";
             if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
                 prefix = "a";
