@@ -26,12 +26,5 @@ public class Optimization implements JmmOptimization {
         return new OllirResult(optimizedSemanticResult,ollirCode,ollirReports);
     }
 
-    @Override
-    public OllirResult optimize(OllirResult ollirResult) {
-        ClassUnit classUnit = ollirResult.getOllirClass();
-        RegisterOptimizer optimizer = new RegisterOptimizer(classUnit);
-        optimizer.allocateRegisters(nRegisters);
 
-        return ollirResult;
-    }
 }
