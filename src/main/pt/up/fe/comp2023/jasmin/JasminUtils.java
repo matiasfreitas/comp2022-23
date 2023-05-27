@@ -1,13 +1,9 @@
 package pt.up.fe.comp2023.jasmin;
 
-import com.google.gson.annotations.Since;
 import org.specs.comp.ollir.*;
-import org.specs.comp.ollir.tree.ElementNode;
-
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+
 
 import static org.specs.comp.ollir.ElementType.*;
 
