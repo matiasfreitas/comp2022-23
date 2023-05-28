@@ -117,4 +117,7 @@ public class JmmBuiltins {
         return node;
     }
 
+    public static boolean iincOptimizable(JmmNode jmmNode) {
+        return  noNeedParenthesis(jmmNode);
+    }
 }

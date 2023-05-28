@@ -146,6 +146,21 @@ public class OllirGenerator extends AOllirGenerator<String> {
         return className + extendsParent + " {\n" + String.join("", fields) + ollirConstructor() + String.join("", methods) + "}";
     }
 
+    private boolean iincOptimizable(JmmNode jmmNode) {
+        if (!jmmNode.getKind().equals("BinaryOp")) {
+            return false;
+        }
+        var lhs = jmmNode.getJmmChild(0);
+        var rhs = jmmNode.getJmmChild(1);
+        return JmmBuiltins.iincOptimizable(lhs) && JmmBuiltins.iincOptimizable(rhs);
+
+    }
+
+    public String iincOptimized(OllirSymbol symbol, JmmNode binaryOp) {
+        var lhs = exprGen.visit(binaryOp.getJmmChild(0));
+        var rhs = exprGen.visit(binaryOp.getJmmChild(1));
+        return ollirAssignment(symbol, lhs.symbol(), rhs.symbol(), binaryOp.get("op"));
+    }
 
     private String handleAssignment(JmmNode node, List<Report> reports) {
         var idType = IdentifierType.fromJmmNode(node);
@@ -155,6 +170,9 @@ public class OllirGenerator extends AOllirGenerator<String> {
             return "";
         }
         OllirSymbol lhs = fromIdentifier(node);
+        if (iincOptimizable(node.getJmmChild(0))) {
+            return iincOptimized(lhs, node.getJmmChild(0));
+        }
         OllirExpressionResult rhs = exprGen.visit(node.getJmmChild(0), reports);
         var code = new StringBuilder(rhs.code());
         if (idType.equals(IdentifierType.ClassField)) {
