@@ -4,9 +4,13 @@ public class LabelPair {
     private int id;
 
     final private String name;
+    final private String first;
+    final private String second;
 
-    public LabelPair(String name) {
+    public LabelPair(String name, String first, String second) {
         this.name = name;
+        this.first = first;
+        this.second = second;
         id = 0;
     }
 
@@ -14,11 +18,11 @@ public class LabelPair {
         id++;
     }
 
-    public String enter() {
-        return name + "_enter_" + id;
+    public String first() {
+        return name + "_" + first + "_" + id;
     }
 
-    public String end() {
-        return name + "_end_" + id;
+    public String second() {
+        return name + "_" + second + "_" + id;
     }
 }

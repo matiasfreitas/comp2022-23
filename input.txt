@@ -12,13 +12,17 @@
 //    }
 //}
 import io;
-class ConstantPropIf{
+class A{
    public static void main(String[] args){
-        if(false){
-            io.println(50);
+        A a;
+        a = new A();
+        while(a.condition()){
+            io.print(3);
         }
-        else{
-        io.println(30);
-        }
+   }
+
+
+   public boolean condition(){
+        return true;
    }
 }

@@ -20,8 +20,8 @@ public class OllirGenerator extends AOllirGenerator<String> {
     public OllirGenerator(JmmSymbolTable symbolTable) {
         super(symbolTable);
         this.exprGen = new OllirExpressionGenerator(symbolTable);
-        this.labelIf = new LabelPair("if");
-        this.labelWhile = new LabelPair("while");
+        this.labelIf = new LabelPair("if", "enter", "end");
+        this.labelWhile = new LabelPair("while", "condition", "body");
 
     }
 
@@ -44,25 +44,22 @@ public class OllirGenerator extends AOllirGenerator<String> {
         var condition = exprGen.visit(jmmNode.getJmmChild(0));
         var whileBlock = visit(jmmNode.getJmmChild(1));
 
-        var enterWhile = labelWhile.enter();
-        var endWhile = labelWhile.end();
+        var enterBody = labelWhile.second();
+        var enterCondition = labelWhile.first();
         labelWhile.next();
-    // TODO : !!!!!!!!There is a jump missing to the begining of the while !!!!!!!!!!
-        return condition.code() + "if(" + condition.symbol().toCode() + ")" + ollirGoTo(enterWhile) + ollirGoTo(endWhile) + ollirLabel(enterWhile) + whileBlock + ollirLabel(endWhile);
-
+        return ollirGoTo(enterCondition) + ollirLabel(enterBody) + whileBlock + ollirLabel(enterCondition) + condition.code() + "if(" + condition.symbol().toCode() + ") " + ollirGoTo(enterBody);
     }
 
     private String handleIfStatement(JmmNode jmmNode, List<Report> reports) {
-        // 'if' '(' expression ')' statement 'else' statement  #IfStatement
         var condition = exprGen.visit(jmmNode.getJmmChild(0));
 
         var ifBlock = visit(jmmNode.getJmmChild(1));
         var elseBlock = visit(jmmNode.getJmmChild(2));
 
-        var enterIf = labelIf.enter();
-        var endIf = labelIf.end();
+        var enterIf = labelIf.first();
+        var endIf = labelIf.second();
         labelIf.next();
-        return condition.code() + "if(" + condition.symbol().toCode() + ")" + ollirGoTo(enterIf) + elseBlock + ollirGoTo(endIf) + ollirLabel(enterIf) + ifBlock + ollirLabel(endIf);
+        return condition.code() + "if(" + condition.symbol().toCode() + ") " + ollirGoTo(enterIf) + elseBlock + ollirGoTo(endIf) + ollirLabel(enterIf) + ifBlock + ollirLabel(endIf);
 
     }
 
