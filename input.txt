@@ -1,22 +1,7 @@
-//class ConstantFolding {
-//    public static void main(String[] args){
-//        boolean a;
-//        boolean b;
-//        b = true && false && true;
-//        a = !(!((true && true) && (true && false)));
-//    }
-//
-//    public int foldIntOperations(int b){
-//        int a;
-//        a = 2 + 1 / 2;
-//    }
-//}
 import io;
 class A{
-   public static void main(String[] args){
-   int a; a = a + 1;
-   }
-   public boolean condition(){
-        return true;
-   }
+    public static void main(String[] args){
+        int a;
+        a = 3;
+    }
 }

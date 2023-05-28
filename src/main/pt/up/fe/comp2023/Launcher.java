@@ -11,10 +11,13 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.jasmin.JasminBackend;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.analysis.Analyser;
 import pt.up.fe.comp2023.jasmin.JasminEngine;
+import pt.up.fe.comp2023.ollir.OllirExpressionResult;
 import pt.up.fe.comp2023.ollir.Optimization;
 import pt.up.fe.comp2023.optimization.ConstantFolding;
 import pt.up.fe.specs.util.SpecsIo;
@@ -40,42 +43,52 @@ public class Launcher {
             throw new RuntimeException("Expected a path to an existing input file, got '" + inputFile + "'.");
         }
 
-        // Read contents of input file
-        String code = SpecsIo.read(inputFile);
+        List<Report> compilationReports = compile(inputFile, config);
+        printReports(compilationReports);
 
+    }
 
+    private static void printReports(List<Report> reports) {
+        for (var report : reports) {
+            System.err.println(report.toString());
+        }
+    }
+
+    private static boolean hasErrors(List<Report> reports) {
+        for (var report : reports) {
+            if (report.getType().equals(ReportType.ERROR)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<Report> compile(File jmm, Map<String, String> config) {
+        String code = SpecsIo.read(jmm);
         // Instantiate JmmParser
         SimpleParser parser = new SimpleParser();
-
         // Parse stage
         JmmParserResult parserResult = parser.parse(code, config);
         // Check if there are parsing errors
-        TestUtils.noErrors(parserResult.getReports());
-        JmmNode rootNode = parserResult.getRootNode();
-
-        System.out.println(rootNode.toTree());
-
-        // Analysis stage
-        System.out.println("Semantics Stage");
-        Analyser analyser = new Analyser();
-        JmmSemanticsResult s = analyser.semanticAnalysis(parserResult);
-        List<Report> l = s.getReports();
-        //System.out.println(rootNode.toTree());
-        System.out.println("Reports:");
-        for (Report r : l) {
-            System.err.println(r.toString());
+        if (hasErrors(parserResult.getReports())) {
+            return parserResult.getReports();
         }
-        System.out.println("=========After Optimizations=======");
+        Analyser analyser = new Analyser();
+        JmmSemanticsResult semanticsResult = analyser.semanticAnalysis(parserResult);
+        if (hasErrors(semanticsResult.getReports())) {
+            return semanticsResult.getReports();
+        }
+
         Optimization optimizer = new Optimization();
-        var result = optimizer.toOllir(s);
-        System.out.println(s.getRootNode().toTree());
-        System.out.println("============Ollir:==========");
-        System.out.println(result.getOllirCode());
-        System.out.println();
-        // ... add remaining stages
+        OllirResult ollirResult = optimizer.toOllir(semanticsResult);
+        if (hasErrors(ollirResult.getReports())) {
+            return ollirResult.getReports();
+        }
         JasminBackend backend = getJasminBackend();
-        JasminResult jasminResult = backend.toJasmin(result);
-        System.out.println(jasminResult.compile());
+        JasminResult jasminResult = backend.toJasmin(ollirResult);
+        jasminResult.compile(new File(ollirResult.getOllirClass().getClassName() + ".class"));
+        return jasminResult.getReports();
+
     }
 
     private static Map<String, String> parseArgs(String[] args) {
