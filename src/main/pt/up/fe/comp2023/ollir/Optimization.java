@@ -10,6 +10,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.optimization.ConstantFolding;
 import org.specs.comp.ollir.*;
+import pt.up.fe.comp2023.optimization.ConstantPropagation;
 import pt.up.fe.comp2023.optimization.GraphColouring;
 import pt.up.fe.comp2023.optimization.Liveness;
 import java.util.ArrayList;
@@ -24,8 +25,10 @@ public class Optimization implements JmmOptimization {
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         ConstantFolding folder = new ConstantFolding();
+        ConstantPropagation propager = new ConstantPropagation();
         if (semanticsResult.getConfig().getOrDefault("optimize", "false").equals("true")) {
-            return folder.optimize(semanticsResult);
+            folder.optimize(semanticsResult);
+            return propager.optimize(semanticsResult);
         }
         return semanticsResult;
     }
