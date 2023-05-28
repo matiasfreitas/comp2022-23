@@ -61,9 +61,10 @@ public class Optimization implements JmmOptimization {
             GraphColouring graph = new GraphColouring(liveRanges, method, nRegisters == 0);
             boolean possible = graph.KColoring(nRegisters);
             if (!possible) {
-                System.out.println("Method " + method.getMethodName() + " needs at least " + +graph.getmRegisters() + " registers");
+                System.out.println("Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers");
                 ollirResult.getReports().add(new Report(ReportType.ERROR, Stage.OPTIMIZATION, -1, -1,
                         "Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers"));
+                return ollirResult;
             }
 
             HashMap<String, Integer> registers = graph.getRegisters();

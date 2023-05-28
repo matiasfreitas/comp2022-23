@@ -60,6 +60,7 @@ public class GraphColouring {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
+            if (kIsZeroFlag && k <100) return KColoring(k+ 1);
             return false;
         }
 
@@ -121,6 +122,7 @@ public class GraphColouring {
                     vertice1.setActive(true);
                     vertices.put(vertice1.getReg(), vertice1);
                 }
+                if (kIsZeroFlag && k <100) return KColoring(k+ 1);
                 return false;
             }
         }
@@ -132,10 +134,11 @@ public class GraphColouring {
         for (String name: table.keySet()) {
 
             Descriptor descriptor = table.get(name);
+            registers.put(name, register);
             if (descriptor.getScope() == VarScope.PARAMETER || descriptor.getScope() == VarScope.FIELD) {
 
                 newTable.put(name, new Descriptor(descriptor.getScope(), register, descriptor.getVarType()));
-                registers.put(name, register);
+
                 register++;
 
             }
