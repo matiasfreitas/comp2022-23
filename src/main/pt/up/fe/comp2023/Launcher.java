@@ -12,6 +12,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.Analyser;
+import pt.up.fe.comp2023.ollir.Optimization;
 import pt.up.fe.comp2023.optimization.ConstantFolding;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
@@ -49,17 +50,21 @@ public class Launcher {
         System.out.println(rootNode.toTree());
 
         // Analysis stage
+        System.out.println("Semantics Stage");
         Analyser analyser = new Analyser();
-        JmmSemanticsResult s  = analyser.semanticAnalysis(parserResult);
+        JmmSemanticsResult s = analyser.semanticAnalysis(parserResult);
         List<Report> l = s.getReports();
         //System.out.println(rootNode.toTree());
         System.out.println("Reports:");
-        for(Report r : l){
+        for (Report r : l) {
             System.err.println(r.toString());
         }
-        ConstantFolding folder = new ConstantFolding();
-        JmmSemanticsResult folded = folder.optimize(s);
-        System.out.println(folded.getRootNode().toTree());
+        System.out.println("=========After Optimizations=======");
+        Optimization optimizer = new Optimization();
+        var result = optimizer.toOllir(s);
+        System.out.println(s.getRootNode().toTree());
+        System.out.println("============Ollir:==========");
+        System.out.println(result.getOllirCode());
         // ... add remaining stages
     }
 
@@ -74,7 +79,7 @@ public class Launcher {
         // Create config
         Map<String, String> config = new HashMap<>();
         config.put("inputFile", args[0]);
-        config.put("optimize", "false");
+        config.put("optimize", "true");
         config.put("registerAllocation", "-1");
         config.put("debug", "false");
 
