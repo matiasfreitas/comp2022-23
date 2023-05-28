@@ -472,7 +472,7 @@ public class JasminUtils {
             case CLASS:
             case ARRAYREF:
             case OBJECTREF:
-                String objectClass;
+
                 Integer dimensions;
                 boolean reference = false;
 
