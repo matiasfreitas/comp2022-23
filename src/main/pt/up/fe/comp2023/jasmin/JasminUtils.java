@@ -228,7 +228,7 @@ public class JasminUtils {
 
             }
             else
-                code.append("new " +  jasminType(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
+                code.append("new " +  getClass(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
             if (object.getType().getTypeOfElement() == OBJECTREF)
                 updateLimit(1);
             return code.toString();
@@ -258,7 +258,7 @@ public class JasminUtils {
 
             code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
             updateLimit(1);
-            invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
+            invokeInstruction.append(getClass(object.getType(), imports) + "/");
 
         }
 
@@ -267,14 +267,8 @@ public class JasminUtils {
 
         for (Element operand: callInstruction.getListOfOperands()) {
             code.append(loadVariable(operand, varTable));
-            addComma = false;
-            if (operand.getType().getTypeOfElement() == OBJECTREF) {
-                invokeInstruction.append("L");
-                addComma = true;
-            }
             invokeInstruction.append(jasminType(operand.getType(), imports));
-            if (addComma)
-                invokeInstruction.append(";");
+
         }
 
         invokeInstruction.append(")" + jasminType(callInstruction.getReturnType(), imports) + '\n');
@@ -478,38 +472,48 @@ public class JasminUtils {
             case CLASS:
             case ARRAYREF:
             case OBJECTREF:
-                String objectClass;
+
                 Integer dimensions;
+                boolean reference = false;
 
                 if (fieldType instanceof ArrayType) {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
-                    boolean reference = false;
-                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-
-                    return "[".repeat(dimensions) + jasminType(newFieldType, imports) + (reference ? ";" : "");
+                    if (((ArrayType) fieldType).getTypeOfElements() == OBJECTREF)
+                        reference = true;
+                    return "[".repeat(dimensions) + ((reference)? "L": "") + getClass(((ArrayType) fieldType).getElementType(), imports) + (reference ? ";" : "");
                 }
                 else {
-                    objectClass = ((ClassType) fieldType).getName();
-                    dimensions = 0;
 
-                    for (String statement : imports) {
-                        String[] importArray = statement.split("\\.");
-                        if (importArray[importArray.length - 1].equals(objectClass)) {
-                            if (fieldType instanceof ArrayType) {
-                                return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
-                            } else
-                                return statement.replace("\\.", "/");
-                        }
-                    }
+                    if (fieldType.getTypeOfElement() == OBJECTREF)
+                        reference = true;
+                    return ((reference)? "L": "") + getClass(fieldType, imports) +  ((reference)? ";": "");
 
-                    return objectClass;
                 }
+
             default:
                 return jasminType(fieldType);
         }
     }
 
-    public static void updateLimit(Integer value) {
+    public static String getClass(Type fieldType, ArrayList<String> imports) {
+
+        if (fieldType.getTypeOfElement() == OBJECTREF) {
+            String objectClass = ((ClassType) fieldType).getName();
+            for (String statement : imports) {
+                String[] importArray = statement.split("\\.");
+                if (importArray[importArray.length - 1].equals(objectClass)) {
+                    return statement.replace("\\.", "/");
+                }
+            }
+
+            return objectClass;
+        }
+
+
+        return jasminType(fieldType);
+    }
+
+        public static void updateLimit(Integer value) {
 
         tempLimit += value;
         stackLimit = Math.max(tempLimit, stackLimit);

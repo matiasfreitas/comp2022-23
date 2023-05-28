@@ -12,7 +12,7 @@ public class GraphColouring {
     HashMap<String, Descriptor> table;
 
     public GraphColouring(ArrayList<HashMap<Node, BitSet>> ranges, Method method) {
-        
+
         vertices = new HashMap<>();
         table = method.getVarTable();
         isStatic = method.isStaticMethod();
@@ -21,7 +21,7 @@ public class GraphColouring {
         else mRegisters = 1;
 
         for(String name: table.keySet()) {
-            
+
             Descriptor descriptor = table.get(name);
             if (descriptor.getScope() == VarScope.PARAMETER || descriptor.getScope() == VarScope.FIELD) mRegisters++;
             else vertices.put(descriptor.getVirtualReg(), new GraphVertice(name, descriptor.getVirtualReg()));
@@ -29,10 +29,10 @@ public class GraphColouring {
 
         for (HashMap<Node, BitSet> range: ranges) {
             for (Node node : range.keySet()) {
-                
+
                 BitSet bitset = range.get(node);
                 List<Integer> indexes = new ArrayList<>();
-                
+
                 for (int i = 0; i < bitset.length(); i++) {
 
                     if (bitset.get(i)) indexes.add(i);
@@ -40,10 +40,10 @@ public class GraphColouring {
 
 
                 for (int i = 0; i < indexes.size() - 1; i++) {
-                    
+
                     GraphVertice verticeEdit = vertices.get(indexes.get(i));
                     for (int j = i + 1; j < indexes.size(); j++) {
-                        
+
                         GraphVertice vertice2 = vertices.get(indexes.get(j));
                         verticeEdit.addPath(new GraphPath(verticeEdit, vertice2));
                         vertice2.addPath(new GraphPath(vertice2, verticeEdit));
@@ -53,11 +53,11 @@ public class GraphColouring {
         }
     }
 
-    public HashMap<String, Descriptor> KColoring(int k) {
+    public boolean KColoring(int k) {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
-            return KColoring(k+1);
+            return false;
         }
 
         Stack<GraphVertice> verticeStack = new Stack<>();
@@ -148,8 +148,12 @@ public class GraphColouring {
         }
         if (!usedRegisters.contains(0))
             usedRegisters.add(0);
-
+        table = newTable;
         System.out.println("Allocated " + usedRegisters.size() + " registers");
-        return newTable;
+        return true;
+    }
+
+    public int getmRegisters() {
+        return mRegisters;
     }
 }
