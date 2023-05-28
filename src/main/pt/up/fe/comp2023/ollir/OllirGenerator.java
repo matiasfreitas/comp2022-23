@@ -135,7 +135,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
     private String handleClassDeclaration(JmmNode jmmNode, List<Report> reports) {
         var className = symbolTable.getClassName();
         var parentClass = symbolTable.getSuper();
-        var extendsParent = (parentClass == null) ? "Object" : parentClass;
+        var extendsParent = (parentClass == null) ? "" : " extends " + parentClass;
         var fields = new ArrayList<String>();
         var methods = new ArrayList<String>();
         for (var child : jmmNode.getChildren()) {
@@ -146,7 +146,7 @@ public class OllirGenerator extends AOllirGenerator<String> {
                 methods.add(childCode);
             }
         }
-        return className + " extends " + extendsParent + " {\n" + String.join("", fields) + ollirConstructor() + String.join("", methods) + "}";
+        return className + extendsParent + " {\n" + String.join("", fields) + ollirConstructor() + String.join("", methods) + "}";
     }
 
 
