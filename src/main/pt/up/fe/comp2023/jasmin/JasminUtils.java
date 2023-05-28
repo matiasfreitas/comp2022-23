@@ -1,12 +1,9 @@
 package pt.up.fe.comp2023.jasmin;
 
-import com.google.gson.annotations.Since;
 import org.specs.comp.ollir.*;
-
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+
 
 import static org.specs.comp.ollir.ElementType.*;
 
@@ -47,7 +44,7 @@ public class JasminUtils {
 
         }
 
-        else if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
+        else if (type.getTypeOfElement() != INT32 && type.getTypeOfElement() != BOOLEAN)
             prefix = "a";
 
         hasAssign  = true;
@@ -61,12 +58,25 @@ public class JasminUtils {
             }
         }
 
-        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
-        code.append(prefix + "store");
-        code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
-        code.append("\n");
-        updateLimit(-1);
+        int id = 0;
+        if (op1.isParameter()) id = op1.getParamId();
+        else varTable.get(op1.getName()).getVirtualReg();
 
+        code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+
+        if (id < 0) {
+
+            code.append("putfield " + "Dummy" + "/" + op1.getName() + " " + jasminType(op1.getType(), imports));
+            updateLimit(-1);
+            return code.toString();
+        }
+
+        else {
+            code.append(prefix + "store");
+            code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
+            code.append("\n");
+            updateLimit(-1);
+        }
         hasAssign  = false;
         return code.toString();
     }
@@ -147,8 +157,8 @@ public class JasminUtils {
             }
         }
 
-        if(!leftIsZero  || isArithmetic(opType)) addCodeOperand(varTable, code, left);
-        if(!rightIsZero || isArithmetic(opType)) addCodeOperand(varTable, code, right);
+        if(!leftIsZero  || isArithmetic(opType)) code.append(loadVariable(left, varTable));
+        if(!rightIsZero || isArithmetic(opType)) code.append(loadVariable(right, varTable));
 
         updateLimit(-1);
 
@@ -212,15 +222,8 @@ public class JasminUtils {
         if (callInstruction.getInvocationType() == CallType.NEW) {
 
             if (object.getName() == "array") {
-                for (Element element : callInstruction.getListOfOperands()) {
-                    if (element instanceof Operand) {
-                        Operand operand = (Operand) element;
-                        updateLimit(1);
 
-                        code.append("iload" + getRegisterHandle(varTable.get(operand.getName()).getVirtualReg()) + varTable.get(operand.getName()).getVirtualReg() + "\n");
-                    }
-                }
-
+                code.append(loadVariable(callInstruction.getListOfOperands().get(0), varTable));
                 code.append("newarray int\n");
 
             }
@@ -244,14 +247,21 @@ public class JasminUtils {
             return code.toString();
         }
 
+
         else {
 
             invokeInstruction.append(callInstruction.getInvocationType() + " " );
             methodName = method.getLiteral().replace("\"","");
-            code.append(loadVariable(object, varTable));
+            if  (callInstruction.getInvocationType() == CallType.invokespecial) {
+                methodName = (methodName.equals(""))? "<init>": methodName;
+            }
+
+            code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
+            updateLimit(1);
             invokeInstruction.append(jasminType(callInstruction.getFirstArg().getType(), imports) + "/");
 
         }
+
 
         invokeInstruction.append("" + methodName + "(");
 
@@ -286,7 +296,7 @@ public class JasminUtils {
         Operand field       = (Operand) getFieldInstruction.getSecondOperand();
 
         updateLimit(1);
-        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) +  varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload_0\n");
         code.append("getfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
         return code.toString();
@@ -300,7 +310,7 @@ public class JasminUtils {
         Element newValue   = putFieldInstruction.getThirdOperand();
 
         updateLimit(1);
-        code.append("aload" + getRegisterHandle(varTable.get(object.getName()).getVirtualReg()) + varTable.get(object.getName()).getVirtualReg() + "\n");
+        code.append("aload_0\n");
         code.append(loadVariable(newValue, varTable));
         code.append("putfield Dummy/" + field.getName() + ' ' + jasminType(field.getType(), imports) + '\n');
 
@@ -314,7 +324,7 @@ public class JasminUtils {
         code.append(loadVariable(returnInstruction.getOperand(), varTable));
         ElementType returnType = returnInstruction.getOperand().getType().getTypeOfElement();
         if (returnType == BOOLEAN || returnType == INT32) code.append("i");
-        else if (returnType == ARRAYREF || returnType == OBJECTREF) code.append("a");
+        else code.append("a");
         code.append("return\n");
         return code.toString();
     }
@@ -352,17 +362,28 @@ public class JasminUtils {
 
             ArrayOperand op = (ArrayOperand) operand;
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
-            Operand indexOperand = (Operand) op.getIndexOperands().get(0);
-            if (op.getIndexOperands().get(0) instanceof Operand) {
-                code.append("iload" + getRegisterHandle(varTable.get(indexOperand.getName()).getVirtualReg()) + varTable.get(indexOperand.getName()).getVirtualReg() + "\n");
-                code.append("iaload\n");
-                updateLimit(3);
-            }
+            Element indexOperand = op.getIndexOperands().get(0);
+            code.append(loadVariable(indexOperand, varTable));
+            updateLimit(2);
+            code.append("iaload\n");
         }
         else {
+
             Operand op = (Operand) operand;
+
+            int id = 0;
+            if (op.isParameter()) id = op.getParamId();
+            else varTable.get(op.getName()).getVirtualReg();
+
+            if (id < 0) {
+
+                code.append("aload_0\n" + "getfield " + "Dummy" + "/" + op.getName() + "\n");
+                updateLimit(1);
+                return code.toString();
+            }
+
             prefix = "i";
-            if (op.getType().getTypeOfElement() == ElementType.OBJECTREF || op.getType().getTypeOfElement() == ElementType.ARRAYREF)
+            if (op.getType().getTypeOfElement() != INT32 && op.getType().getTypeOfElement() != BOOLEAN)
                 prefix = "a";
             code.append(prefix + "load" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + '\n');
             updateLimit(1);
@@ -447,21 +468,6 @@ public class JasminUtils {
         return code.toString();
 
     }
-    private static void addCodeOperand(HashMap<String, Descriptor> varTable, StringBuilder code, Element element) {
-        if (!element.isLiteral()) {
-            Operand el = (Operand) element;
-            if (element.getType().getTypeOfElement() != ElementType.BOOLEAN || element.getType().getTypeOfElement() != ElementType.INT32)
-                code.append("iload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
-            else
-                code.append("aload" + getRegisterHandle(varTable.get(el.getName()).getVirtualReg()));
-            code.append(varTable.get(el.getName()).getVirtualReg() + "\n");
-            updateLimit(1);
-        }
-        else {
-            LiteralElement el = (LiteralElement) element;
-            code.append(constantPusher(el) + el.getLiteral() + "\n");
-        }
-    }
 
 
     public static String jasminType(Type fieldType, ArrayList<String> imports) {
@@ -469,6 +475,7 @@ public class JasminUtils {
 
         switch (fieldType.getTypeOfElement()) {
             case THIS:
+            case CLASS:
             case ARRAYREF:
             case OBJECTREF:
                 String objectClass;
@@ -476,32 +483,27 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
-                    objectClass = ((ArrayType) fieldType).getElementClass();
+                    boolean reference = false;
+                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
+
+                    return "[".repeat(dimensions) + jasminType(newFieldType, imports) + (reference ? ";" : "");
                 }
                 else {
                     objectClass = ((ClassType) fieldType).getName();
                     dimensions = 0;
-                }
-                for (String statement : imports) {
-                    String[] importArray = statement.split("\\.");
-                    if (importArray[importArray.length - 1].equals(objectClass)) {
-                        if (fieldType instanceof ArrayType) {
-                            return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
+
+                    for (String statement : imports) {
+                        String[] importArray = statement.split("\\.");
+                        if (importArray[importArray.length - 1].equals(objectClass)) {
+                            if (fieldType instanceof ArrayType) {
+                                return "[".repeat(dimensions) + 'L' + statement.replace("\\.", "/") + ';';
+                            } else
+                                return statement.replace("\\.", "/");
                         }
-                        else
-                            return statement.replace("\\.", "/");
                     }
+
+                    return objectClass;
                 }
-
-                if (fieldType instanceof ArrayType) {
-                    boolean reference = false;
-                        Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    if (jasminType(newFieldType, imports) != "I" && jasminType(newFieldType) != "Z")
-                        reference = true;
-
-                    return "[".repeat(dimensions) + (reference ? "L" : "") + jasminType(newFieldType, imports) + (reference ? ";" : "");
-                }
-
             default:
                 return jasminType(fieldType);
         }
@@ -554,7 +556,7 @@ public class JasminUtils {
 
         switch (fieldType.getTypeOfElement()) {
             case BOOLEAN:   return "Z";
-            case STRING:    return "java/lang/String";
+            case STRING:    return "Ljava/lang/String;";
             case VOID:      return "V";
             case INT32:     return "I";
             case OBJECTREF: return "a";

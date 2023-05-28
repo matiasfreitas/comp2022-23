@@ -6,11 +6,15 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.optimization.ConstantFolding;
+import org.specs.comp.ollir.*;
+import pt.up.fe.comp2023.optimization.RegisterOptimizer;
 
 import java.util.LinkedList;
 
 
 public class Optimization implements JmmOptimization {
+    private int nRegisters;
+
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         ConstantFolding folder = new ConstantFolding();
@@ -30,4 +34,6 @@ public class Optimization implements JmmOptimization {
         var ollirCode = ollirGenerator.visit(rootNode, ollirReports);
         return new OllirResult(optimizedSemanticResult, ollirCode, ollirReports);
     }
+
+
 }

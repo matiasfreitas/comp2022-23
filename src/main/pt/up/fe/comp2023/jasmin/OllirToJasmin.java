@@ -48,16 +48,7 @@ public class OllirToJasmin {
 
 
         if (superClass != null) {
-            code.append(".super ");
-
-            for (String statement : this.classUnit.getImports()) {
-                String[] importArray = statement.split("\\.");
-
-                if (importArray[importArray.length - 1].equals(superClass)) {
-                    code.append(statement.replace('.', '/'));
-                    break;
-                }
-            }
+            code.append(".super " + superClass + "\n");
         }
         else code.append(".super java/lang/Object");
 
@@ -99,16 +90,8 @@ public class OllirToJasmin {
         code.append("aload_0\n");
 
         if (classUnit.getSuperClass() != null) {
-            code.append("invokespecial ");
-            for (String statement : this.classUnit.getImports()) {
-                String[] importArray = statement.split("\\.");
+            code.append("invokespecial " + classUnit.getSuperClass());
 
-                if (importArray[importArray.length - 1].equals(classUnit.getSuperClass())) {
-                    code.append(statement.replace("\\.", "/"));
-
-                    break;
-                }
-            }
         }
         else {
             code.append("invokespecial java/lang/Object");
