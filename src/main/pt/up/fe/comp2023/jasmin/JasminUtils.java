@@ -44,7 +44,7 @@ public class JasminUtils {
 
         }
 
-        else if (type.getTypeOfElement() == ElementType.OBJECTREF || type.getTypeOfElement() == ElementType.ARRAYREF)
+        else if (type.getTypeOfElement() != INT32 || type.getTypeOfElement() != BOOLEAN)
             prefix = "a";
 
         hasAssign  = true;
