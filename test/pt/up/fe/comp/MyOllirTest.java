@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
 import pt.up.fe.comp2023.ollir.OllirGenerator;
+import pt.up.fe.comp2023.optimization.ConstantFolding;
 import pt.up.fe.specs.util.SpecsIo;
 
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public class MyOllirTest {
     public void testOllir(String path) {
         String jmmCode = SpecsIo.getResource(path);
         var output = TestUtils.analyse(jmmCode);
+        var optimized =  new ConstantFolding().optimize(output);
         var rootNode = output.getRootNode();
         System.out.println(rootNode.toTree());
         var semanticReports = output.getReports();
@@ -55,7 +57,7 @@ public class MyOllirTest {
 
         var ollirGenerator = new OllirGenerator((JmmSymbolTable) output.getSymbolTable());
         var reports = new LinkedList<Report>();
-        var ollirCode = ollirGenerator.visit(rootNode, reports);
+        var ollirCode = ollirGenerator.visit(optimized.getRootNode(), reports);
         System.out.println("Ollir Code:\n" + ollirCode);
     }
 

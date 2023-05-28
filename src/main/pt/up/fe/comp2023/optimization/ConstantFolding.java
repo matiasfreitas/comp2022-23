@@ -59,7 +59,7 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         if (jmmNode.get("op").equals("&&")) {
             result = lhs && rhs;
         }
-        var folded = JmmBuiltins.newBooleanNode(String.valueOf(lhs));
+        var folded = JmmBuiltins.newBooleanNode(String.valueOf(result));
         jmmNode.replace(folded);
     }
 
