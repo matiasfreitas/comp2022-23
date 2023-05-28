@@ -148,7 +148,7 @@ public class GraphColouring {
         }
         if (!usedRegisters.contains(0))
             usedRegisters.add(0);
-
+        table = newTable;
         System.out.println("Allocated " + usedRegisters.size() + " registers");
         return true;
     }

@@ -1,6 +1,7 @@
 package pt.up.fe.comp2023.ollir;
 
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
@@ -66,6 +67,9 @@ public class Optimization implements JmmOptimization {
                         "Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers"));
             }
         }
+
+        classUnit.buildCFGs();
+
 
         return ollirResult;
     }
