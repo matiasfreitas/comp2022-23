@@ -21,7 +21,7 @@ public class DeadCodeElimination extends JmmIterativeOptimizer {
     @Override
     protected void buildVisitor() {
         this.setDefaultVisit(this::visitAllChildren);
-        //addVisit("IfStatement", this::handleIf);
+        addVisit("IfStatement", this::handleIf);
         addVisit("WhileLoop", this::handleWhile);
 
     }
@@ -38,7 +38,6 @@ public class DeadCodeElimination extends JmmIterativeOptimizer {
     }
 
     private Void handleWhile(JmmNode jmmNode, Void unused) {
-        //       | 'while' '(' expression ')' statement #WhileLoop
         if (!evaluateCondition(jmmNode.getJmmChild(0)).equals(Condition.False)) {
             return null;
         }
@@ -48,7 +47,16 @@ public class DeadCodeElimination extends JmmIterativeOptimizer {
     }
 
     private Void handleIf(JmmNode jmmNode, Void unused) {
-        //'if' '(' expression ')' statement 'else' statement  #IfStatement
+        Condition result = evaluateCondition(jmmNode.getJmmChild(0));
+        if (result.equals(Condition.NotKnown)) {
+            return null;
+        }
+        didOptimize();
+        JmmNode chosenBlock = jmmNode.getJmmChild(1);
+        if (result.equals(Condition.False)) {
+            chosenBlock = jmmNode.getJmmChild(2);
+        }
+        jmmNode.replace(chosenBlock);
         return null;
     }
 }

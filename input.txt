@@ -14,8 +14,11 @@
 import io;
 class ConstantPropIf{
    public static void main(String[] args){
-        while(false){
-            io.println(3);
+        if(false){
+            io.println(50);
+        }
+        else{
+        io.println(30);
         }
    }
 }
