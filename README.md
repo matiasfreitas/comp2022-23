@@ -1,29 +1,26 @@
 # About Develop Optimization:
 
-All the sugests optimizations are develop in the final code.
+All the suggested optimizations were implemented in the final code, meaning:
 
-That means:
-
-### The -o flag has:
+### The -o flag, which forces:
 
 - Constant Propagation
 
 - Constant Folding
 
-I
-In a loop until maximum optimization.
 
-### The -r=k flag has:
+
+### The -r=k flag, which applies:
 
 - Graph Colouring algorithm
 
-- Minimum possible instruction (-r=0)
+- Minimum possible registers (**-r=0**)
 
-- Tries to minimize to k register (-r!=0)
+- Tries to minimize to **K** register (with **-r!=0**)
 
-- Report the mapping between the local variables of each method of the Java
+- Report the mapping between the local variables of each method
 
-- If the choose k isnt enough, report a error. 
+- If the chosen **K** isn't enough, report a error. 
 
 ## Extras
 
