@@ -20,8 +20,6 @@ class A{
             io.print(3);
         }
    }
-
-
    public boolean condition(){
         return true;
    }

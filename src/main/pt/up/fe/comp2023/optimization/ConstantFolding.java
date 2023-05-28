@@ -9,7 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConstantFolding extends JmmIterativeOptimizer{
+public class ConstantFolding extends JmmIterativeOptimizer {
 
 
     @Override
@@ -53,8 +53,8 @@ public class ConstantFolding extends JmmIterativeOptimizer{
     }
 
     private void foldBooleanOperation(JmmNode jmmNode) {
-        boolean lhs = jmmNode.getJmmChild(0).get("value").equals("true");
-        boolean rhs = jmmNode.getJmmChild(1).get("value").equals("true");
+        boolean lhs = jmmNode.getJmmChild(0).get("value").equals("1");
+        boolean rhs = jmmNode.getJmmChild(1).get("value").equals("1");
         boolean result = lhs;
         if (jmmNode.get("op").equals("&&")) {
             result = lhs && rhs;
@@ -108,7 +108,7 @@ public class ConstantFolding extends JmmIterativeOptimizer{
             return null;
         }
         didOptimize();
-        boolean value = foldedChild.get("value").equals("true");
+        boolean value = foldedChild.get("value").equals("1");
         boolean result = !value;
         var folded = JmmBuiltins.newBooleanNode(String.valueOf(result));
         jmmNode.replace(folded);

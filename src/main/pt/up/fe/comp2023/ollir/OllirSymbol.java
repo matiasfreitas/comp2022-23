@@ -24,7 +24,10 @@ public record OllirSymbol(String value, String type) {
             default -> null;
         };
         String value = literal.get("value");
-        //System.out.println("New Ollir Symbol " + value + " " + type);
+        if ("bool".equals(type)) {
+            value = value.equals("true") ? "1" : "0";
+
+        }
         return new OllirSymbol(value, type);
     }
 
@@ -67,12 +70,12 @@ public record OllirSymbol(String value, String type) {
 
     public String containedType() {
         var split = type.split("\\.");
-        int start = split.length >1 ?  1 : 0;
+        int start = split.length > 1 ? 1 : 0;
         var type = new StringBuilder();
-        for(;start < split.length-1;start++){
+        for (; start < split.length - 1; start++) {
             type.append(split[start]).append(".");
         }
-        if(start < split.length){
+        if (start < split.length) {
             type.append(split[start]);
         }
         return type.toString();

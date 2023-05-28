@@ -9,14 +9,19 @@ import java.util.Map;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp.jmm.jasmin.JasminBackend;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.analysis.Analyser;
+import pt.up.fe.comp2023.jasmin.JasminEngine;
 import pt.up.fe.comp2023.ollir.Optimization;
 import pt.up.fe.comp2023.optimization.ConstantFolding;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
+
+import static pt.up.fe.comp.TestUtils.getJasminBackend;
 
 public class Launcher {
 
@@ -37,6 +42,7 @@ public class Launcher {
 
         // Read contents of input file
         String code = SpecsIo.read(inputFile);
+
 
         // Instantiate JmmParser
         SimpleParser parser = new SimpleParser();
@@ -65,7 +71,11 @@ public class Launcher {
         System.out.println(s.getRootNode().toTree());
         System.out.println("============Ollir:==========");
         System.out.println(result.getOllirCode());
+        System.out.println();
         // ... add remaining stages
+        JasminBackend backend = getJasminBackend();
+        JasminResult jasminResult = backend.toJasmin(result);
+        System.out.println(jasminResult.compile());
     }
 
     private static Map<String, String> parseArgs(String[] args) {

@@ -30,7 +30,7 @@ public class DeadCodeElimination extends JmmIterativeOptimizer {
         if (!JmmBuiltins.isLiteralNode(jmmNode)) {
             return Condition.NotKnown;
         }
-        if (jmmNode.get("value").equals("true")) {
+        if (jmmNode.get("value").equals("1")) {
             return Condition.True;
         }
         return Condition.False;
