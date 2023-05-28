@@ -9,7 +9,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConstantFolding extends AJmmVisitor<Void, Void> {
+public class ConstantFolding extends JmmIterativeOptimizer{
 
 
     @Override
@@ -91,6 +91,7 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         if (!canFoldBinaryNode(jmmNode)) {
             return null;
         }
+        didOptimize();
         if (isBinaryNodeKind(jmmNode, "Boolean")) {
             foldBooleanOperation(jmmNode);
         } else {
@@ -106,6 +107,7 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         if (!foldedChild.getKind().equals("Boolean")) {
             return null;
         }
+        didOptimize();
         boolean value = foldedChild.get("value").equals("true");
         boolean result = !value;
         var folded = JmmBuiltins.newBooleanNode(String.valueOf(result));
@@ -113,7 +115,9 @@ public class ConstantFolding extends AJmmVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+        startOptimizing();
         visit(semanticsResult.getRootNode());
         return semanticsResult;
     }

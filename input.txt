@@ -1,13 +1,35 @@
-class ConstantFolding {
-    public static void main(String[] args){
-        boolean a;
-        boolean b;
-        b = true && false && true;
-        a = !(!((true && true) && (true && false)));
-    }
-
-    public int foldIntOperations(int b){
+//class ConstantFolding {
+//    public static void main(String[] args){
+//        boolean a;
+//        boolean b;
+//        b = true && false && true;
+//        a = !(!((true && true) && (true && false)));
+//    }
+//
+//    public int foldIntOperations(int b){
+//        int a;
+//        a = 2 + 1 / 2;
+//    }
+//}
+import io;
+class ConstantPropIf{
+   public static void main(String[] args){
         int a;
-        a = 2 + 1 / 2;
-    }
+        boolean b;
+        int c;
+        int d;
+        b = true;
+        a = 10;
+        c = 20;
+        d = 40;
+        if(b){
+           d = a;
+        }else{
+            d = c;
+        }
+        io.print(a);
+        io.print(b);
+        io.print(c);
+        io.print(d);
+   }
 }
