@@ -480,7 +480,7 @@ public class JasminUtils {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
                     if (((ArrayType) fieldType).getTypeOfElements() == OBJECTREF)
                         reference = true;
-                    return "[".repeat(dimensions) + ((reference)? "L": "") + jasminType(((ArrayType) fieldType).getElementType(), imports) + (reference ? ";" : "");
+                    return "[".repeat(dimensions) + ((reference)? "L": "") + getClass(((ArrayType) fieldType).getElementType(), imports) + (reference ? ";" : "");
                 }
                 else {
 
@@ -497,15 +497,20 @@ public class JasminUtils {
 
     public static String getClass(Type fieldType, ArrayList<String> imports) {
 
-        String objectClass = ((ClassType) fieldType).getName();
-        for (String statement : imports) {
-            String[] importArray = statement.split("\\.");
-            if (importArray[importArray.length - 1].equals(objectClass)) {
-                return statement.replace("\\.", "/");
+        if (fieldType.getTypeOfElement() == OBJECTREF) {
+            String objectClass = ((ClassType) fieldType).getName();
+            for (String statement : imports) {
+                String[] importArray = statement.split("\\.");
+                if (importArray[importArray.length - 1].equals(objectClass)) {
+                    return statement.replace("\\.", "/");
+                }
             }
+
+            return objectClass;
         }
 
-        return objectClass;
+
+        return jasminType(fieldType);
     }
 
         public static void updateLimit(Integer value) {
