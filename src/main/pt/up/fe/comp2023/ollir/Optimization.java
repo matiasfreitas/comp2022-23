@@ -48,7 +48,7 @@ public class Optimization implements JmmOptimization {
             return ollirResult;
         }
 
-        int nRegisters = Integer.parseInt(ollirResult.getConfig().get("registerAllocation"));
+        nRegisters = Integer.parseInt(ollirResult.getConfig().get("registerAllocation"));
         if (nRegisters == -1) return ollirResult;
 
         ClassUnit classUnit = ollirResult.getOllirClass();

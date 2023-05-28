@@ -141,13 +141,13 @@ public class GraphColouring {
                 newTable.put(name, new Descriptor(descriptor.getScope(), register, descriptor.getVarType()));
                 register++;
             }
+            registers.put(name, descriptor.getVirtualReg());
         }
 
         ArrayList<Integer> usedRegisters = new ArrayList<>();
 
         for (Descriptor descriptor: newTable.values()) {
             if(!usedRegisters.contains(descriptor.getVirtualReg()))
-                registers.put(descriptor.toString(), descriptor.getVirtualReg());
                 usedRegisters.add(descriptor.getVirtualReg());
         }
         if (!usedRegisters.contains(0))
