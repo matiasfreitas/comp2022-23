@@ -30,6 +30,39 @@ public class ConstantPropagation extends AJmmVisitor<Void, Void> {
         setDefaultVisit(this::visitAllChildren);
         addVisit("Assignment", this::handleWrite);
         addVisit("Identifier", this::handleRead);
+        addVisit("IfStatement", this::handleIf);
+        addVisit("WhileLoop", this::handleWhile);
+    }
+
+    private void killVariable(String varName) {
+        if (!varValue.containsKey(varName)) {
+            return;
+        }
+        varValue.remove(varName);
+    }
+
+    private void killVariables(JmmNode jmmNode) {
+        for (var child : jmmNode.getChildren()) {
+            if (child.getKind().equals("Assignment")) {
+                killVariable(child.get("varName"));
+            }
+        }
+    }
+
+    private Void handleWhile(JmmNode jmmNode, Void unused) {
+        killVariables(jmmNode.getJmmChild(1));
+        visit(jmmNode.getJmmChild(0));
+        visit(jmmNode.getJmmChild(1));
+        return null;
+    }
+
+    private Void handleIf(JmmNode jmmNode, Void unused) {
+        visit(jmmNode.getJmmChild(0));
+        visit(jmmNode.getJmmChild(1));
+        visit(jmmNode.getJmmChild(2));
+        killVariables(jmmNode.getJmmChild(1));
+        killVariables(jmmNode.getJmmChild(2));
+        return null;
     }
 
     private Void handleRead(JmmNode jmmNode, Void unused) {

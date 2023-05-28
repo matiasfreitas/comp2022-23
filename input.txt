@@ -11,13 +11,25 @@
 //        a = 2 + 1 / 2;
 //    }
 //}
-
 import io;
-class ConstantPropagation {
-    public static void main(String[] args){
-        boolean a;
+class ConstantPropIf{
+   public static void main(String[] args){
+        int a;
         boolean b;
-        a = true;
-        b = a && a;
-    }
+        int c;
+        int d;
+        b = true;
+        a = 10;
+        c = 20;
+        d = 40;
+        if(b){
+           d = a;
+        }else{
+            d = c;
+        }
+        io.print(a);
+        io.print(b);
+        io.print(c);
+        io.print(d);
+   }
 }
