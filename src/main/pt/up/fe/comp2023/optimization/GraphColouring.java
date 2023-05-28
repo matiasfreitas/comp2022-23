@@ -60,7 +60,6 @@ public class GraphColouring {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
-            if (kIsZeroFlag && k <100) return KColoring(k+ 1);
             return false;
         }
 
@@ -122,7 +121,6 @@ public class GraphColouring {
                     vertice1.setActive(true);
                     vertices.put(vertice1.getReg(), vertice1);
                 }
-                if (kIsZeroFlag && k <100) return KColoring(k+ 1);
                 return false;
             }
         }
