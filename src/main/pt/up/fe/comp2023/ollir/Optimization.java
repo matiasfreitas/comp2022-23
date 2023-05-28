@@ -8,15 +8,10 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2023.analysis.symboltable.JmmSymbolTable;
-import pt.up.fe.comp2023.optimization.ConstantFolding;
+import pt.up.fe.comp2023.optimization.*;
 import org.specs.comp.ollir.*;
-import pt.up.fe.comp2023.optimization.ConstantPropagation;
-import pt.up.fe.comp2023.optimization.GraphColouring;
-import pt.up.fe.comp2023.optimization.Liveness;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.LinkedList;
+
+import java.util.*;
 
 
 public class Optimization implements JmmOptimization {
@@ -26,10 +21,15 @@ public class Optimization implements JmmOptimization {
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         ConstantFolding folder = new ConstantFolding();
         ConstantPropagation propager = new ConstantPropagation();
-        if (semanticsResult.getConfig().getOrDefault("optimize", "false").equals("true")) {
-            folder.optimize(semanticsResult);
-            return propager.optimize(semanticsResult);
+        List<JmmIterativeOptimizer> optimizers = Arrays.asList(folder, propager);
+        if (!semanticsResult.getConfig().getOrDefault("optimize", "false").equals("true")) {
+            return semanticsResult;
         }
+        do {
+            for (var optimizer : optimizers) {
+                optimizer.optimize(semanticsResult);
+            }
+        } while (JmmIterativeOptimizer.anyOptimization(optimizers));
         return semanticsResult;
     }
 
@@ -63,9 +63,9 @@ public class Optimization implements JmmOptimization {
 
             ArrayList<HashMap<Node, BitSet>> liveRanges = liveness.liveness(method);
             GraphColouring graph = new GraphColouring(liveRanges, method);
-            boolean possible  = graph.KColoring(nRegisters);
+            boolean possible = graph.KColoring(nRegisters);
             if (!possible) {
-                System.out.println("Method " + method.getMethodName() + " needs at least " + + graph.getmRegisters() + " registers");
+                System.out.println("Method " + method.getMethodName() + " needs at least " + +graph.getmRegisters() + " registers");
                 ollirResult.getReports().add(new Report(ReportType.ERROR, Stage.OPTIMIZATION, -1, -1,
                         "Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers"));
             }
