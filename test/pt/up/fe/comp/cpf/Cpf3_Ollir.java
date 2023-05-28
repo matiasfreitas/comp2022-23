@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 public class Cpf3_Ollir {
 
     static OllirResult getOllirResult(String filename) {
-        return TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/cpf/3_ollir/" + filename));
+        return TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/cpf/3_ollir/" + filename),
+                TestUtils.toConfig("optimize", "true"));
     }
 
 
