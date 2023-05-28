@@ -27,12 +27,12 @@ public class JasminUtils {
 
             ArrayOperand op      = (ArrayOperand) op1;
             Element indexOperand = op.getIndexOperands().get(0);
-
             code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
+
             if (indexOperand instanceof Operand)
                 code.append("iload" + getRegisterHandle(varTable.get(((Operand)indexOperand).getName()).getVirtualReg()) + varTable.get(((Operand)indexOperand).getName()).getVirtualReg() + "\n");
-            else
-                code.append(constantPusher((LiteralElement) indexOperand) + ((LiteralElement) indexOperand).getLiteral() + "\n");
+            else code.append(constantPusher((LiteralElement) indexOperand) + ((LiteralElement) indexOperand).getLiteral() + "\n");
+
             updateLimit(2);
             hasAssign = true;
             code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
@@ -41,10 +41,9 @@ public class JasminUtils {
             updateLimit(-1);
             return code.toString();
 
-
         }
 
-        else if (type.getTypeOfElement() != INT32 && type.getTypeOfElement() != BOOLEAN)
+        if (type.getTypeOfElement() != INT32 && type.getTypeOfElement() != BOOLEAN)
             prefix = "a";
 
         hasAssign  = true;
@@ -52,32 +51,20 @@ public class JasminUtils {
 
         String iincCode = "";
         if (assignInstruction.getRhs().getInstType() == InstructionType.BINARYOPER ) {
-            iincCode = generateIincCode(assignInstruction, varTable, imports);
-            if (iincAssign) {
-                return iincCode;
-            }
-        }
+            iincCode = generateIincCode(assignInstruction, varTable);
+            if (iincAssign) return iincCode;
 
-        int id = 0;
-        if (op1.isParameter()) id = op1.getParamId();
-        else varTable.get(op1.getName()).getVirtualReg();
+        }
 
         code.append(addInstruction(assignInstruction.getRhs(), varTable, imports));
+        code.append(prefix + "store");
+        code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()));
+        code.append(varTable.get(op1.getName()).getVirtualReg());
+        code.append("\n");
 
-        if (id < 0) {
-
-            code.append("putfield " + "Dummy" + "/" + op1.getName() + " " + jasminType(op1.getType(), imports));
-            updateLimit(-1);
-            return code.toString();
-        }
-
-        else {
-            code.append(prefix + "store");
-            code.append(getRegisterHandle(varTable.get(op1.getName()).getVirtualReg()) + varTable.get(op1.getName()).getVirtualReg());
-            code.append("\n");
-            updateLimit(-1);
-        }
+        updateLimit(-1);
         hasAssign  = false;
+
         return code.toString();
     }
 
@@ -129,12 +116,11 @@ public class JasminUtils {
                     code.append(Integer.parseInt(l.getLiteral()) / Integer.parseInt(r.getLiteral()) + "\n"); break;
 
                 default:
-                    if(boolLiteralOperation(opType, l, r)) {
+
+                    if(boolLiteralOperation(opType, l, r))
                         code.append(constantPusher(1) +  "1\n");
-                    }
                     else code.append(constantPusher(0) + "0\n");
                     break;
-
             }
 
             return code.toString();
@@ -197,7 +183,7 @@ public class JasminUtils {
     public static String createBranchCode(CondBranchInstruction conditionInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
         StringBuilder code      = new StringBuilder();
-        Instruction condition = conditionInstruction.getCondition();
+        Instruction condition   = conditionInstruction.getCondition();
         code.append(addInstruction(condition, varTable, imports));
 
         code.append("ifne ");
@@ -206,6 +192,25 @@ public class JasminUtils {
         return code.toString();
     }
 
+    public static String createNewCode(CallInstruction callInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
+
+        StringBuilder code = new StringBuilder();
+        Operand object     = (Operand) callInstruction.getFirstArg();
+
+        if (object.getName() == "array") {
+
+            code.append(loadVariable(callInstruction.getListOfOperands().get(0), varTable));
+            code.append("newarray int\n");
+
+        }
+
+        else
+            code.append("new " +  getClass(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
+        if (object.getType().getTypeOfElement() == OBJECTREF)
+            updateLimit(1);
+        return code.toString();
+
+    }
     public static String createCallCode(CallInstruction callInstruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
         StringBuilder code              = new StringBuilder();
         StringBuilder invokeInstruction = new StringBuilder();
@@ -213,26 +218,14 @@ public class JasminUtils {
         if (callInstruction.getInvocationType() == CallType.ldc)
             return "ldc " + ((LiteralElement) callInstruction.getFirstArg()).getLiteral() + "\n";
 
-        Operand object                          = (Operand) callInstruction.getFirstArg();
+        Operand object                  = (Operand) callInstruction.getFirstArg();
         LiteralElement method           = (LiteralElement) callInstruction.getSecondArg();
-        boolean addComma;
         String methodName;
 
 
-        if (callInstruction.getInvocationType() == CallType.NEW) {
+        if (callInstruction.getInvocationType() == CallType.NEW)
+            return createNewCode(callInstruction, varTable, imports);
 
-            if (object.getName() == "array") {
-
-                code.append(loadVariable(callInstruction.getListOfOperands().get(0), varTable));
-                code.append("newarray int\n");
-
-            }
-            else
-                code.append("new " +  getClass(callInstruction.getFirstArg().getType(), imports) + "\ndup\n");
-            if (object.getType().getTypeOfElement() == OBJECTREF)
-                updateLimit(1);
-            return code.toString();
-        }
         else if (callInstruction.getInvocationType() == CallType.invokestatic) {
 
             methodName = method.getLiteral().replace("\"","");
@@ -315,12 +308,17 @@ public class JasminUtils {
 
         StringBuilder code = new StringBuilder();
         if (returnInstruction.getOperand() == null) return "return\n";
+
         code.append(loadVariable(returnInstruction.getOperand(), varTable));
         ElementType returnType = returnInstruction.getOperand().getType().getTypeOfElement();
-        if (returnType == BOOLEAN || returnType == INT32) code.append("i");
+
+        if (returnType == BOOLEAN || returnType == INT32)
+            code.append("i");
         else code.append("a");
+
         code.append("return\n");
         return code.toString();
+
     }
     public static String addInstruction(Instruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
 
@@ -354,28 +352,18 @@ public class JasminUtils {
         }
         else if (operand instanceof ArrayOperand) {
 
-            ArrayOperand op = (ArrayOperand) operand;
-            code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
+            ArrayOperand op      = (ArrayOperand) operand;
             Element indexOperand = op.getIndexOperands().get(0);
+
+            code.append("aload" + getRegisterHandle(varTable.get(op.getName()).getVirtualReg()) + varTable.get(op.getName()).getVirtualReg() + "\n");
             code.append(loadVariable(indexOperand, varTable));
-            updateLimit(2);
             code.append("iaload\n");
+
+            updateLimit(2);
         }
         else {
 
             Operand op = (Operand) operand;
-
-            int id = 0;
-            if (op.isParameter()) id = op.getParamId();
-            else varTable.get(op.getName()).getVirtualReg();
-
-            if (id < 0) {
-
-                code.append("aload_0\n" + "getfield " + "Dummy" + "/" + op.getName() + "\n");
-                updateLimit(1);
-                return code.toString();
-            }
-
             prefix = "i";
             if (op.getType().getTypeOfElement() != INT32 && op.getType().getTypeOfElement() != BOOLEAN)
                 prefix = "a";
@@ -387,46 +375,42 @@ public class JasminUtils {
 
     }
 
-    private static String generateIincCode(AssignInstruction instruction, HashMap<String, Descriptor> varTable, ArrayList<String> imports) {
-        if (instruction.getRhs().getInstType() == InstructionType.BINARYOPER) {
-            BinaryOpInstruction rightInstruction = (BinaryOpInstruction) instruction.getRhs();
-            OperationType opType = rightInstruction.getOperation().getOpType();
-
-            Element left  = rightInstruction.getLeftOperand();
-            Element right = rightInstruction.getRightOperand();
-            Operand assignee = (Operand) instruction.getDest();
-
-            if (left instanceof Operand) {
-                if(((Operand) left).getName().equals(assignee.getName())) {
-                    if (right.isLiteral()) {
-                        int num = Integer.parseInt(((LiteralElement) right).getLiteral());
-                        if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
-                            iincAssign = true;
-                            String signal = (opType == OperationType.ADD)? "": "-";
-                            if (num == 0)
-                                return "";
-                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
-                        }
-                    }
-                }
-            }
-
-            else if (right instanceof Operand) {
-                if(((Operand) right).getName().equals(assignee.getName())) {
-                    if (left.isLiteral()) {
-                        int num = Integer.parseInt(((LiteralElement) left).getLiteral());
-                        if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
-                            iincAssign = true;
-                            String signal = (opType == OperationType.ADD)? "": "-";
-                            if (num == 0)
-                                return "";
-                            return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
-                        }
+    private static boolean checkSideIinc(Element firstSide, Element secondSide, Operand assignee, OperationType opType) {
+        if (firstSide instanceof Operand) {
+            if(((Operand) firstSide).getName().equals(assignee.getName())) {
+                if (secondSide.isLiteral()) {
+                    int num = Integer.parseInt(((LiteralElement) secondSide).getLiteral());
+                    if ((opType == OperationType.ADD && num >= 0 && num <= 127) || (opType == OperationType.SUB && num >= 0 && num <= 128)) {
+                        iincAssign = true;
+                        if (num == 0)
+                            return false;
+                        return true;
                     }
                 }
             }
         }
 
+        return false;
+    }
+    private static String generateIincCode(AssignInstruction instruction, HashMap<String, Descriptor> varTable) {
+        if (instruction.getRhs().getInstType()   == InstructionType.BINARYOPER) {
+            BinaryOpInstruction rightInstruction = (BinaryOpInstruction) instruction.getRhs();
+            OperationType opType                 = rightInstruction.getOperation().getOpType();
+
+            Element left     = rightInstruction.getLeftOperand();
+            Element right    = rightInstruction.getRightOperand();
+            Operand assignee = (Operand) instruction.getDest();
+
+            String signal = (opType == OperationType.ADD) ? "" : "-";
+            int num = 0;
+
+            if      (right.isLiteral()) num = Integer.parseInt(((LiteralElement) right).getLiteral());
+            else if (left.isLiteral()) num = Integer.parseInt(((LiteralElement)  left).getLiteral());
+
+
+            if (checkSideIinc(left, right, assignee, opType) || checkSideIinc(right, left, assignee, opType))
+                return "iinc " + varTable.get(assignee.getName()).getVirtualReg() + " " + signal + num + "\n";
+        }
 
         return "";
 
@@ -450,13 +434,15 @@ public class JasminUtils {
     }
     private static String boolJumpOperation (String prefix) {
 
+
+        // STEP ensures that 1 is pushed to the stack, while our goto makes us avoid that
+
         StringBuilder code = new StringBuilder();
-        code.append(prefix + " STEP" + labelNumber + "\n" );
-        code.append("iconst_0\n");
-        code.append("goto GO" + labelNumber +"\n");
-        code.append("STEP" + labelNumber + ":\n");
-        code.append("iconst_1\n");
-        code.append("GO" + labelNumber + ":\n");
+
+        code.append(prefix + " STEP" + labelNumber + "\n" + "iconst_0\n");
+        code.append("goto GO" + labelNumber +"\n" + "STEP" + labelNumber + ":\n");
+        code.append("iconst_1\n" + "GO" + labelNumber + ":\n");
+
         updateLimit(1);
         labelNumber++;
         return code.toString();
@@ -478,14 +464,12 @@ public class JasminUtils {
 
                 if (fieldType instanceof ArrayType) {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
-                    if (((ArrayType) fieldType).getTypeOfElements() == OBJECTREF)
-                        reference = true;
+                    if (((ArrayType) fieldType).getTypeOfElements() == OBJECTREF) reference = true;
                     return "[".repeat(dimensions) + ((reference)? "L": "") + getClass(((ArrayType) fieldType).getElementType(), imports) + (reference ? ";" : "");
                 }
                 else {
 
-                    if (fieldType.getTypeOfElement() == OBJECTREF)
-                        reference = true;
+                    if (fieldType.getTypeOfElement() == OBJECTREF) reference = true;
                     return ((reference)? "L": "") + getClass(fieldType, imports) +  ((reference)? ";": "");
 
                 }
@@ -513,7 +497,7 @@ public class JasminUtils {
         return jasminType(fieldType);
     }
 
-        public static void updateLimit(Integer value) {
+    public static void updateLimit(Integer value) {
 
         tempLimit += value;
         stackLimit = Math.max(tempLimit, stackLimit);
