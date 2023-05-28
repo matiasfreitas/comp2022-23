@@ -58,8 +58,19 @@ public class Optimization implements JmmOptimization {
             System.out.println("\nMethod: " + method.getMethodName() + "\n");
 
             ArrayList<HashMap<Node, BitSet>> liveRanges = liveness.liveness(method);
-            GraphColouring graph = new GraphColouring(liveRanges, method, nRegisters == 0);
-            boolean possible = graph.KColoring(nRegisters);
+            boolean possible = false;
+            GraphColouring graph = new GraphColouring(liveRanges, method);
+            if (nRegisters == 0){
+                while (!possible){
+                    possible = graph.KColoring(nRegisters++);
+                    if (nRegisters>99){
+                        break;
+                    }
+                }
+            }
+            else{
+                possible = graph.KColoring(nRegisters);
+            }
             if (!possible) {
                 System.out.println("Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers");
                 ollirResult.getReports().add(new Report(ReportType.ERROR, Stage.OPTIMIZATION, -1, -1,
