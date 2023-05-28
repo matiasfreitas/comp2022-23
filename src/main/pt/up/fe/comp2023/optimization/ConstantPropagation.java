@@ -8,7 +8,7 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConstantPropagation extends AJmmVisitor<Void, Void> {
+public class ConstantPropagation extends JmmIterativeOptimizer {
     Map<String, JmmNode> varValue;
 
     public ConstantPropagation() {
@@ -71,6 +71,7 @@ public class ConstantPropagation extends AJmmVisitor<Void, Void> {
             return null;
         }
         jmmNode.replace(loadNode(varName));
+        didOptimize();
         return null;
     }
 
@@ -85,7 +86,9 @@ public class ConstantPropagation extends AJmmVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+        startOptimizing();
         visit(semanticsResult.getRootNode());
         return semanticsResult;
     }
