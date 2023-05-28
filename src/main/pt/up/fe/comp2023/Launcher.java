@@ -95,18 +95,36 @@ public class Launcher {
         SpecsLogs.info("Executing with args: " + Arrays.toString(args));
 
         // Check if there is at least one argument
-        if (args.length != 1) {
+        if (args.length < 1) {
             throw new RuntimeException("Expected a single argument, a path to an existing input file.");
         }
 
         // Create config
         Map<String, String> config = new HashMap<>();
         config.put("inputFile", args[0]);
-        config.put("optimize", "true");
-        config.put("registerAllocation", "-1");
+        config.put("optimize", optimizationsOn(args));
+        config.put("registerAllocation", registerCount(args));
         config.put("debug", "false");
 
+
+
         return config;
+    }
+
+    private static String optimizationsOn(String[] args) {
+        for (var arg : args) {
+            if (arg.equals("-o"))
+                return "true";
+        }
+        return "false";
+    }
+
+    private static String registerCount(String[] args) {
+        for (var arg : args) {
+            if (arg.startsWith("-r="))
+                return arg.substring(3);
+        }
+        return "-1";
     }
 
 }
