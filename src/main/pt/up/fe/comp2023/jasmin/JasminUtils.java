@@ -485,10 +485,8 @@ public class JasminUtils {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
                     boolean reference = false;
                     Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-                    if (jasminType(newFieldType, imports) != "I" && jasminType(newFieldType) != "Z")
-                        reference = true;
 
-                    return "[".repeat(dimensions) + (reference ? "L" : "") + jasminType(newFieldType, imports) + (reference ? ";" : "");
+                    return "[".repeat(dimensions) + jasminType(newFieldType, imports) + (reference ? ";" : "");
                 }
                 else {
                     objectClass = ((ClassType) fieldType).getName();
@@ -558,7 +556,7 @@ public class JasminUtils {
 
         switch (fieldType.getTypeOfElement()) {
             case BOOLEAN:   return "Z";
-            case STRING:    return "java/lang/String";
+            case STRING:    return "Ljava/lang/String;";
             case VOID:      return "V";
             case INT32:     return "I";
             case OBJECTREF: return "a";
