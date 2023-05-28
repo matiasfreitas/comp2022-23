@@ -58,7 +58,7 @@ public class Optimization implements JmmOptimization {
             System.out.println("\nMethod: " + method.getMethodName() + "\n");
 
             ArrayList<HashMap<Node, BitSet>> liveRanges = liveness.liveness(method);
-            GraphColouring graph = new GraphColouring(liveRanges, method);
+            GraphColouring graph = new GraphColouring(liveRanges, method, nRegisters == 0);
             boolean possible = graph.KColoring(nRegisters);
             if (!possible) {
                 System.out.println("Method " + method.getMethodName() + " needs at least " + +graph.getmRegisters() + " registers");

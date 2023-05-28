@@ -11,12 +11,12 @@ public class GraphColouring {
     boolean isStatic;
     HashMap<String, Descriptor> table;
 
-
+    boolean kIsZeroFlag;
 
     HashMap<String, Integer> registers = new HashMap<>();
 
-    public GraphColouring(ArrayList<HashMap<Node, BitSet>> ranges, Method method) {
-
+    public GraphColouring(ArrayList<HashMap<Node, BitSet>> ranges, Method method, boolean kIsZeroFlag) {
+        this.kIsZeroFlag = kIsZeroFlag;
         vertices = new HashMap<>();
         table = method.getVarTable();
         isStatic = method.isStaticMethod();
@@ -60,6 +60,7 @@ public class GraphColouring {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
+            if (kIsZeroFlag) return KColoring(k+ 1);
             return false;
         }
 
@@ -84,8 +85,9 @@ public class GraphColouring {
 
         for (int i = mRegisters; i < k; i++) colors.put(i, new ArrayList<>());
         HashMap<String, Descriptor> newTable = new HashMap<>();
-        for (GraphVertice vertice:  verticeStack) {
+        while (!verticeStack.isEmpty()) {
 
+            GraphVertice vertice = verticeStack.pop();
             vertice.setActive(true);
             vertices.put(vertice.getReg(), vertice);
             boolean colored = false;
@@ -120,7 +122,7 @@ public class GraphColouring {
                     vertice1.setActive(true);
                     vertices.put(vertice1.getReg(), vertice1);
                 }
-
+                if (kIsZeroFlag) return KColoring(k+ 1);
                 return false;
             }
         }
