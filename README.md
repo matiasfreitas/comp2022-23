@@ -1,3 +1,31 @@
+# About Develop Optimization:
+
+All the sugests optimizations are develop in the final code.
+
+That means:
+
+### The -o flag has:
+
+- Constant Propagation
+
+- Constant Folding
+
+I
+In a loop until maximum optimization.
+
+### The -r=k flag has:
+
+- Graph Colouring algorithm
+
+- Minimum possible instruction (-r=0)
+
+- Tries to minimize to k register (-r!=0)
+
+- Report the mapping between the local variables of each method of the Java
+
+- If the choose k isnt enough, report a error. 
+
+
 # Compilers Project
 
 For this project, you need to install [Java](https://jdk.java.net/), [Gradle](https://gradle.org/install/), and [Git](https://git-scm.com/downloads/) (and optionally, a [Git GUI client](https://git-scm.com/downloads/guis), such as TortoiseGit or GitHub Desktop). Please check the [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for Java and Gradle versions.
