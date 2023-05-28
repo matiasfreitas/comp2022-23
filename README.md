@@ -1,3 +1,11 @@
+## Students
+
+| Name             | Number        | Contribution | 
+| ---------------- | ------------- | ------------ |
+| Miguel Silva     |  up202007972  | 33%          |
+| Martim Videira     |  up202006289  | 33%          |
+| Matias Vaz |  up201900194  | 33%          |
+
 # About Develop Optimization:
 
 All the suggested optimizations were implemented in the final code, meaning:
