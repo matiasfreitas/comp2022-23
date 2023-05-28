@@ -25,6 +25,40 @@ In a loop until maximum optimization.
 
 - If the choose k isnt enough, report a error. 
 
+## Extras
+
+### Warnings
+
+- Variable Declaration Shadows Method Parameter.
+- Variable Declaration Shadows Class Field.
+- Assuming Type warning to help the programmer know he is responsible for type correctness.
+- Unused Imports.
+- Already Import module.
+
+### Errors
+
+- Though only supporting atribute `length` on arrays we have errors on accessing class attributes that don't exists using `this.attribute` syntax.
+- Not a valid statement.
+
+### Static Methods
+- We support other static methods rathar than only supporting `main` and the correct semantic analysis is performed.
+
+### Support For More Builtin Types
+
+- We support more `String` builtin type and ast-to-ollir based optimizations apply to all builtin-types.(Although It is not supported by the Ollir Parser in use).
+
+### Arrays Can Contain Types Other Than Ints
+
+
+### Dead Code Elimination
+
+- If statements.
+- While loops.
+
+
+### Parenthesis
+
+- We simplify some expressions that need not parenthesis and constant folding works with parenthesied expressions.
 
 # Compilers Project
 
