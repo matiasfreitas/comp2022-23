@@ -27,8 +27,7 @@ public class GraphColouring {
         for(String name: table.keySet()) {
 
             Descriptor descriptor = table.get(name);
-            if (descriptor.getScope() == VarScope.PARAMETER || descriptor.getScope() == VarScope.FIELD) mRegisters++;
-            else vertices.put(descriptor.getVirtualReg(), new GraphVertice(name, descriptor.getVirtualReg()));
+            vertices.put(descriptor.getVirtualReg(), new GraphVertice(name, descriptor.getVirtualReg()));
         }
 
         for (HashMap<Node, BitSet> range: ranges) {
@@ -61,7 +60,7 @@ public class GraphColouring {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
-            return KColoring(k+1);
+            return false;
         }
 
         Stack<GraphVertice> verticeStack = new Stack<>();
@@ -123,7 +122,7 @@ public class GraphColouring {
                     vertices.put(vertice1.getReg(), vertice1);
                 }
 
-                return KColoring(k+1);
+                return false;
             }
         }
 
@@ -137,8 +136,9 @@ public class GraphColouring {
             if (descriptor.getScope() == VarScope.PARAMETER || descriptor.getScope() == VarScope.FIELD) {
 
                 newTable.put(name, new Descriptor(descriptor.getScope(), register, descriptor.getVarType()));
-                register++;
                 registers.put(name, register);
+                register++;
+
             }
 
         }
