@@ -32,4 +32,13 @@ public abstract class JmmIterativeOptimizer extends AJmmVisitor<Void, Void> {
         return false;
     }
 
+    public static JmmSemanticsResult optimize(List<JmmIterativeOptimizer> optimizers, JmmSemanticsResult result) {
+        do {
+            for (var optimizer : optimizers) {
+                optimizer.optimize(result);
+            }
+        } while (JmmIterativeOptimizer.anyOptimization(optimizers));
+        return result;
+    }
+
 }

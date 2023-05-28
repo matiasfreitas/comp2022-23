@@ -25,12 +25,7 @@ public class Optimization implements JmmOptimization {
         if (!semanticsResult.getConfig().getOrDefault("optimize", "false").equals("true")) {
             return semanticsResult;
         }
-        do {
-            for (var optimizer : optimizers) {
-                optimizer.optimize(semanticsResult);
-            }
-        } while (JmmIterativeOptimizer.anyOptimization(optimizers));
-        return semanticsResult;
+        return JmmIterativeOptimizer.optimize(optimizers, semanticsResult);
     }
 
     @Override
