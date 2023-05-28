@@ -66,6 +66,18 @@ public class Optimization implements JmmOptimization {
                 ollirResult.getReports().add(new Report(ReportType.ERROR, Stage.OPTIMIZATION, -1, -1,
                         "Method " + method.getMethodName() + " needs at least " + graph.getmRegisters() + " registers"));
             }
+
+            HashMap<String, Integer> registers = graph.getRegisters();
+            HashMap<String, Descriptor> varTable = method.getVarTable();
+            System.out.println(registers);
+            for(String var : registers.keySet()){
+                try {
+                    varTable.get(var).setVirtualReg(registers.get(var));
+                }
+                catch (Exception e){
+
+                }
+            }
         }
 
         classUnit.buildCFGs();

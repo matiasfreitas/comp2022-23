@@ -11,6 +11,10 @@ public class GraphColouring {
     boolean isStatic;
     HashMap<String, Descriptor> table;
 
+
+
+    HashMap<String, Integer> registers = new HashMap<>();
+
     public GraphColouring(ArrayList<HashMap<Node, BitSet>> ranges, Method method) {
 
         vertices = new HashMap<>();
@@ -143,7 +147,7 @@ public class GraphColouring {
 
         for (Descriptor descriptor: newTable.values()) {
             if(!usedRegisters.contains(descriptor.getVirtualReg()))
-
+                registers.put(descriptor.toString(), descriptor.getVirtualReg());
                 usedRegisters.add(descriptor.getVirtualReg());
         }
         if (!usedRegisters.contains(0))
@@ -151,6 +155,11 @@ public class GraphColouring {
         table = newTable;
         System.out.println("Allocated " + usedRegisters.size() + " registers");
         return true;
+    }
+
+
+    public HashMap<String, Integer> getRegisters() {
+        return registers;
     }
 
     public int getmRegisters() {
