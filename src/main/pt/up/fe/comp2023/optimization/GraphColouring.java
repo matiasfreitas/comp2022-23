@@ -27,6 +27,7 @@ public class GraphColouring {
         for(String name: table.keySet()) {
 
             Descriptor descriptor = table.get(name);
+
             vertices.put(descriptor.getVirtualReg(), new GraphVertice(name, descriptor.getVirtualReg()));
         }
 
@@ -83,7 +84,7 @@ public class GraphColouring {
 
         HashMap<Integer, ArrayList<String>> colors = new HashMap<>();
 
-        for (int i = mRegisters; i < k; i++) colors.put(i, new ArrayList<>());
+        for (int i = mRegisters; i <= k; i++) colors.put(i, new ArrayList<>());
         HashMap<String, Descriptor> newTable = new HashMap<>();
         while (!verticeStack.isEmpty()) {
 
@@ -136,9 +137,7 @@ public class GraphColouring {
             Descriptor descriptor = table.get(name);
             registers.put(name, register);
             if (descriptor.getScope() == VarScope.PARAMETER || descriptor.getScope() == VarScope.FIELD) {
-
                 newTable.put(name, new Descriptor(descriptor.getScope(), register, descriptor.getVarType()));
-
                 register++;
 
             }
