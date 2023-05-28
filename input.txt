@@ -14,22 +14,11 @@
 import io;
 class ConstantPropIf{
    public static void main(String[] args){
-        int a;
-        boolean b;
-        int c;
-        int d;
-        b = true;
-        a = 10;
-        c = 20;
-        d = 40;
-        if(b){
-           d = a;
-        }else{
-            d = c;
+        if(false){
+            io.println(50);
         }
-        io.print(a);
-        io.print(b);
-        io.print(c);
-        io.print(d);
+        else{
+        io.println(30);
+        }
    }
 }

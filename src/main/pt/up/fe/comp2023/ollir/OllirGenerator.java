@@ -41,13 +41,13 @@ public class OllirGenerator extends AOllirGenerator<String> {
     }
 
     private String handleWhileStatement(JmmNode jmmNode, List<Report> reports) {
-        //| 'while' '(' expression ')' statement #WhileLoop
         var condition = exprGen.visit(jmmNode.getJmmChild(0));
         var whileBlock = visit(jmmNode.getJmmChild(1));
 
         var enterWhile = labelWhile.enter();
         var endWhile = labelWhile.end();
         labelWhile.next();
+    // TODO : !!!!!!!!There is a jump missing to the begining of the while !!!!!!!!!!
         return condition.code() + "if(" + condition.symbol().toCode() + ")" + ollirGoTo(enterWhile) + ollirGoTo(endWhile) + ollirLabel(enterWhile) + whileBlock + ollirLabel(endWhile);
 
     }
