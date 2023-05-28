@@ -1,3 +1,8 @@
+
+### Self-assessment
+
+Ever since this project first started, we've been implementing every  feature / fix suggested by the teacher, by coming back to the aspects that were criticized and updating them. We also commited to a lot of efforts to make this final delivery as good as possible: from refactoring the whole Ollir generation code to the implementation of every optimization and added extras With that in mind, we think that our project should be graded 20 out of 20 points, as we've successfuly completed every required task.
+
 ## Students
 
 | Name             | Number        | Contribution | 
@@ -5,6 +10,7 @@
 | Miguel Silva     |  up202007972  | 33%          |
 | Martim Videira     |  up202006289  | 33%          |
 | Matias Vaz |  up201900194  | 33%          |
+
 
 # About Develop Optimization:
 
