@@ -61,7 +61,7 @@ public class GraphColouring {
         if (k < mRegisters) {
 
             System.out.println( Integer.toString(k) +" registers isn't enough.");
-            return false;
+            return KColoring(k+1);
         }
 
         Stack<GraphVertice> verticeStack = new Stack<>();
@@ -83,9 +83,7 @@ public class GraphColouring {
 
         HashMap<Integer, ArrayList<String>> colors = new HashMap<>();
 
-        for (int i = mRegisters; i < k; i++)
-
-            colors.put(i, new ArrayList<>());
+        for (int i = mRegisters; i < k; i++) colors.put(i, new ArrayList<>());
         HashMap<String, Descriptor> newTable = new HashMap<>();
         while (!verticeStack.isEmpty()) {
 
@@ -140,8 +138,9 @@ public class GraphColouring {
 
                 newTable.put(name, new Descriptor(descriptor.getScope(), register, descriptor.getVarType()));
                 register++;
+                registers.put(name, register);
             }
-            registers.put(name, descriptor.getVirtualReg());
+
         }
 
         ArrayList<Integer> usedRegisters = new ArrayList<>();
@@ -152,7 +151,10 @@ public class GraphColouring {
         }
         if (!usedRegisters.contains(0))
             usedRegisters.add(0);
-        table = newTable;
+
+        for (String key:newTable.keySet()) {
+            table.replace(key, newTable.get(key));
+        }
         System.out.println("Allocated " + usedRegisters.size() + " registers");
         return true;
     }
