@@ -7,6 +7,10 @@ import pt.up.fe.comp2023.analysis.JmmBuiltins;
 import java.util.Optional;
 
 public class DeadCodeElimination extends JmmIterativeOptimizer {
+    private enum Condition {
+        True, False, NotKnown;
+    }
+
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         startOptimizing();
@@ -22,13 +26,20 @@ public class DeadCodeElimination extends JmmIterativeOptimizer {
 
     }
 
+    private Condition evaluateCondition(JmmNode jmmNode) {
+        if (!JmmBuiltins.isLiteralNode(jmmNode)) {
+            return Condition.NotKnown;
+        }
+        if (jmmNode.get("value").equals("true")) {
+            return Condition.True;
+        }
+        return Condition.False;
+
+    }
+
     private Void handleWhile(JmmNode jmmNode, Void unused) {
         //       | 'while' '(' expression ')' statement #WhileLoop
-        var expression = jmmNode.getJmmChild(0);
-        if (!JmmBuiltins.isLiteralNode(expression)) {
-            return null;
-        }
-        if (expression.get("value").equals("true")) {
+        if (!evaluateCondition(jmmNode.getJmmChild(0)).equals(Condition.False)) {
             return null;
         }
         didOptimize();
