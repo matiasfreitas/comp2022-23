@@ -21,7 +21,8 @@ public class Optimization implements JmmOptimization {
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         ConstantFolding folder = new ConstantFolding();
         ConstantPropagation propager = new ConstantPropagation();
-        List<JmmIterativeOptimizer> optimizers = Arrays.asList(folder, propager);
+        DeadCodeElimination deader = new DeadCodeElimination();
+        List<JmmIterativeOptimizer> optimizers = Arrays.asList(folder, propager, deader);
         if (!semanticsResult.getConfig().getOrDefault("optimize", "false").equals("true")) {
             return semanticsResult;
         }
@@ -68,11 +69,10 @@ public class Optimization implements JmmOptimization {
             HashMap<String, Integer> registers = graph.getRegisters();
             HashMap<String, Descriptor> varTable = method.getVarTable();
             System.out.println(registers);
-            for(String var : registers.keySet()){
+            for (String var : registers.keySet()) {
                 try {
                     varTable.get(var).setVirtualReg(registers.get(var));
-                }
-                catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
