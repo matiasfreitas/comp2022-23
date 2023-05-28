@@ -26,7 +26,9 @@ public class JmmBuiltins {
     }
 
 
-    private static final List<String> literals = Arrays.asList("Int", "Boolean", "Char", "String", "Identifier", "This");
+    private static final List<String> literals = Arrays.asList("Int", "Boolean", "Char", "String");
+
+    private static final List<String> substitutable = Arrays.asList("Identifier", "This");
 
     private static Optional<Type> kindToType(String kind) {
         Type t = switch (kind) {
@@ -93,7 +95,7 @@ public class JmmBuiltins {
     }
 
     public static boolean noNeedParenthesis(JmmNode jmmNode) {
-        return literals.contains(jmmNode.getKind());
+        return literals.contains(jmmNode.getKind()) || substitutable.contains(jmmNode.getKind());
     }
 
 
@@ -106,6 +108,12 @@ public class JmmBuiltins {
     public static JmmNode newBooleanNode(String value) {
         var node = new JmmNodeImpl("Boolean");
         node.put("value", value);
+        return node;
+    }
+
+    public static JmmNode newNode(JmmNode jmmNode) {
+        var node = new JmmNodeImpl(jmmNode.getKind());
+        node.put("value", jmmNode.get("value"));
         return node;
     }
 

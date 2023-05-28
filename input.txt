@@ -1,13 +1,23 @@
-class ConstantFolding {
+//class ConstantFolding {
+//    public static void main(String[] args){
+//        boolean a;
+//        boolean b;
+//        b = true && false && true;
+//        a = !(!((true && true) && (true && false)));
+//    }
+//
+//    public int foldIntOperations(int b){
+//        int a;
+//        a = 2 + 1 / 2;
+//    }
+//}
+
+import io;
+class ConstantPropagation {
     public static void main(String[] args){
         boolean a;
         boolean b;
-        b = true && false && true;
-        a = !(!((true && true) && (true && false)));
-    }
-
-    public int foldIntOperations(int b){
-        int a;
-        a = 2 + 1 / 2;
+        a = true;
+        b = a && a;
     }
 }
