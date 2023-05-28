@@ -480,13 +480,13 @@ public class JasminUtils {
             case OBJECTREF:
                 String objectClass;
                 Integer dimensions;
+                boolean reference = false;
 
                 if (fieldType instanceof ArrayType) {
                     dimensions = ((ArrayType) fieldType).getNumDimensions();
-                    boolean reference = false;
-                    Type newFieldType = new Type(((ArrayType) fieldType).getElementType().getTypeOfElement());
-
-                    return "[".repeat(dimensions) + jasminType(newFieldType, imports) + (reference ? ";" : "");
+                    if (((ArrayType) fieldType).getTypeOfElements() == OBJECTREF)
+                        reference = true;
+                    return "[".repeat(dimensions) + ((reference == true)? "L": "") + jasminType(((ArrayType) fieldType).getElementType(), imports) + (reference ? ";" : "");
                 }
                 else {
                     objectClass = ((ClassType) fieldType).getName();
