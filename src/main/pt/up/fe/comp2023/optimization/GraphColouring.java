@@ -84,9 +84,8 @@ public class GraphColouring {
 
         for (int i = mRegisters; i < k; i++) colors.put(i, new ArrayList<>());
         HashMap<String, Descriptor> newTable = new HashMap<>();
-        while (!verticeStack.isEmpty()) {
+        for (GraphVertice vertice:  verticeStack) {
 
-            GraphVertice vertice = verticeStack.pop();
             vertice.setActive(true);
             vertices.put(vertice.getReg(), vertice);
             boolean colored = false;
